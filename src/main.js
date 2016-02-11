@@ -106,7 +106,7 @@ module.exports = factory.createClass({
         displayName: name,
         mixins: [store.createMixin(), controller],
         
-        storeDidChange: function() {
+        storeDidChange: function(store) {
           this.setState(store.getState());
         },
         

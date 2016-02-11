@@ -50,6 +50,7 @@ describe("main", function() {
   });
   
   it("should run application", function(done) {
+    
     var rey = new Rey();
     
     var parts = {};
@@ -127,7 +128,7 @@ describe("main", function() {
     rey.load(["TodoRoutes"]);
     
     rey.run(["Router", "TodoAction", function(Router, TodoAction) {
-      Router.start();
+      Router.start("/");
       TodoAction.addTask("test");
       assert.deepEqual(parts, {
         component: true,
