@@ -15,12 +15,12 @@ var React = require("react-immutable");
 var ReactDOM = require("react-dom");
 var Immutable = require("immutable");
 var classNames = require("classnames");
-var promiseFactory = require("bluebird/js/release/promise");
+var bluebird = require("bluebird");
 var CSSTransitionGroup = require("react-addons-css-transition-group");
 var BrowserRequest = require("browser-request");
 var parseArgs = require("./args.js");
 
-module.exports = factory.createObject({
+module.exports = factory.createClass({
   
   constructor: function() {
     
@@ -52,7 +52,7 @@ module.exports = factory.createObject({
     });
     
     this.factory("Promise", function() {
-      return promiseFactory();
+      return bluebird;
     });
     
     this.factory("request", function() {
@@ -69,10 +69,6 @@ module.exports = factory.createObject({
     
   },
   
-  isRouter: function(arg) { return arg instanceof Rooter; },
-  isStore: Fluks.isStore,
-  isAction: Fluks.isAction,
-  isDispatcher: Fluks.isDispatcher,
   isString: factory.isString,
   isNumber: factory.isNumber,
   isBoolean: factory.isBoolean,
@@ -85,6 +81,56 @@ module.exports = factory.createObject({
   isDate: factory.isDate,
   isRegExp: factory.isRegExp,
   isArguments: factory.isArguments,
+  
+  isStore: Fluks.isStore,
+  isAction: Fluks.isAction,
+  isDispatcher: Fluks.isDispatcher,
+  
+  isRouter: function(arg) { return arg instanceof Rooter; },
+  isPromise: function(arg) { return arg instanceof Promise; },
+  isComponent: function(arg) {},
+  isController: function() { 
+    
+  },
+  
+  createController: {
+    
+    // .createController(controller Object) :Component
+    o: function(controller) {
+      
+      var store = this.isStore(controller.store) ? 
+        controller.store : this.inject(controller.store);
+
+      return React.createClass({
+        
+        displayName: name,
+        mixins: [store.createMixin(), controller],
+        
+        storeDidChange: function() {
+          this.setState(store.getState());
+        },
+        
+        componentDidMount: function() {
+          if (controller.pageTitle) {
+            var pageTitle = factory.isFunction(controller.pageTitle) ?
+              controller.pageTitle.call(this) : controller.pageTitle;
+            this.previousTitle = document.title;
+            document.title = pageTitle;
+          }
+        },
+        
+        componentWillUnmount: function() {
+          if (this.previousTitle) {
+            document.title = this.previousTitle;
+          }
+        },
+        
+        render: function() {
+          return React.createElement(controller.component, this.state);
+        }
+      });
+    }
+  },
   
   factory: {
     
@@ -145,8 +191,12 @@ module.exports = factory.createObject({
     // .store(name String, dependencies Array) :void
     sa: function(name, deps) {
       return this.factory(name, ["Flux", function(Flux) {
-        var store = this.inject(deps);
-        return Flux.createStore(store);
+        var storeOptions = this.inject(deps);
+        var store = Flux.createStore(storeOptions);
+        if (storeOptions.registerHandler) {
+          store.register(storeOptions.registerHandler);
+        }
+        return store;
       }]);
     }
   },
@@ -176,28 +226,10 @@ module.exports = factory.createObject({
     
     // .controller(name String, dependencies Array) :void
     sa: function(name, deps) {
-      return this.factory(name, ["React", function(React) {
+      return this.factory(name, [function() {
         
         var controller = this.inject(deps);
-        
-        var store = this.isStore(controller.store) ? 
-          controller.store : this.inject(controller.store);
-        
-        return React.createClass({
-          displayName: name,
-          mixins: [store.createMixin()],
-          storeDidChange: function() {
-            this.setState(store.getState());
-          },
-          shouldComponentUpdate: function(nextProps, nextState) {
-            if (factory.isFunction(controller.update)) {
-              return controller.update.call(this, nextState);
-            }
-          },
-          render: function() {
-            return React.createElement(controller.component, this.state);
-          }
-        });
+        return this.createController(controller);
       }]);
     }
   },
@@ -213,6 +245,9 @@ module.exports = factory.createObject({
     sa: function(name, deps) {
       this.factory(name, ["React", function(React) {
         var component = this.inject(deps);
+        if (!component.displayName) {
+          component.displayName = name;
+        }
         return React.createClass(component);
       }]);
     }
@@ -227,8 +262,48 @@ module.exports = factory.createObject({
     
     // .routes(name String, dependencies Array) :void
     sa: function(name, deps) {
-      this.factory(name, ["Router", function(Router) {
+      this.factory(name, ["Router", "ReactDOM", function(Router, ReactDOM) {
+        
         var routes = this.inject(deps);
+        
+        if (factory.isObject(routes)) {
+          
+          Object.keys(routes).forEach(function(href) {
+            
+            var route = routes[href];
+            if (factory.isObject(route)) {
+              
+              if (!factory.isDefined(route.handler)) {
+                route.handler = function(activeRoute) {
+                  
+                  var controller = factory.isString(route.controller) ?
+                    this.inject(route.controller) : route.controller;
+                  
+                  var container = factory.isString(route.container) ? 
+                    document.getElementById(route.container) :
+                    factory.isFunction(route.container) ?
+                      route.container() : route.container;
+                  
+                  var element = React.createElement(controller, activeRoute);
+                  ReactDOM.render(element, container);
+                  
+                }.bind(this);
+              }
+              
+              var routeCopy = {};
+              Object.keys(route).forEach(function(key) {
+                if (key !== "controller" && key !== "container") {
+                  routeCopy[key] = route[key];
+                }
+              });
+              routes[href] = routeCopy;
+              
+            } else if (factory.isFunction(route)) {
+              routes[href] = { handler: route };
+            }
+          }, this);
+        }
+        
         return Router.setRoute(routes);
       }]);
     }
