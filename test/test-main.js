@@ -115,7 +115,7 @@ describe("main", function() {
       }
     }]);
     
-    rey.routes("TodoRoutes", ["TodoController", function(TodoController) {
+    rey.router("TodoRouter", ["TodoController", function(TodoController) {
       return {
         "/": {
           name: "root",
@@ -125,9 +125,7 @@ describe("main", function() {
       };
     }]);
     
-    rey.load(["TodoRoutes"]);
-    
-    rey.run(["Router", "TodoAction", function(Router, TodoAction) {
+    rey.run(["TodoRouter", "TodoAction", function(Router, TodoAction) {
       Router.start("/");
       TodoAction.addTask("test");
       assert.deepEqual(parts, {

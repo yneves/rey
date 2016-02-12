@@ -59,8 +59,8 @@ module.exports = factory.createClass({
       return BrowserRequest;
     });
     
-    this.factory("Router", function() {
-      return new Rooter();
+    this.factory("Rooter", function() {
+      return Rooter;
     });
     
     this.factory("Dispatcher", ["Flux", function(Flux) {
@@ -77,6 +77,7 @@ module.exports = factory.createClass({
   isNull: factory.isNull,
   isDefined: factory.isDefined,
   isUndefined: factory.isUndefined,
+  isFunction: factory.isFunction,
   isError: factory.isError,
   isDate: factory.isDate,
   isRegExp: factory.isRegExp,
@@ -88,27 +89,65 @@ module.exports = factory.createClass({
   
   isRouter: function(arg) { return arg instanceof Rooter; },
   isPromise: function(arg) { return arg instanceof Promise; },
-  isComponent: function(arg) {},
+  isComponent: factory.isObject,
   isController: function() { 
     
   },
+  
+  merge: factory.merge,
+  extend: factory.extend,
+  
+  createClass: factory.createClass,
+  createObject: factory.createObject,
   
   createController: {
     
     // .createController(controller Object) :Component
     o: function(controller) {
       
-      var store = this.isStore(controller.store) ? 
-        controller.store : this.inject(controller.store);
+      var mixin = {};
+      var reserved = ["storeDidChange", "store", "component", "pageTitle"];
 
+      Object.keys(controller).forEach(function(key) {
+        if (reserved.indexOf(key) === -1) {
+          mixin[key] = controller[key];
+        }
+      });
+      
+      var mixins = [mixin];
+      
+      if (this.isArray(controller.store)) {
+        controller.store.forEach(function(store) {
+          if (!this.isStore(store)) {
+            store = this.inject(store);
+          }
+          if (this.isStore(store)) {
+            mixins.push(store.createMixin());
+          }
+        }, this);
+        
+      } else if (this.isStore(controller.store)) {
+        mixins.push(controller.store.createMixin());
+        
+      } else {
+        var store = this.inject(controller.store);
+        if (this.isStore(store)) {
+          mixins.push(store.createMixin());
+        }
+      }
+      
+      var storeDidChange = this.isFunction(controller.storeDidChange) ?
+        controller.storeDidChange :
+        function(store) { this.setState(store.getState()); }
+      
+      var component = this.isString(controller.component) ?
+        this.inject(controller.component) : controller.component;
+      
       return React.createClass({
         
         displayName: name,
-        mixins: [store.createMixin(), controller],
-        
-        storeDidChange: function(store) {
-          this.setState(store.getState());
-        },
+        mixins: mixins,
+        storeDidChange: storeDidChange,
         
         componentDidMount: function() {
           if (controller.pageTitle) {
@@ -126,7 +165,7 @@ module.exports = factory.createClass({
         },
         
         render: function() {
-          return React.createElement(controller.component, this.state);
+          return React.createElement(component, this.state);
         }
       });
     }
@@ -181,6 +220,21 @@ module.exports = factory.createClass({
     }
   },
   
+  immutable: {
+    
+    // .immutable(name String, factory Function) :void
+    sf: function(name, code) {
+      return this.immutable(name, parseArgs(code).concat(code));
+    },
+    
+    // .immutable(name String, dependencies Array) :void
+    sa: function(name, deps) {
+      return this.factory(name, [function() {
+        return Immutable.fromJS(this.inject(deps));
+      }]);
+    }
+  },
+  
   store: {
     
     // .store(name String, factory Function) :void
@@ -211,8 +265,7 @@ module.exports = factory.createClass({
     // .action(name String, dependencies Array) :void
     sa: function(name, deps) {
       return this.factory(name, ["Flux", function(Flux) {
-        var action = this.inject(deps);
-        return Flux.createAction(action);
+        return Flux.createAction(this.inject(deps));
       }]);
     }
   },
@@ -227,9 +280,7 @@ module.exports = factory.createClass({
     // .controller(name String, dependencies Array) :void
     sa: function(name, deps) {
       return this.factory(name, [function() {
-        
-        var controller = this.inject(deps);
-        return this.createController(controller);
+        return this.createController(this.inject(deps));
       }]);
     }
   },
@@ -248,21 +299,25 @@ module.exports = factory.createClass({
         if (!component.displayName) {
           component.displayName = name;
         }
-        return React.createClass(component);
+        try {
+          return React.createClass(component);
+        } catch(e) {
+          throw new Error("failed to create component: " + name);
+        }
       }]);
     }
   },
   
-  routes: {
+  router: {
     
-    // .routes(name String, factory Function) :void
+    // .router(name String, factory Function) :void
     sf: function(name, code) {
-      return this.routes(name, parseArgs(code).concat(code));
+      return this.router(name, parseArgs(code).concat(code));
     },
     
-    // .routes(name String, dependencies Array) :void
+    // .router(name String, dependencies Array) :void
     sa: function(name, deps) {
-      this.factory(name, ["Router", "ReactDOM", function(Router, ReactDOM) {
+      this.factory(name, ["Rooter", "ReactDOM", function(Rooter, ReactDOM) {
         
         var routes = this.inject(deps);
         
@@ -304,7 +359,9 @@ module.exports = factory.createClass({
           }, this);
         }
         
-        return Router.setRoute(routes);
+        var router = new Rooter();
+        router.setRoute(routes);
+        return router;
       }]);
     }
   },

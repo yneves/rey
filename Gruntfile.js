@@ -13,24 +13,28 @@ module.exports = function(grunt) {
       development: {
         options: {
           detectGlobals: false,
-          standalone: "rey",
+          browserifyOptions: {
+            standalone: "rey"
+          },
           alias: [
             "../fluks/:fluks",
             "../rooter/:rooter"
           ]
         },
         files: {
-          "./dist/rey.js": "./src/main.js",
+          "./dist/rey.js": "./src/index.js",
         },
       },
       
       distribute: {
         options: {
           detectGlobals: false,
-          standalone: "rey"
+          browserifyOptions: {
+            standalone: "rey"
+          },
         },
         files: {
-          "./dist/rey.js": "./src/main.js",
+          "./dist/rey.js": "./src/index.js",
         },
       }
       
