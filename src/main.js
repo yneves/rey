@@ -59,6 +59,10 @@ module.exports = factory.createClass({
       return axios;
     });
     
+    this.factory("Promise", function() {
+      return bluebird;
+    });
+    
     this.factory("Dispatcher", ["Flux", function(Flux) {
       return Flux.dispatcher;
     }]);
