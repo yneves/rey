@@ -8,6 +8,10 @@
 
 "use strict";
 
+var bluebird = require("bluebird");
+window.Promise = bluebird;
+
+var axios = require("axios");
 var factory = require("bauer-factory");
 var Rooter = require("rooter");
 var Fluks = require("fluks");
@@ -15,10 +19,10 @@ var React = require("react-immutable");
 var ReactDOM = require("react-dom");
 var Immutable = require("immutable");
 var classNames = require("classnames");
-var bluebird = require("bluebird");
 var CSSTransitionGroup = require("react-addons-css-transition-group");
-var BrowserRequest = require("browser-request");
 var parseArgs = require("./args.js");
+
+window.React = React;
 
 module.exports = factory.createClass({
   
@@ -51,16 +55,8 @@ module.exports = factory.createClass({
       return CSSTransitionGroup;
     });
     
-    this.factory("Promise", function() {
-      return bluebird;
-    });
-    
-    this.factory("request", function() {
-      return BrowserRequest;
-    });
-    
-    this.factory("Rooter", function() {
-      return Rooter;
+    this.factory("http", function() {
+      return axios;
     });
     
     this.factory("Dispatcher", ["Flux", function(Flux) {
@@ -294,7 +290,7 @@ module.exports = factory.createClass({
     
     // .component(name String, dependencies Array) :void
     sa: function(name, deps) {
-      this.factory(name, ["React", function(React) {
+      this.factory(name, [function() {
         var component = this.inject(deps);
         if (!component.displayName) {
           component.displayName = name;
@@ -317,7 +313,7 @@ module.exports = factory.createClass({
     
     // .router(name String, dependencies Array) :void
     sa: function(name, deps) {
-      this.factory(name, ["Rooter", "ReactDOM", function(Rooter, ReactDOM) {
+      this.factory(name, [function() {
         
         var routes = this.inject(deps);
         

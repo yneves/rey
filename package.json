@@ -1,6 +1,6 @@
 {
   "name": "rey",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": {
     "url": "http://yneves.com/",
     "name": "Yuri Neves Silveira",
@@ -8,9 +8,9 @@
   },
   "main": "./src/index.js",
   "dependencies": {
+    "axios": "^0.9.1",
     "bauer-factory": "^2.0.6",
-    "bluebird": "^3.2.2",
-    "browser-request": "^0.3.3",
+    "bluebird": "^3.3.0",
     "classnames": "^2.2.3",
     "fluks": "^0.3.6",
     "grunt": "^0.4.5",
