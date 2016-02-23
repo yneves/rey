@@ -9,8 +9,6 @@
 "use strict";
 
 var bluebird = require("bluebird");
-window.Promise = bluebird;
-
 var axios = require("axios");
 var factory = require("bauer-factory");
 var Rooter = require("rooter");
@@ -23,6 +21,8 @@ var CSSTransitionGroup = require("react-addons-css-transition-group");
 var parseArgs = require("./args.js");
 
 window.React = React;
+window.ReactDOM = ReactDOM;
+window.Promise = bluebird;
 
 module.exports = factory.createClass({
   
