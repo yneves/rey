@@ -338,7 +338,7 @@ module.exports = factory.createClass({
                     document.getElementById(route.container) :
                     factory.isFunction(route.container) ?
                       route.container() : route.container;
-                  
+                
                   var element = React.createElement(controller, activeRoute);
                   ReactDOM.render(element, container);
                   
