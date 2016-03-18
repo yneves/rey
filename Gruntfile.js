@@ -18,7 +18,7 @@ module.exports = function(grunt) {
           },
           alias: [
             "../fluks/:fluks",
-            "../rooter/:rooter"
+            // "../rooter/:rooter"
           ]
         },
         files: {
