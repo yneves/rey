@@ -18,7 +18,7 @@ module.exports = function(grunt) {
           },
           alias: [
             "../fluks/:fluks",
-            // "../rooter/:rooter"
+            "../rooter/:rooter"
           ]
         },
         files: {
@@ -47,29 +47,11 @@ module.exports = function(grunt) {
         dest: "./dist/rey.min.js"
       }
       
-    },
-
-    watch: {
-      js: {
-        files: [
-          "./src/**/*.js",
-          "./src/**/*.jsx",
-          "../fluks/**/*.js",
-          "../rooter/**/*.js",
-          "../react-immutable/**/*.js",
-        ],
-        tasks: ["browserify:development"],
-        options: {
-          spawn: false,
-        },
-      },
-    },
+    }
 
   });
   
   grunt.loadNpmTasks("grunt-browserify");
-  grunt.loadNpmTasks("grunt-contrib-copy");
-  grunt.loadNpmTasks("grunt-contrib-watch");
   grunt.loadNpmTasks("grunt-contrib-uglify");
 
   grunt.registerTask("development", [
