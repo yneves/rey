@@ -6,9 +6,9 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-var Rey = require("./main.js");
+var Rey = require('./main.js');
 
 module.exports = new Rey();
 

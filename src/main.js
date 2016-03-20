@@ -6,69 +6,74 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-var bluebird = require("bluebird");
-var axios = require("axios");
-var factory = require("bauer-factory");
-var Rooter = require("rooter");
-var Fluks = require("fluks");
-var React = require("react-immutable");
-var ReactDOM = require("react-dom");
-var Immutable = require("immutable");
-var classNames = require("classnames");
-var CSSTransitionGroup = require("react-addons-css-transition-group");
-var parseArgs = require("./args.js");
+var events = require('events');
+var bluebird = require('bluebird');
+var axios = require('axios');
+var factory = require('bauer-factory');
+var Rooter = require('rooter');
+var Fluks = require('fluks');
+var React = require('react-immutable');
+var ReactDOM = require('react-dom');
+var Immutable = require('immutable');
+var classNames = require('classnames');
+var CSSTransitionGroup = require('react-addons-css-transition-group');
+var parseArgs = require('./args.js');
+var createController = require('./controller.js');
+var createRoutes = require('./routes.js');
 
 window.React = React;
 window.ReactDOM = ReactDOM;
 window.Promise = bluebird;
 
 module.exports = factory.createClass({
-  
-  constructor: function() {
-    
+
+  inherits: events.EventEmitter,
+
+  constructor: function () {
+
     this.factories = {};
     this.instances = {};
-    
-    this.factory("Flux", function() {
+
+    this.factory('Flux', function () {
       return Fluks.createFlux();
     });
-    
-    this.factory("Immutable", function() {
+
+    this.factory('Immutable', function () {
       return Immutable;
     });
-    
-    this.factory("classNames", function() {
+
+    this.factory('classNames', function () {
       return classNames;
     });
-    
-    this.factory("React", function() {
+
+    this.factory('React', function () {
       return React;
     });
-    
-    this.factory("ReactDOM", function() {
+
+    this.factory('ReactDOM', function () {
       return ReactDOM;
     });
-    
-    this.factory("CSSTransitionGroup", function() {
+
+    this.factory('CSSTransitionGroup', function () {
       return CSSTransitionGroup;
     });
-    
-    this.factory("http", function() {
+
+    this.factory('http', function () {
       return axios;
     });
-    
-    this.factory("Promise", function() {
+
+    this.factory('Promise', function () {
       return bluebird;
     });
-    
-    this.factory("Dispatcher", ["Flux", function(Flux) {
+
+    this.factory('Dispatcher', ['Flux', function (Flux) {
       return Flux.dispatcher;
     }]);
-    
+
   },
-  
+
   isString: factory.isString,
   isNumber: factory.isNumber,
   isBoolean: factory.isBoolean,
@@ -82,313 +87,231 @@ module.exports = factory.createClass({
   isDate: factory.isDate,
   isRegExp: factory.isRegExp,
   isArguments: factory.isArguments,
-  
+
   isStore: Fluks.isStore,
   isAction: Fluks.isAction,
   isDispatcher: Fluks.isDispatcher,
-  
-  isRouter: function(arg) { return arg instanceof Rooter; },
-  isPromise: function(arg) { return arg instanceof Promise; },
+
+  isRouter: function (arg) { return arg instanceof Rooter; },
+  isPromise: function (arg) { return arg instanceof Promise; },
   isComponent: factory.isObject,
-  isController: function() { 
-    
+  isController: function () {
+
   },
-  
+
   merge: factory.merge,
   extend: factory.extend,
-  
+
   createClass: factory.createClass,
   createObject: factory.createObject,
-  
-  createController: {
-    
-    // .createController(controller Object) :Component
-    o: function(controller) {
-      
-      var mixin = {};
-      var reserved = ["storeDidChange", "store", "component", "pageTitle"];
 
-      Object.keys(controller).forEach(function(key) {
-        if (reserved.indexOf(key) === -1) {
-          mixin[key] = controller[key];
-        }
-      });
-      
-      var mixins = [mixin];
-      
-      if (this.isArray(controller.store)) {
-        controller.store.forEach(function(store) {
-          if (!this.isStore(store)) {
-            store = this.inject(store);
-          }
-          if (this.isStore(store)) {
-            mixins.push(store.createMixin());
-          }
-        }, this);
-        
-      } else if (this.isStore(controller.store)) {
-        mixins.push(controller.store.createMixin());
-        
-      } else {
-        var store = this.inject(controller.store);
-        if (this.isStore(store)) {
-          mixins.push(store.createMixin());
-        }
-      }
-      
-      var storeDidChange = this.isFunction(controller.storeDidChange) ?
-        controller.storeDidChange :
-        function(store) { this.setState(store.getState()); }
-      
-      var component = this.isString(controller.component) ?
-        this.inject(controller.component) : controller.component;
-      
-      return React.createClass({
-        
-        displayName: name,
-        mixins: mixins,
-        storeDidChange: storeDidChange,
-        
-        componentDidMount: function() {
-          if (controller.pageTitle) {
-            var pageTitle = factory.isFunction(controller.pageTitle) ?
-              controller.pageTitle.call(this) : controller.pageTitle;
-            this.previousTitle = document.title;
-            document.title = pageTitle;
-          }
-        },
-        
-        componentWillUnmount: function() {
-          if (this.previousTitle) {
-            document.title = this.previousTitle;
-          }
-        },
-        
-        render: function() {
-          return React.createElement(component, this.state);
-        }
-      });
-    }
-  },
-  
   factory: {
-    
-    // .factory(name String, injectable Function) :void
-    sf: function(name, injectable) {
+
+    // .factory(name String, injectable Function) :Rey
+    sf: function (name, injectable) {
       this.factories[name] = injectable;
       return this;
     },
-    
-    // .factory(name String, injectable Array) :void
-    sa: function(name, injectable) {
+
+    // .factory(name String, injectable Array) :Rey
+    sa: function (name, injectable) {
       this.factories[name] = injectable;
       return this;
     }
   },
-  
+
   inject: {
-    
+
     // .inject(name String) :Object
-    s: function(name) {
+    s: function (name) {
       if (!this.factories[name]) {
-        throw new Error("unknown dependency requested: " + name);
+        throw new Error('unknown dependency requested: ' + name);
       }
       if (!this.instances[name]) {
         this.instances[name] = this.inject(this.factories[name]);
       }
       return this.instances[name];
     },
-    
+
     // .inject(code Function) :Object
-    f: function(code) {
+    f: function (code) {
       return this.inject(parseArgs(code).concat(code));
     },
-    
+
     // .inject(dependencies Array) :Object
-    a: function(deps) {
-      if (!factory.isFunction(deps[deps.length - 1])) {
-        throw new Error("Last element must be a function.");
+    a: function (deps) {
+      var hasTrace = factory.isError(deps[deps.length - 1]);
+      var codeIndex = hasTrace ? deps.length - 2 : deps.length - 1;
+      if (!factory.isFunction(deps[codeIndex])) {
+        throw new Error('missing factory function');
       }
-      var code = deps[deps.length - 1];
-      var len = deps.length - 1;
+      var trace = hasTrace ? deps[codeIndex + 1] : null;
+      var code = deps[codeIndex];
       var args = [];
       var i;
-      for (i = 0; i < len; i++) {
+      for (i = 0; i < codeIndex; i++) {
         args[i] = this.inject(deps[i]);
       }
-      return code.apply(this, args);
+      try {
+        return code.apply(this, args);
+      } catch (error) {
+        if (this.listenerCount('error')) {
+          this.emit('error', error, trace);
+        } else {
+          console.error(error, trace);
+        }
+      }
     }
   },
-  
+
   immutable: {
-    
-    // .immutable(name String, factory Function) :void
-    sf: function(name, code) {
+
+    // .immutable(name String, factory Function) :Rey
+    sf: function (name, code) {
       return this.immutable(name, parseArgs(code).concat(code));
     },
-    
-    // .immutable(name String, dependencies Array) :void
-    sa: function(name, deps) {
-      return this.factory(name, [function() {
+
+    // .immutable(name String, dependencies Array) :Rey
+    sa: function (name, deps) {
+      var trace = new Error('immutable: ' + name);
+      return this.factory(name, [function () {
         return Immutable.fromJS(this.inject(deps));
-      }]);
+      }, trace]);
     }
   },
-  
+
   store: {
-    
-    // .store(name String, factory Function) :void
-    sf: function(name, code) {
+
+    // .store(name String, factory Function) :Rey
+    sf: function (name, code) {
       return this.store(name, parseArgs(code).concat(code));
     },
-    
-    // .store(name String, dependencies Array) :void
-    sa: function(name, deps) {
-      return this.factory(name, ["Flux", function(Flux) {
+
+    // .store(name String, dependencies Array) :Rey
+    sa: function (name, deps) {
+      var trace = new Error('store: ' + name);
+      return this.factory(name, ['Flux', function (Flux) {
         var storeOptions = this.inject(deps);
+        storeOptions.displayName = name.replace(/\W/g, '_');
         var store = Flux.createStore(storeOptions);
         if (storeOptions.registerHandler) {
           store.register(storeOptions.registerHandler);
         }
         return store;
-      }]);
+      }, trace]);
     }
   },
-  
+
   action: {
-    
-    // .action(name String, factory Function) :void
-    sf: function(name, code) {
+
+    // .action(name String, factory Function) :Rey
+    sf: function (name, code) {
       return this.action(name, parseArgs(code).concat(code));
     },
-    
-    // .action(name String, dependencies Array) :void
-    sa: function(name, deps) {
-      return this.factory(name, ["Flux", function(Flux) {
+
+    // .action(name String, dependencies Array) :Rey
+    sa: function (name, deps) {
+      var trace = new Error('action: ' + name);
+      return this.factory(name, ['Flux', function (Flux) {
         return Flux.createAction(this.inject(deps));
-      }]);
+      }, trace]);
     }
   },
-  
+
   controller: {
-    
-    // .controller(name String, factory Function) :void
-    sf: function(name, code) {
+
+    // .controller(name String, factory Function) :Rey
+    sf: function (name, code) {
       return this.controller(name, parseArgs(code).concat(code));
     },
-    
-    // .controller(name String, dependencies Array) :void
-    sa: function(name, deps) {
-      return this.factory(name, [function() {
-        return this.createController(this.inject(deps));
-      }]);
+
+    // .controller(name String, dependencies Array) :Rey
+    sa: function (name, deps) {
+      var trace = new Error('controller: ' + name);
+      return this.factory(name, [function () {
+        return createController.call(this, this.inject(deps));
+      }, trace]);
     }
   },
-  
+
   component: {
-    
-    // .component(name String, factory Function) :void
-    sf: function(name, code) {
+
+    // .component(name String, factory Function) :Rey
+    sf: function (name, code) {
       return this.component(name, parseArgs(code).concat(code));
     },
-    
-    // .component(name String, dependencies Array) :void
-    sa: function(name, deps) {
-      this.factory(name, [function() {
+
+    // .component(name String, dependencies Array) :Rey
+    sa: function (name, deps) {
+      var trace = new Error('component: ' + name);
+      this.factory(name, [function () {
         var component = this.inject(deps);
         if (!component.displayName) {
           component.displayName = name;
         }
-        try {
-          return React.createClass(component);
-        } catch(e) {
-          throw new Error("failed to create component: " + name);
+        if (factory.isFunction(component.render)) {
+          var render = component.render;
+          var rey = this;
+          component.render = function () {
+            try {
+              return render.call(this);
+            } catch (error) {
+              if (rey.listenerCount('error')) {
+                rey.emit('error', error, trace);
+              } else {
+                console.error(error, trace);
+              }
+              return React.createElement('noscript');
+            }
+          };
         }
-      }]);
+        return React.createClass(component);
+      }, trace]);
     }
   },
-  
+
   router: {
-    
-    // .router(name String, factory Function) :void
-    sf: function(name, code) {
+
+    // .router(name String, factory Function) :Rey
+    sf: function (name, code) {
       return this.router(name, parseArgs(code).concat(code));
     },
-    
-    // .router(name String, dependencies Array) :void
-    sa: function(name, deps) {
-      this.factory(name, [function() {
-        
+
+    // .router(name String, dependencies Array) :Rey
+    sa: function (name, deps) {
+      var trace = new Error('router: ' + name);
+      this.factory(name, [function () {
         var routes = this.inject(deps);
-        
-        if (factory.isObject(routes)) {
-          
-          Object.keys(routes).forEach(function(href) {
-            
-            var route = routes[href];
-            if (factory.isObject(route)) {
-              
-              if (!factory.isDefined(route.handler)) {
-                route.handler = function(activeRoute) {
-                  
-                  var controller = factory.isString(route.controller) ?
-                    this.inject(route.controller) : route.controller;
-                  
-                  var container = factory.isString(route.container) ? 
-                    document.getElementById(route.container) :
-                    factory.isFunction(route.container) ?
-                      route.container() : route.container;
-                
-                  var element = React.createElement(controller, activeRoute);
-                  ReactDOM.render(element, container);
-                  
-                }.bind(this);
-              }
-              
-              var routeCopy = {};
-              Object.keys(route).forEach(function(key) {
-                if (key !== "controller" && key !== "container") {
-                  routeCopy[key] = route[key];
-                }
-              });
-              routes[href] = routeCopy;
-              
-            } else if (factory.isFunction(route)) {
-              routes[href] = { handler: route };
-            }
-          }, this);
-        }
-        
         var router = new Rooter();
-        router.setRoute(routes);
+        router.setRoute(createRoutes.call(this, routes));
         return router;
-      }]);
+      }, trace]);
     }
   },
-  
+
   load: {
-    
-    // .run(dependencies Array) :void
-    a: function(deps) {
-      this.inject(deps.concat([function() {}]));
+
+    // .run(dependencies Array) :Rey
+    a: function (deps) {
+      this.inject(deps.concat([function () {}]));
       return this;
     }
   },
-  
+
   run: {
-    
-    // .run(code Function) :void
-    f: function(code) {
+
+    // .run(code Function) :Rey
+    f: function (code) {
       return this.run(parseArgs(code).concat(code));
     },
-    
-    // .run(dependencies Array) :void
-    a: function(deps) {
+
+    // .run(dependencies Array) :Rey
+    a: function (deps) {
       this.inject(deps);
       return this;
     }
   }
-  
+
 });
 
 // - -------------------------------------------------------------------- - //

@@ -7752,62 +7752,62 @@ module.exports = toExport;
 // - -------------------------------------------------------------------- - //
 // - libs
 
-"use strict";
+'use strict';
 
-var factory = require("bauer-factory");
-var dispatchers = require("./dispatchers.js");
+var factory = require('bauer-factory');
+var dispatchers = require('./dispatchers.js');
 
 // - -------------------------------------------------------------------- - //
 // - module
 
 var Action = factory.createClass({
 
-  // new Action(dispatcher Dispatcher) :Action
-  constructor: function(dispatcher) {
-    
+  // New Action(dispatcher Dispatcher) :Action
+  constructor: function (dispatcher) {
+
     if (dispatchers.isDispatcher(dispatcher)) {
       this.dispatcher = dispatcher;
     } else {
       this.dispatcher = new dispatchers.Dispatcher();
     }
-    
+
     var action = this;
     var prototype = Object.getPrototypeOf(this);
-    Object.keys(prototype).forEach(function(method) {
-      if (method !== "dispatch") {
-        action[method] = function() {
-          var ret = prototype[method].apply(action,arguments);
-          if (typeof ret !== "undefined") {
+    Object.keys(prototype).forEach(function (method) {
+      if (method !== 'dispatch') {
+        action[method] = function () {
+          var ret = prototype[method].apply(action, arguments);
+          if (typeof ret !== 'undefined') {
             action.dispatch(ret);
           }
         };
       }
     });
   },
-  
+
   dispatch: {
-    
+
     // .dispatch(actionType String) :void
-    s: function(actionType) {
+    s: function (actionType) {
       this.dispatcher.dispatch({
         actionType: actionType
       });
     },
-    
+
     // .disptach(payload Object) :void
-    o: function(payload) {
+    o: function (payload) {
       this.dispatcher.dispatch(payload);
     }
-    
+
   }
-  
+
 });
 
-function isAction(arg) {
+function isAction (arg) {
   return arg instanceof Action;
 }
 
-function createAction(options) {
+function createAction (options) {
   options = options || {};
   options.inherits = Action;
   return factory.createClass(options);
@@ -7834,19 +7834,19 @@ module.exports = {
 // - -------------------------------------------------------------------- - //
 // - libs
 
-"use strict";
+'use strict';
 
-var factory = require("bauer-factory");
-var Dispatcher = require("flux").Dispatcher;
+var factory = require('bauer-factory');
+var Dispatcher = require('flux').Dispatcher;
 
 // - -------------------------------------------------------------------- - //
 // - module
 
-function isDispatcher(arg) {
+function isDispatcher (arg) {
   return arg instanceof Dispatcher;
 }
 
-function createDispatcher(options) {
+function createDispatcher (options) {
   options = options || {};
   options.inherits = Dispatcher;
   return factory.createClass(options);
@@ -7873,48 +7873,48 @@ module.exports = {
 // - -------------------------------------------------------------------- - //
 // - libs
 
-"use strict";
+'use strict';
 
-var factory = require("bauer-factory");
-var stores = require("./stores.js");
-var actions = require("./actions.js");
-var dispatchers = require("./dispatchers.js");
+var factory = require('bauer-factory');
+var stores = require('./stores.js');
+var actions = require('./actions.js');
+var dispatchers = require('./dispatchers.js');
 
 // - -------------------------------------------------------------------- - //
 // - module
 
 var Flux = factory.createClass({
 
-  // new Flux(dispatcher Dispatcher) :Flux
-  constructor: function(dispatcher) {
+  // New Flux(dispatcher Dispatcher) :Flux
+  constructor: function (dispatcher) {
     if (dispatchers.isDispatcher(dispatcher)) {
       this.dispatcher = dispatcher;
     } else {
       this.dispatcher = new dispatchers.Dispatcher();
     }
   },
-  
+
   // .createStore(options Object) :Store
-  createStore: function(options) {
+  createStore: function (options) {
     options = options || {};
     var Store = stores.createStore(options);
     return new Store(this.dispatcher);
   },
 
   // .createAction(options Object) :Action
-  createAction: function(options) {
+  createAction: function (options) {
     options = options || {};
     var Action = actions.createAction(options);
     return new Action(this.dispatcher);
   }
-  
+
 });
 
-function isFlux(arg) {
+function isFlux (arg) {
   return arg instanceof Flux;
 }
 
-function createFlux(options) {
+function createFlux (options) {
   options = options || {};
   options.inherits = Flux;
   return factory.createObject(options);
@@ -7941,12 +7941,12 @@ module.exports = {
 // - -------------------------------------------------------------------- - //
 // - libs
 
-"use strict";
+'use strict';
 
-var events = require("events");
-var factory = require("bauer-factory");
-var dispatchers = require("./dispatchers.js");
-var Immutable = require("immutable");
+var events = require('events');
+var factory = require('bauer-factory');
+var dispatchers = require('./dispatchers.js');
+var Immutable = require('immutable');
 
 // - -------------------------------------------------------------------- - //
 // - module
@@ -7954,122 +7954,167 @@ var Immutable = require("immutable");
 var Store = factory.createClass({
 
   inherits: events.EventEmitter,
-  
-  // new Store(dispatcher Dispatcher) :Store
-  constructor: function(dispatcher) {
-    
+
+  // New Store(dispatcher Dispatcher) :Store
+  constructor: function (dispatcher) {
+
     if (dispatchers.isDispatcher(dispatcher)) {
       this.dispatcher = dispatcher;
     } else {
       this.dispatcher = new dispatchers.Dispatcher();
     }
-    
+
     this.tokens = [];
-    
-    this.props = this.getDefaultProps();
+
+    this.resetProps();
     this.resetState();
-    
-    this.on("storeWillMount", this.storeWillMount);
-    this.on("storeWillUnmount", this.storeWillUnmount);
-    this.on("storeWillReceiveProps", this.storeWillReceiveProps);
-    
-  },
-  
-  register: {
-    
-    // .register(callback Function) :void
-    f: function(callback) {
-      this.tokens.push(this.dispatcher.register(callback));
-    },
-    
-    // .register(actions Object) :void
-    o: function(actions) {
-      this.tokens.push(this.dispatcher.register(function(payload) {
-        if (payload.actionType) {
-          if (factory.isFunction(actions[payload.actionType])) {
-            actions[payload.actionType].call(this,payload);
-          }
-        }
-      }.bind(this)));
+
+    var name = this.constructor.name;
+    var trace;
+    var handler;
+
+    if (factory.isFunction(this.storeWillMount)) {
+      trace = new Error(name + ': storeWillMount handler error');
+      handler = this.catchError(this.storeWillMount.bind(this), trace);
+      this.on('storeWillMount', handler);
+    }
+
+    if (factory.isFunction(this.storeWillUnmount)) {
+      trace = new Error(name + ': storeWillUnmount handler error');
+      handler = this.catchError(this.storeWillUnmount.bind(this), trace);
+      this.on('storeWillUnmount', handler);
+    }
+
+    if (factory.isFunction(this.storeWillReceiveProps)) {
+      trace = new Error(name + ': storeWillReceiveProps handler error');
+      handler = this.catchError(this.storeWillReceiveProps.bind(this), trace);
+      this.on('storeWillReceiveProps', handler);
     }
   },
-  
+
+  catchError: {
+
+    // .catchError(callback Function, trace Error) :Function
+    fe: function (callback, trace) {
+      return function (arg) {
+        try {
+          callback(arg);
+        } catch (error) {
+          if (this.listenerCount('error')) {
+            this.emit('error', error, trace);
+          } else {
+            console.error(error, trace);
+          }
+        }
+      }.bind(this);
+    }
+  },
+
+  register: {
+
+    // .register(callback Function) :void
+    f: function (callback) {
+      var trace = new Error(this.constructor.name + ': dispatcher handler error');
+      var token = this.dispatcher.register(this.catchError(callback, trace));
+      this.tokens.push(token);
+    },
+
+    // .register(actions Object) :void
+    o: function (actions) {
+      this.register(function (payload) {
+        if (payload.actionType) {
+          if (factory.isFunction(actions[payload.actionType])) {
+            actions[payload.actionType].call(this, payload);
+          }
+        }
+      }.bind(this));
+    }
+  },
+
   unregister: {
-    
+
     // .unregister() :void
-    0: function() {
+    0: function () {
       while (this.tokens.length) {
         this.dispatcher.unregister(this.tokens.pop());
       }
     }
   },
-  
+
   onChange: {
-    
+
     // .onChange(callback Function) :void
-    f: function(callback) {
-      this.addListener("change",callback);
+    f: function (callback) {
+      var trace = new Error(this.constructor.name + ': change handler error');
+      var handler = this.catchError(callback, trace);
+      this.addListener('change', handler);
+      return handler;
     }
   },
-  
+
   emitChange: {
-    
+
     // .emitChange() :void
-    0: function() {
-      this.emit("change");
+    0: function () {
+      this.emit('change');
     }
   },
-  
+
   // .storeWillMount() :void
-  storeWillMount: function() {
-    
+  storeWillMount: function () {
+
   },
-  
+
   // .storeWillUnmount() :void
-  storeWillUnmount: function() {
-    
+  storeWillUnmount: function () {
+
   },
-  
+
   // .storeWillReceiveProps() :void
-  storeWillReceiveProps: function() {
-    
+  storeWillReceiveProps: function () {
+
   },
-   
+
   // .getDefaultProps() :Object
-  getDefaultProps: function() {
+  getDefaultProps: function () {
     return {};
   },
-  
+
   // .replaceProps(props) :void
-  replaceProps: function(props) {
+  replaceProps: function (props) {
     this.props = props;
   },
-  
+
+  // .resetProps() :void
+  resetProps: function () {
+    this.replaceProps(this.getDefaultProps());
+  },
+
   // .getInitialState() :Object
-  getInitialState: function() {
+  getInitialState: function () {
     return {};
   },
-  
+
   setState: {
-    
+
     // .setState(state Object) :void
-    o: function(state) {
+    o: function (state) {
       this.state = this.state.merge(state);
       this.emitChange();
     }
   },
-  
+
   getState: {
-    
-    0: function() {
+
+    0: function () {
       return this.state.toObject();
     }
   },
-  
+
   resetState: {
-    
+
     // .resetState() :void
-    0: function() {
+    0: function () {
       if (this.state) {
         this.state = this.state.clear();
         this.state = this.state.merge(this.getInitialState());
@@ -8078,66 +8123,68 @@ var Store = factory.createClass({
       }
     }
   },
-  
+
   createMixin: {
-    
+
     // .createMixin() :Object
-    0: function() {
+    0: function () {
       return this.createMixin({});
     },
-    
+
     // .createMixin(options Object) :Object
-    o: function(options) {
-      
+    o: function (options) {
+
       options = options || {};
-      
+
       var store = this;
       var storeChangeHandler;
-      
+
       return {
-        
-        getInitialState: function() {
+
+        getInitialState: function () {
           store.replaceProps(this.props);
           if (options.resetState !== false) {
             store.resetState();
           }
           return store.getState();
         },
-        
-        componentWillMount: function() {
-          storeChangeHandler = function() {
+
+        componentWillMount: function () {
+          storeChangeHandler = store.onChange(function () {
             if (this.storeDidChange) {
               this.storeDidChange(store);
             }
-          }.bind(this);
-          store.addListener("change", storeChangeHandler);
-          store.emit("storeWillMount");
+          }.bind(this));
+          store.emit('storeWillMount');
         },
-        
-        componentWillReceiveProps: function(newProps) {
+
+        componentWillReceiveProps: function (newProps) {
           store.replaceProps(newProps);
-          store.emit("storeWillReceiveProps");
+          store.emit('storeWillReceiveProps');
         },
-        
-        componentWillUnmount: function() {
-          store.removeListener("change", storeChangeHandler);
-          store.emit("storeWillUnmount");
-          store.replaceProps(store.getDefaultProps());
+
+        componentWillUnmount: function () {
+          store.removeListener('change', storeChangeHandler);
+          store.emit('storeWillUnmount');
+          if (options.resetProps !== false) {
+            store.resetProps();
+          }
         }
       };
     }
   }
-  
+
 });
 
-function isStore(arg) {
+function isStore (arg) {
   return arg instanceof Store;
 }
 
-function createStore(options) {
+function createStore (options) {
   options = options || {};
   options.inherits = Store;
-  return factory.createClass(options);
+  options.displayName = options.displayName || 'CustomStore';
+  return factory.createClass(options.displayName, options);
 }
 
 // - -------------------------------------------------------------------- - //
@@ -33932,26 +33979,26 @@ module.exports = require('./lib/React');
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-var url = require("url");
-var events = require("events");
-var factory = require("bauer-factory");
+var url = require('url');
+var events = require('events');
+var factory = require('bauer-factory');
 
 // - -------------------------------------------------------------------- - //
 
 var Router = factory.createClass({
-  
+
   inherits: events.EventEmitter,
-  
+
   // new Router() :Router
-  constructor: function() {
+  constructor: function () {
     this.routes = {};
   },
-  
-  parse: function(str, qs) {
+
+  parse: function (str, qs) {
     var parsed = url.parse(str, qs);
-    ["host", "port", "protocol", "hostname", "pathname"].forEach(function(prop) {
+    ['host', 'port', 'protocol', 'hostname', 'pathname'].forEach(function (prop) {
       if (!parsed[prop]) {
         parsed[prop] = window.location[prop];
       }
@@ -33961,49 +34008,48 @@ var Router = factory.createClass({
     }
     return parsed;
   },
-  
-  format: function(obj) {
+
+  format: function (obj) {
     return url.format(obj);
   },
-  
+
   setRoute: {
-    
-    // .setRoute(routes Object) :Router
-    o: function(routes) {
-      Object.keys(routes).forEach(function(route) {
+
+    // .setRoute(routes Object) :void
+    o: function (routes) {
+      Object.keys(routes).forEach(function (route) {
         this.setRoute(route, routes[route]);
       }.bind(this));
-      return this;
     },
-    
-    // .setRoute(route String, handler Function) :Router
-    sf: function(route, handler) {
+
+    // .setRoute(route String, handler Function) :void
+    sf: function (route, handler) {
       this.routes[route] = {
+        trace: new Error('Router: route "' + route + '" handler error'),
         handler: handler
       };
-      return this;
     },
-    
-    // .setRoute(route String, data Object) :Router
-    so: function(route, data) {
+
+    // .setRoute(route String, data Object) :void
+    so: function (route, data) {
+      data.trace = new Error('Router: route "' + route + '" handler error');
       this.routes[route] = data;
-      return this;
     }
   },
-  
+
   findRoute: {
-    
+
     // .findRoute(path String) :Function
-    s: function(path) {
+    s: function (path) {
       return this.findRoute(this.parse(path, true));
     },
-    
+
     // .findRoute(parsed Object) :Function
-    o: function(parsed) {
-      
+    o: function (parsed) {
+
       var route;
-      
-      // exact match
+
+      // Exact match
       if (this.routes[parsed.pathname]) {
         route = factory.merge(this.routes[parsed.pathname], {
           path: parsed.path,
@@ -34011,10 +34057,10 @@ var Router = factory.createClass({
           params: {},
           pathname: parsed.pathname
         });
-      
-      // match params
+
+      // Match params
       } else {
-        
+
         var routes = Object.keys(this.routes);
         var routesLength = routes.length;
         var routeMatcher;
@@ -34023,36 +34069,36 @@ var Router = factory.createClass({
         var values;
         var i;
         var p;
-        
+
         for (i = 0; i < routesLength; i++) {
-          
+
           params = routes[i].match(/\{[\w]+\}/g);
           if (params) {
-            
+
             paramsLength = params.length;
-            
+
             for (p = 0; p < paramsLength; p++) {
               params[p] = params[p].substr(1, params[p].length - 2);
             }
-            
-            routeMatcher = new RegExp("^" + routes[i].replace(/\{[\w]+\}/g, "([\\w0-9-]+)") + "$");
+
+            routeMatcher = new RegExp('^' + routes[i].replace(/\{[\w]+\}/g, '([\\w0-9-]+)') + '$');
             values = parsed.pathname ? parsed.pathname.match(routeMatcher) : undefined;
-            
+
             if (values) {
-              
+
               route = factory.merge(this.routes[routes[i]], {
                 path: parsed.path,
                 params: {},
                 query: parsed.query,
                 pathname: parsed.pathname
               });
-              
+
               for (p = 0; p < paramsLength; p++) {
                 route.params[params[p]] = values[p + 1];
               }
             }
           }
-          
+
           if (route) {
             break;
           }
@@ -34061,144 +34107,192 @@ var Router = factory.createClass({
       return route;
     }
   },
-  
+
   replace: {
-    
+
     // .navigate(options Object) :void
-    o: function(options) {
+    o: function (options) {
       this.replace(url.format(options));
     },
-    
+
     // .replace(path String) :void
-    s: function(path) {
+    s: function (path) {
       var state = { route: path };
       window.history.replaceState(state, document.title, path);
     }
   },
-  
+
   navigate: {
-    
+
     // .navigate(options Object) :void
-    o: function(options) {
-      this.navigate(url.format(options), true);
+    o: function (options) {
+      var route = url.format(options);
+      var trace = new Error('Router: navigate to "' + route + '" handler error');
+      this.navigate(route, true, trace);
     },
-    
+
     // .navigate(options Object, pushState Boolean) :void
-    ob: function(options, pushState) {
-      this.navigate(url.format(options), pushState);
+    ob: function (options, pushState) {
+      var route = url.format(options);
+      var trace = new Error('Router: navigate to "' + route + '" handler error');
+      this.navigate(route, pushState, trace);
     },
-    
+
     // .navigate(route String) :void
-    s: function(route) {
-      this.navigate(route, true);
+    s: function (route) {
+      var trace = new Error('Router: navigate to "' + route + '" handler error');
+      this.navigate(route, true, trace);
     },
-    
-    // .navigate(href String, pushState Boolean) :void
-    sb: function(href, pushState) {
+
+    // .navigate(route String, pushState Boolean) :void
+    sb: function (route, pushState) {
+      var trace = new Error('Router: navigate to "' + route + '" handler error');
+      this.navigate(route, pushState, trace);
+    },
+
+    // .navigate(route String, pushState Boolean, trace Error) :void
+    sbe: function (route, pushState, trace) {
       if (this.navigateTimeout) {
         clearTimeout(this.navigateTimeout);
         this.navigateTimeout = undefined;
       }
-      this.navigateTimeout = setTimeout(function() {
+      this.navigateTimeout = setTimeout(function () {
         this.navigateTimeout = undefined;
-        this.navigateSync(href, pushState);
+        this.navigateSync(route, pushState, trace);
       }.bind(this), 1);
     }
   },
-  
+
   navigateSync: {
-    
+
     // .navigateSync(options Object) :void
-    o: function(options) {
-      this.navigateSync(url.format(options), true);
+    o: function (options) {
+      var route = url.format(options);
+      var trace = new Error('Router: navigate to "' + route + '" handler error');
+      this.navigateSync(route, true, trace);
     },
-    
+
     // .navigateSync(options Object, pushState Boolean) :void
-    ob: function(options, pushState) {
-      this.navigateSync(url.format(options), pushState);
+    ob: function (options, pushState) {
+      var route = url.format(options);
+      var trace = new Error('Router: navigate to "' + route + '" handler error');
+      this.navigateSync(route, pushState, trace);
     },
-    
+
     // .navigateSync(route String) :void
-    s: function(route) {
-      this.navigateSync(route, true);
+    s: function (route) {
+      var trace = new Error('Router: navigate to "' + route + '" handler error');
+      this.navigateSync(route, true, trace);
     },
-    
-    // .navigateSync(href String, pushState Boolean) :void
-    sb: function(href, pushState) {
-      
+
+    // .navigateSync(route String, pushState Boolean) :void
+    sb: function (route, pushState) {
+      var trace = new Error('Router: navigate to "' + route + '" handler error');
+      this.navigateSync(route, pushState, trace);
+    },
+
+    // .navigateSync(route String, pushState Boolean, trace Error) :void
+    sbe: function (route, pushState, trace) {
+
       this.activeRoute = undefined;
-      
-      var parsed = this.parse(href, true);
-      
+
+      var parsed = this.parse(route, true);
+
       if (parsed.host && parsed.host !== window.location.host) {
-        window.location.href = href;
-        
+        window.location.href = route;
+
       } else {
-        
-        var route = this.activeRoute = this.findRoute(parsed);
+
+        var activeRoute = this.activeRoute = this.findRoute(parsed);
         var pageTitle = document.title;
         var state = { route: this.format(parsed) };
-        
+
         if (pushState) {
-          window.history.pushState(state, pageTitle, href);
+          window.history.pushState(state, pageTitle, route);
         }
-        
-        if (route && factory.isFunction(route.handler)) {
-          this.emit("navigate", route);
-          route.handler(route);
-          
+
+        if (activeRoute && factory.isFunction(activeRoute.handler)) {
+
+          this.handleRoute(activeRoute, trace);
+
           if (pageTitle !== document.title) {
-            window.history.replaceState(state, document.title, href);
+            window.history.replaceState(state, document.title, route);
           }
         }
       }
     }
   },
-  
+
+  handleRoute: {
+
+    // .handleRoute(route Object, trace Error) :void
+    oe: function (route, trace) {
+      try {
+        this.emit('navigate', route);
+      } catch (error) {
+        if (this.listenerCount('error')) {
+          this.emit('error', error, trace, route.trace);
+        } else {
+          console.error(error, trace, route.trace);
+        }
+      }
+      try {
+        route.handler(route);
+      } catch (error) {
+        if (this.listenerCount('error')) {
+          this.emit('error', error, trace, route.trace);
+        } else {
+          console.error(error, trace, route.trace);
+        }
+      }
+    }
+  },
+
   back: {
-    
+
     // .back() :void
-    0: function() {
+    0: function () {
       window.history.back();
     }
   },
-  
+
   start: {
-    
+
     // .start() :void
-    0: function() {
+    0: function () {
       this.start(window.location.href);
     },
-    
-    // .navigate(options Object) :void
-    o: function(options) {
+
+    // .start(options Object) :void
+    o: function (options) {
       this.start(url.format(options));
     },
-    
+
     // .start(url String) :void
-    s: function(url) {
-      
-      window.addEventListener("popstate", function(e) {
+    s: function (url) {
+
+      window.addEventListener('popstate', function (e) {
         if (!e.state) {
-          throw new Error("popstate called without state");
+          throw new Error('popstate called without state');
         }
-        this.navigateSync(e.state.route, false);
+        var trace = new Error('popstate event');
+        this.navigateSync(e.state.route, false, trace);
       }.bind(this));
-      
+
       this.navigateSync(url, false);
     }
   },
-  
+
   isRouteActive: {
-    
+
     // .isRouteActive(route String) :Boolean
-    s: function(route) {
+    s: function (route) {
       return this.parse(window.location.href).path === this.parse(route).path;
     }
   },
-  
+
   // .getRouteParams() :Object
-  getRouteParams: function() {
+  getRouteParams: function () {
     return this.activeRoute ? this.activeRoute.params : undefined;
   }
 
@@ -34971,14 +35065,14 @@ module.exports = {
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
 var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 var ARGUMENT_NAMES = /([^\s,]+)/g;
 
-module.exports = function parseArgs(func) {
-  var fnStr = func.toString().replace(STRIP_COMMENTS, "");
-  var result = fnStr.slice(fnStr.indexOf("(") + 1, fnStr.indexOf(")")).match(ARGUMENT_NAMES);
+module.exports = function parseArgs (func) {
+  var fnStr = func.toString().replace(STRIP_COMMENTS, '');
+  var result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
   return result || [];
 };
 
@@ -34993,15 +35087,83 @@ module.exports = function parseArgs(func) {
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-var Rey = require("./main.js");
-
-module.exports = new Rey();
+var factory = require('bauer-factory');
+var React = require('react-immutable');
 
 // - -------------------------------------------------------------------- - //
 
-},{"./main.js":212}],212:[function(require,module,exports){
+function defaultStoreChange (store) {
+  this.setState(store.getState());
+}
+
+function createMixin (controller) {
+  var mixin = {};
+  var reserved = [
+    'storeDidChange',
+    'store',
+    'component',
+    'pageTitle'
+  ];
+  Object.keys(controller).forEach(function (key) {
+    if (reserved.indexOf(key) === -1) {
+      mixin[key] = controller[key];
+    }
+  });
+  return mixin;
+}
+
+function createStoreMixin (store) {
+  if (!this.isStore(store)) {
+    store = this.inject(store);
+  }
+  if (this.isStore(store)) {
+    return store.createMixin();
+  }
+}
+
+module.exports = function createController (controller) {
+
+  var mixins = [createMixin(controller)];
+  if (this.isArray(controller.store)) {
+    mixins = mixins.concat(controller.store.map(createStoreMixin, this));
+  } else {
+    mixins.push(createStoreMixin.call(this, controller.store));
+  }
+
+  var storeDidChange = this.isFunction(controller.storeDidChange) ?
+    controller.storeDidChange : defaultStoreChange;
+
+  var component = this.isString(controller.component) ?
+    this.inject(controller.component) : controller.component;
+
+  return React.createClass({
+    displayName: name,
+    mixins: mixins,
+    storeDidChange: storeDidChange,
+    componentDidMount: function () {
+      if (controller.pageTitle) {
+        var pageTitle = factory.isFunction(controller.pageTitle) ?
+          controller.pageTitle.call(this) : controller.pageTitle;
+        this.previousTitle = document.title;
+        document.title = pageTitle;
+      }
+    },
+    componentWillUnmount: function () {
+      if (this.previousTitle) {
+        document.title = this.previousTitle;
+      }
+    },
+    render: function () {
+      return React.createElement(component, this.state);
+    }
+  });
+};
+
+// - -------------------------------------------------------------------- - //
+
+},{"bauer-factory":20,"react-immutable":44}],212:[function(require,module,exports){
 /*!
 **  rey -- Framework based on React and Flux that looks like AngularJS.
 **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -35010,69 +35172,91 @@ module.exports = new Rey();
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-var bluebird = require("bluebird");
-var axios = require("axios");
-var factory = require("bauer-factory");
-var Rooter = require("rooter");
-var Fluks = require("fluks");
-var React = require("react-immutable");
-var ReactDOM = require("react-dom");
-var Immutable = require("immutable");
-var classNames = require("classnames");
-var CSSTransitionGroup = require("react-addons-css-transition-group");
-var parseArgs = require("./args.js");
+var Rey = require('./main.js');
+
+module.exports = new Rey();
+
+// - -------------------------------------------------------------------- - //
+
+},{"./main.js":213}],213:[function(require,module,exports){
+/*!
+**  rey -- Framework based on React and Flux that looks like AngularJS.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/rey>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+var events = require('events');
+var bluebird = require('bluebird');
+var axios = require('axios');
+var factory = require('bauer-factory');
+var Rooter = require('rooter');
+var Fluks = require('fluks');
+var React = require('react-immutable');
+var ReactDOM = require('react-dom');
+var Immutable = require('immutable');
+var classNames = require('classnames');
+var CSSTransitionGroup = require('react-addons-css-transition-group');
+var parseArgs = require('./args.js');
+var createController = require('./controller.js');
+var createRoutes = require('./routes.js');
 
 window.React = React;
 window.ReactDOM = ReactDOM;
 window.Promise = bluebird;
 
 module.exports = factory.createClass({
-  
-  constructor: function() {
-    
+
+  inherits: events.EventEmitter,
+
+  constructor: function () {
+
     this.factories = {};
     this.instances = {};
-    
-    this.factory("Flux", function() {
+
+    this.factory('Flux', function () {
       return Fluks.createFlux();
     });
-    
-    this.factory("Immutable", function() {
+
+    this.factory('Immutable', function () {
       return Immutable;
     });
-    
-    this.factory("classNames", function() {
+
+    this.factory('classNames', function () {
       return classNames;
     });
-    
-    this.factory("React", function() {
+
+    this.factory('React', function () {
       return React;
     });
-    
-    this.factory("ReactDOM", function() {
+
+    this.factory('ReactDOM', function () {
       return ReactDOM;
     });
-    
-    this.factory("CSSTransitionGroup", function() {
+
+    this.factory('CSSTransitionGroup', function () {
       return CSSTransitionGroup;
     });
-    
-    this.factory("http", function() {
+
+    this.factory('http', function () {
       return axios;
     });
-    
-    this.factory("Promise", function() {
+
+    this.factory('Promise', function () {
       return bluebird;
     });
-    
-    this.factory("Dispatcher", ["Flux", function(Flux) {
+
+    this.factory('Dispatcher', ['Flux', function (Flux) {
       return Flux.dispatcher;
     }]);
-    
+
   },
-  
+
   isString: factory.isString,
   isNumber: factory.isNumber,
   isBoolean: factory.isBoolean,
@@ -35086,316 +35270,294 @@ module.exports = factory.createClass({
   isDate: factory.isDate,
   isRegExp: factory.isRegExp,
   isArguments: factory.isArguments,
-  
+
   isStore: Fluks.isStore,
   isAction: Fluks.isAction,
   isDispatcher: Fluks.isDispatcher,
-  
-  isRouter: function(arg) { return arg instanceof Rooter; },
-  isPromise: function(arg) { return arg instanceof Promise; },
+
+  isRouter: function (arg) { return arg instanceof Rooter; },
+  isPromise: function (arg) { return arg instanceof Promise; },
   isComponent: factory.isObject,
-  isController: function() { 
-    
+  isController: function () {
+
   },
-  
+
   merge: factory.merge,
   extend: factory.extend,
-  
+
   createClass: factory.createClass,
   createObject: factory.createObject,
-  
-  createController: {
-    
-    // .createController(controller Object) :Component
-    o: function(controller) {
-      
-      var mixin = {};
-      var reserved = ["storeDidChange", "store", "component", "pageTitle"];
 
-      Object.keys(controller).forEach(function(key) {
-        if (reserved.indexOf(key) === -1) {
-          mixin[key] = controller[key];
-        }
-      });
-      
-      var mixins = [mixin];
-      
-      if (this.isArray(controller.store)) {
-        controller.store.forEach(function(store) {
-          if (!this.isStore(store)) {
-            store = this.inject(store);
-          }
-          if (this.isStore(store)) {
-            mixins.push(store.createMixin());
-          }
-        }, this);
-        
-      } else if (this.isStore(controller.store)) {
-        mixins.push(controller.store.createMixin());
-        
-      } else {
-        var store = this.inject(controller.store);
-        if (this.isStore(store)) {
-          mixins.push(store.createMixin());
-        }
-      }
-      
-      var storeDidChange = this.isFunction(controller.storeDidChange) ?
-        controller.storeDidChange :
-        function(store) { this.setState(store.getState()); }
-      
-      var component = this.isString(controller.component) ?
-        this.inject(controller.component) : controller.component;
-      
-      return React.createClass({
-        
-        displayName: name,
-        mixins: mixins,
-        storeDidChange: storeDidChange,
-        
-        componentDidMount: function() {
-          if (controller.pageTitle) {
-            var pageTitle = factory.isFunction(controller.pageTitle) ?
-              controller.pageTitle.call(this) : controller.pageTitle;
-            this.previousTitle = document.title;
-            document.title = pageTitle;
-          }
-        },
-        
-        componentWillUnmount: function() {
-          if (this.previousTitle) {
-            document.title = this.previousTitle;
-          }
-        },
-        
-        render: function() {
-          return React.createElement(component, this.state);
-        }
-      });
-    }
-  },
-  
   factory: {
-    
-    // .factory(name String, injectable Function) :void
-    sf: function(name, injectable) {
+
+    // .factory(name String, injectable Function) :Rey
+    sf: function (name, injectable) {
       this.factories[name] = injectable;
       return this;
     },
-    
-    // .factory(name String, injectable Array) :void
-    sa: function(name, injectable) {
+
+    // .factory(name String, injectable Array) :Rey
+    sa: function (name, injectable) {
       this.factories[name] = injectable;
       return this;
     }
   },
-  
+
   inject: {
-    
+
     // .inject(name String) :Object
-    s: function(name) {
+    s: function (name) {
       if (!this.factories[name]) {
-        throw new Error("unknown dependency requested: " + name);
+        throw new Error('unknown dependency requested: ' + name);
       }
       if (!this.instances[name]) {
         this.instances[name] = this.inject(this.factories[name]);
       }
       return this.instances[name];
     },
-    
+
     // .inject(code Function) :Object
-    f: function(code) {
+    f: function (code) {
       return this.inject(parseArgs(code).concat(code));
     },
-    
+
     // .inject(dependencies Array) :Object
-    a: function(deps) {
-      if (!factory.isFunction(deps[deps.length - 1])) {
-        throw new Error("Last element must be a function.");
+    a: function (deps) {
+      var hasTrace = factory.isError(deps[deps.length - 1]);
+      var codeIndex = hasTrace ? deps.length - 2 : deps.length - 1;
+      if (!factory.isFunction(deps[codeIndex])) {
+        throw new Error('missing factory function');
       }
-      var code = deps[deps.length - 1];
-      var len = deps.length - 1;
+      var trace = hasTrace ? deps[codeIndex + 1] : null;
+      var code = deps[codeIndex];
       var args = [];
       var i;
-      for (i = 0; i < len; i++) {
+      for (i = 0; i < codeIndex; i++) {
         args[i] = this.inject(deps[i]);
       }
-      return code.apply(this, args);
+      try {
+        return code.apply(this, args);
+      } catch (error) {
+        if (this.listenerCount('error')) {
+          this.emit('error', error, trace);
+        } else {
+          console.error(error, trace);
+        }
+      }
     }
   },
-  
+
   immutable: {
-    
-    // .immutable(name String, factory Function) :void
-    sf: function(name, code) {
+
+    // .immutable(name String, factory Function) :Rey
+    sf: function (name, code) {
       return this.immutable(name, parseArgs(code).concat(code));
     },
-    
-    // .immutable(name String, dependencies Array) :void
-    sa: function(name, deps) {
-      return this.factory(name, [function() {
+
+    // .immutable(name String, dependencies Array) :Rey
+    sa: function (name, deps) {
+      var trace = new Error('immutable: ' + name);
+      return this.factory(name, [function () {
         return Immutable.fromJS(this.inject(deps));
-      }]);
+      }, trace]);
     }
   },
-  
+
   store: {
-    
-    // .store(name String, factory Function) :void
-    sf: function(name, code) {
+
+    // .store(name String, factory Function) :Rey
+    sf: function (name, code) {
       return this.store(name, parseArgs(code).concat(code));
     },
-    
-    // .store(name String, dependencies Array) :void
-    sa: function(name, deps) {
-      return this.factory(name, ["Flux", function(Flux) {
+
+    // .store(name String, dependencies Array) :Rey
+    sa: function (name, deps) {
+      var trace = new Error('store: ' + name);
+      return this.factory(name, ['Flux', function (Flux) {
         var storeOptions = this.inject(deps);
+        storeOptions.displayName = name.replace(/\W/g, '_');
         var store = Flux.createStore(storeOptions);
         if (storeOptions.registerHandler) {
           store.register(storeOptions.registerHandler);
         }
         return store;
-      }]);
+      }, trace]);
     }
   },
-  
+
   action: {
-    
-    // .action(name String, factory Function) :void
-    sf: function(name, code) {
+
+    // .action(name String, factory Function) :Rey
+    sf: function (name, code) {
       return this.action(name, parseArgs(code).concat(code));
     },
-    
-    // .action(name String, dependencies Array) :void
-    sa: function(name, deps) {
-      return this.factory(name, ["Flux", function(Flux) {
+
+    // .action(name String, dependencies Array) :Rey
+    sa: function (name, deps) {
+      var trace = new Error('action: ' + name);
+      return this.factory(name, ['Flux', function (Flux) {
         return Flux.createAction(this.inject(deps));
-      }]);
+      }, trace]);
     }
   },
-  
+
   controller: {
-    
-    // .controller(name String, factory Function) :void
-    sf: function(name, code) {
+
+    // .controller(name String, factory Function) :Rey
+    sf: function (name, code) {
       return this.controller(name, parseArgs(code).concat(code));
     },
-    
-    // .controller(name String, dependencies Array) :void
-    sa: function(name, deps) {
-      return this.factory(name, [function() {
-        return this.createController(this.inject(deps));
-      }]);
+
+    // .controller(name String, dependencies Array) :Rey
+    sa: function (name, deps) {
+      var trace = new Error('controller: ' + name);
+      return this.factory(name, [function () {
+        return createController.call(this, this.inject(deps));
+      }, trace]);
     }
   },
-  
+
   component: {
-    
-    // .component(name String, factory Function) :void
-    sf: function(name, code) {
+
+    // .component(name String, factory Function) :Rey
+    sf: function (name, code) {
       return this.component(name, parseArgs(code).concat(code));
     },
-    
-    // .component(name String, dependencies Array) :void
-    sa: function(name, deps) {
-      this.factory(name, [function() {
+
+    // .component(name String, dependencies Array) :Rey
+    sa: function (name, deps) {
+      var trace = new Error('component: ' + name);
+      this.factory(name, [function () {
         var component = this.inject(deps);
         if (!component.displayName) {
           component.displayName = name;
         }
-        try {
-          return React.createClass(component);
-        } catch(e) {
-          throw new Error("failed to create component: " + name);
+        if (factory.isFunction(component.render)) {
+          var render = component.render;
+          var rey = this;
+          component.render = function () {
+            try {
+              return render.call(this);
+            } catch (error) {
+              if (rey.listenerCount('error')) {
+                rey.emit('error', error, trace);
+              } else {
+                console.error(error, trace);
+              }
+              return React.createElement('noscript');
+            }
+          };
         }
-      }]);
+        return React.createClass(component);
+      }, trace]);
     }
   },
-  
+
   router: {
-    
-    // .router(name String, factory Function) :void
-    sf: function(name, code) {
+
+    // .router(name String, factory Function) :Rey
+    sf: function (name, code) {
       return this.router(name, parseArgs(code).concat(code));
     },
-    
-    // .router(name String, dependencies Array) :void
-    sa: function(name, deps) {
-      this.factory(name, [function() {
-        
+
+    // .router(name String, dependencies Array) :Rey
+    sa: function (name, deps) {
+      var trace = new Error('router: ' + name);
+      this.factory(name, [function () {
         var routes = this.inject(deps);
-        
-        if (factory.isObject(routes)) {
-          
-          Object.keys(routes).forEach(function(href) {
-            
-            var route = routes[href];
-            if (factory.isObject(route)) {
-              
-              if (!factory.isDefined(route.handler)) {
-                route.handler = function(activeRoute) {
-                  
-                  var controller = factory.isString(route.controller) ?
-                    this.inject(route.controller) : route.controller;
-                  
-                  var container = factory.isString(route.container) ? 
-                    document.getElementById(route.container) :
-                    factory.isFunction(route.container) ?
-                      route.container() : route.container;
-                
-                  var element = React.createElement(controller, activeRoute);
-                  ReactDOM.render(element, container);
-                  
-                }.bind(this);
-              }
-              
-              var routeCopy = {};
-              Object.keys(route).forEach(function(key) {
-                if (key !== "controller" && key !== "container") {
-                  routeCopy[key] = route[key];
-                }
-              });
-              routes[href] = routeCopy;
-              
-            } else if (factory.isFunction(route)) {
-              routes[href] = { handler: route };
-            }
-          }, this);
-        }
-        
         var router = new Rooter();
-        router.setRoute(routes);
+        router.setRoute(createRoutes.call(this, routes));
         return router;
-      }]);
+      }, trace]);
     }
   },
-  
+
   load: {
-    
-    // .run(dependencies Array) :void
-    a: function(deps) {
-      this.inject(deps.concat([function() {}]));
+
+    // .run(dependencies Array) :Rey
+    a: function (deps) {
+      this.inject(deps.concat([function () {}]));
       return this;
     }
   },
-  
+
   run: {
-    
-    // .run(code Function) :void
-    f: function(code) {
+
+    // .run(code Function) :Rey
+    f: function (code) {
       return this.run(parseArgs(code).concat(code));
     },
-    
-    // .run(dependencies Array) :void
-    a: function(deps) {
+
+    // .run(dependencies Array) :Rey
+    a: function (deps) {
       this.inject(deps);
       return this;
     }
   }
-  
+
 });
 
 // - -------------------------------------------------------------------- - //
 
-},{"./args.js":210,"axios":1,"bauer-factory":20,"bluebird":25,"classnames":26,"fluks":29,"immutable":36,"react-addons-css-transition-group":42,"react-dom":43,"react-immutable":44,"rooter":207}]},{},[211])(211)
+},{"./args.js":210,"./controller.js":211,"./routes.js":214,"axios":1,"bauer-factory":20,"bluebird":25,"classnames":26,"events":27,"fluks":29,"immutable":36,"react-addons-css-transition-group":42,"react-dom":43,"react-immutable":44,"rooter":207}],214:[function(require,module,exports){
+/*!
+**  rey -- Framework based on React and Flux that looks like AngularJS.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/rey>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+var factory = require('bauer-factory');
+var React = require('react-immutable');
+var ReactDOM = require('react-dom');
+
+// - -------------------------------------------------------------------- - //
+
+function copyRoute (route) {
+  var routeCopy = {};
+  Object.keys(route).forEach(function (key) {
+    if (key !== 'controller' && key !== 'container') {
+      routeCopy[key] = route[key];
+    }
+  });
+  return routeCopy;
+}
+
+function handleRoute (controller, container, activeRoute) {
+
+  controller = factory.isString(controller)
+    ? this.inject(controller) : controller;
+
+  container = factory.isString(container) ?
+    document.getElementById(container) :
+    factory.isFunction(container) ?
+      container() : container;
+
+  var element = React.createElement(controller, activeRoute);
+  ReactDOM.render(element, container);
+}
+
+module.exports = function createRoutes (routes) {
+  if (factory.isObject(routes)) {
+    Object.keys(routes).forEach(function (href) {
+      var route = routes[href];
+      if (factory.isFunction(route)) {
+        routes[href] = { handler: route };
+      } else if (factory.isObject(route)) {
+        if (!factory.isDefined(route.handler)) {
+          route.handler = handleRoute.bind(this, route.controller, route.container);
+        }
+        routes[href] = copyRoute(route);
+      }
+    }, this);
+  }
+  return routes;
+};
+
+// - -------------------------------------------------------------------- - //
+
+},{"bauer-factory":20,"react-dom":43,"react-immutable":44}]},{},[212])(212)
 });
