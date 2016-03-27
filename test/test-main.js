@@ -140,6 +140,83 @@ describe('main', function () {
 
   });
 
+  it('should update state with value from promise', function (done) {
+    var rey = new Rey();
+    rey.run(['Promise', function (Promise) {
+      var stateHolder = {
+        counter: 0,
+        setState: function (state) {
+          this.counter++
+          assert.strictEqual(state.prop.get('isFulfilled'), true);
+          assert.strictEqual(state.prop.get('isPending'), false);
+          assert.strictEqual(state.prop.get('isRejected'), false);
+          assert.strictEqual(state.prop.get('isCancelled'), false);
+          assert.strictEqual(state.prop.get('reason'), undefined);
+          assert.strictEqual(state.prop.get('value'), 123);
+          if (this.counter === 2) {
+            done();
+          }
+        }
+      };
+      new Promise(function (resolve, reject) {
+        setTimeout(function () {
+          resolve(123);
+        }, 1);
+      }).toState(stateHolder, 'prop');
+    }]);
+  });
+
+  it('should update state with reason from promise', function (done) {
+    var rey = new Rey();
+    rey.run(['Promise', function (Promise) {
+      var stateHolder = {
+        counter: 0,
+        setState: function (state) {
+          this.counter++
+          assert.strictEqual(state.prop.get('isFulfilled'), false);
+          assert.strictEqual(state.prop.get('isPending'), false);
+          assert.strictEqual(state.prop.get('isRejected'), true);
+          assert.strictEqual(state.prop.get('isCancelled'), false);
+          assert.strictEqual(state.prop.get('reason'), 'reason');
+          assert.strictEqual(state.prop.get('value'), undefined);
+          if (this.counter === 2) {
+            done();
+          }
+        }
+      };
+      new Promise(function (resolve, reject) {
+        setTimeout(function () {
+          reject('reason');
+        }, 1);
+      }).toState(stateHolder, 'prop');
+    }]);
+  });
+
+  it('should prepare api requests properly', function (done) {
+
+    var rey = new Rey();
+
+    rey.api('api', [function () {
+      return {
+        testOne: {
+          url: '/test/one',
+          params: { one: 1 }
+        },
+        testTwo: {
+          url: '/test/two',
+          data: { two: 2 },
+          method: 'POST'
+        }
+      };
+    }]);
+
+    rey.run(['api', function (api) {
+      assert.strictEqual(typeof api.testOne, 'function');
+      assert.strictEqual(typeof api.testTwo, 'function');
+      done();
+    }]);
+  });
+
 });
 
 // - -------------------------------------------------------------------- - //

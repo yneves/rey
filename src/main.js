@@ -20,12 +20,14 @@ var Immutable = require('immutable');
 var classNames = require('classnames');
 var CSSTransitionGroup = require('react-addons-css-transition-group');
 var parseArgs = require('./args.js');
+var createAPI = require('./api.js');
 var createController = require('./controller.js');
 var createRoutes = require('./routes.js');
+var extendPromise = require('./promise.js');
 
 window.React = React;
 window.ReactDOM = ReactDOM;
-window.Promise = bluebird;
+window.Promise = extendPromise(bluebird);
 
 module.exports = factory.createClass({
 
@@ -285,6 +287,23 @@ module.exports = factory.createClass({
         var router = new Rooter();
         router.setRoute(createRoutes.call(this, routes));
         return router;
+      }, trace]);
+    }
+  },
+
+  api: {
+
+    // .api(name String, factory Function) :Rey
+    sf: function (name, code) {
+      return this.api(name, parseArgs(code).concat(code));
+    },
+
+    // .api(name String, dependencies Array) :Rey
+    sa: function (name, deps) {
+      var trace = new Error('api: ' + name);
+      this.factory(name, ['http', 'Promise', function (http, Promise) {
+        var methods = this.inject(deps);
+        return createAPI(http, Promise, name, methods);
       }, trace]);
     }
   },

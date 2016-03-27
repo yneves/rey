@@ -35067,6 +35067,83 @@ module.exports = {
 
 'use strict';
 
+var factory = require('bauer-factory');
+var Immutable = require('immutable');
+var prepareOptions = require('./options.js');
+
+var API = factory.createClass({
+
+  constructor: function (http, Promise, defaults) {
+    this.http = http.create();
+    this.Promise = Promise;
+    this.defaults = defaults;
+    this.init();
+  },
+
+  init: function () {
+
+  },
+
+  request: function () {
+    var defaults = factory.isFunction(this.defaults) ? this.defaults() : this.defaults;
+    var options = prepareOptions(defaults, arguments);
+    return this.Promise.resolve(this.http.request(options))
+      .bind(this)
+      .then(function (response) {
+        if (response.status === 200 && response.data) {
+          return Immutable.fromJS(response.data);
+        }
+      });
+  }
+
+});
+
+function createMethod (method) {
+  return function () {
+    var args = [method];
+    for (var i = 0; i < arguments.length; i++) {
+      args.push(arguments[i]);
+    }
+    return this.request.apply(this, args);
+  };
+}
+
+module.exports = function (http, Promise, name, methods) {
+
+  name = name.replace(/\W/g, '_');
+  var defaults = methods.defaults || {};
+  var options = {
+    inherits: API
+  };
+
+  Object.keys(methods).forEach(function (name) {
+    if (name !== 'defaults') {
+      var method = methods[name];
+      if (factory.isFunction(method)) {
+        options[name] = method;
+      } else {
+        options[name] = createMethod(method);
+      }
+    }
+  });
+
+  var CustomAPI = factory.createClass(name, options);
+  return new CustomAPI(http, Promise, defaults);
+};
+
+// - -------------------------------------------------------------------- - //
+
+},{"./options.js":215,"bauer-factory":20,"immutable":36}],211:[function(require,module,exports){
+/*!
+**  rey -- Framework based on React and Flux that looks like AngularJS.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/rey>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
 var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 var ARGUMENT_NAMES = /([^\s,]+)/g;
 
@@ -35078,7 +35155,7 @@ module.exports = function parseArgs (func) {
 
 // - -------------------------------------------------------------------- - //
 
-},{}],211:[function(require,module,exports){
+},{}],212:[function(require,module,exports){
 /*!
 **  rey -- Framework based on React and Flux that looks like AngularJS.
 **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -35163,7 +35240,7 @@ module.exports = function createController (controller) {
 
 // - -------------------------------------------------------------------- - //
 
-},{"bauer-factory":20,"react-immutable":44}],212:[function(require,module,exports){
+},{"bauer-factory":20,"react-immutable":44}],213:[function(require,module,exports){
 /*!
 **  rey -- Framework based on React and Flux that looks like AngularJS.
 **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -35180,7 +35257,7 @@ module.exports = new Rey();
 
 // - -------------------------------------------------------------------- - //
 
-},{"./main.js":213}],213:[function(require,module,exports){
+},{"./main.js":214}],214:[function(require,module,exports){
 /*!
 **  rey -- Framework based on React and Flux that looks like AngularJS.
 **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -35203,12 +35280,14 @@ var Immutable = require('immutable');
 var classNames = require('classnames');
 var CSSTransitionGroup = require('react-addons-css-transition-group');
 var parseArgs = require('./args.js');
+var createAPI = require('./api.js');
 var createController = require('./controller.js');
 var createRoutes = require('./routes.js');
+var extendPromise = require('./promise.js');
 
 window.React = React;
 window.ReactDOM = ReactDOM;
-window.Promise = bluebird;
+window.Promise = extendPromise(bluebird);
 
 module.exports = factory.createClass({
 
@@ -35472,6 +35551,23 @@ module.exports = factory.createClass({
     }
   },
 
+  api: {
+
+    // .api(name String, factory Function) :Rey
+    sf: function (name, code) {
+      return this.api(name, parseArgs(code).concat(code));
+    },
+
+    // .api(name String, dependencies Array) :Rey
+    sa: function (name, deps) {
+      var trace = new Error('api: ' + name);
+      this.factory(name, ['http', 'Promise', function (http, Promise) {
+        var methods = this.inject(deps);
+        return createAPI(http, Promise, name, methods);
+      }, trace]);
+    }
+  },
+
   load: {
 
     // .run(dependencies Array) :Rey
@@ -35499,7 +35595,123 @@ module.exports = factory.createClass({
 
 // - -------------------------------------------------------------------- - //
 
-},{"./args.js":210,"./controller.js":211,"./routes.js":214,"axios":1,"bauer-factory":20,"bluebird":25,"classnames":26,"events":27,"fluks":29,"immutable":36,"react-addons-css-transition-group":42,"react-dom":43,"react-immutable":44,"rooter":207}],214:[function(require,module,exports){
+},{"./api.js":210,"./args.js":211,"./controller.js":212,"./promise.js":216,"./routes.js":217,"axios":1,"bauer-factory":20,"bluebird":25,"classnames":26,"events":27,"fluks":29,"immutable":36,"react-addons-css-transition-group":42,"react-dom":43,"react-immutable":44,"rooter":207}],215:[function(require,module,exports){
+/*!
+**  rey -- Framework based on React and Flux that looks like AngularJS.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/rey>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+var factory = require('bauer-factory');
+var Immutable = require('immutable');
+
+module.exports = function (defaults, givenArgs) {
+
+  var args = [defaults];
+
+  var argNames = [];
+
+  Array.prototype.forEach.call(givenArgs, function (arg) {
+
+    if (Immutable.Map.isMap(arg) || Immutable.List.isList(arg)) {
+      arg = arg.toJS();
+    }
+    if (factory.isString(arg)) {
+      argNames.push(arg);
+    } else if (factory.isArray(arg)) {
+      arg.forEach(function (subArg) {
+        if (Immutable.Map.isMap(subArg) || Immutable.List.isList(subArg)) {
+          subArg = subArg.toJS();
+        }
+        if (factory.isString(subArg)) {
+          argNames.push(subArg);
+        } else {
+          if (argNames.length) {
+            var optArg = {};
+            optArg[argNames.shift()] = subArg;
+            args.push(optArg);
+          } else {
+            args.push(subArg);
+          }
+        }
+      });
+    } else {
+      if (argNames.length) {
+        var optArg = {};
+        optArg[argNames.shift()] = arg;
+        args.push(optArg);
+      } else {
+        args.push(arg);
+      }
+    }
+  });
+
+  return factory.extend.apply(factory, args);
+};
+
+// - -------------------------------------------------------------------- - //
+
+},{"bauer-factory":20,"immutable":36}],216:[function(require,module,exports){
+/*!
+**  rey -- Framework based on React and Flux that looks like AngularJS.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/rey>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+var factory = require('bauer-factory');
+var Immutable = require('immutable');
+
+function toState (stateHolder, propertyName) {
+
+  if (!factory.isObject(stateHolder) || !factory.isFunction(stateHolder.setState)) {
+    throw new Error('state holder must have a setState method');
+  }
+
+  if (!factory.isString(propertyName)) {
+    throw new Error('state property name must be string');
+  }
+
+  var promise = this;
+
+  function getState () {
+    return Immutable.fromJS({
+      value: promise.isFulfilled() ? promise.value() : undefined,
+      reason: promise.isRejected() ? promise.reason() : undefined,
+      isFulfilled: promise.isFulfilled(),
+      isRejected: promise.isRejected(),
+      isPending: promise.isPending(),
+      isCancelled: promise.isCancelled()
+    })
+  }
+
+  function updateState () {
+    var state = {};
+    state[propertyName] = getState();
+    stateHolder.setState(state);
+  }
+
+  return promise.bind(stateHolder)
+    .then(updateState)
+    .catch(updateState)
+    .finally(updateState);
+};
+
+module.exports = function (Promise) {
+  Promise.prototype.toState = toState;
+  return Promise;
+};
+
+// - -------------------------------------------------------------------- - //
+
+},{"bauer-factory":20,"immutable":36}],217:[function(require,module,exports){
 /*!
 **  rey -- Framework based on React and Flux that looks like AngularJS.
 **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -35559,5 +35771,5 @@ module.exports = function createRoutes (routes) {
 
 // - -------------------------------------------------------------------- - //
 
-},{"bauer-factory":20,"react-dom":43,"react-immutable":44}]},{},[212])(212)
+},{"bauer-factory":20,"react-dom":43,"react-immutable":44}]},{},[213])(213)
 });
