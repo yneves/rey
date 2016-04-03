@@ -17,8 +17,7 @@ module.exports = function (grunt) {
             standalone: 'rey'
           },
           alias: [
-            '../fluks/:fluks',
-            '../rooter/:rooter'
+            '../fluks/:fluks'
           ]
         },
         files: {

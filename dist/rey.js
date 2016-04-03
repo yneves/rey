@@ -8101,13 +8101,29 @@ var Store = factory.createClass({
     o: function (state) {
       this.state = this.state.merge(state);
       this.emitChange();
+    },
+
+    // .setState(path Array, value Object) :void
+    2: function (path, value) {
+      if (factory.isObject(value) || factory.isArray(value)) {
+        this.state = this.state.mergeIn(path, value);
+      } else {
+        this.state = this.state.setIn(path, value);
+      }
+      this.emitChange();
     }
   },
 
   getState: {
 
+    // .getState() :Object
     0: function () {
       return this.state.toObject();
+    },
+
+    // .getState(path Array) :Object
+    a: function (path) {
+      return this.state.getIn(path);
     }
   },
 
@@ -35692,11 +35708,19 @@ function toState (stateHolder, propertyName) {
     })
   }
 
-  function updateState () {
-    var state = {};
-    state[propertyName] = getState();
-    stateHolder.setState(state);
+  function updateState (value) {
+    var newState = getState();
+    if (Immutable.Map.isMap(stateHolder.state)) {
+      stateHolder.setState(stateHolder.state.mergeIn([propertyName], newState));
+    } else {
+      var state = {};
+      state[propertyName] = newState;
+      stateHolder.setState(state);
+    }
+    return value;
   }
+
+  updateState();
 
   return promise.bind(stateHolder)
     .then(updateState)

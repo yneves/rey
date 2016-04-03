@@ -193,13 +193,47 @@ module.exports = factory.createClass({
     sa: function (name, deps) {
       var trace = new Error('store: ' + name);
       return this.factory(name, ['Flux', function (Flux) {
+
         var storeOptions = this.inject(deps);
+
         storeOptions.displayName = name.replace(/\W/g, '_');
+
+        var attachStores = [];
+        if (storeOptions.attachStore) {
+          if (factory.isArray(storeOptions.attachStore)) {
+            attachStores = storeOptions.attachStore;
+          } else if (factory.isObject(storeOptions.attachStore)) {
+            Object.keys(storeOptions.attachStore).forEach(function (key, value) {
+              attachStores.push([key, storeOptions.attachStore[key]]);
+            });
+          } else {
+            attachStores.push(storeOptions.attachStore);
+          }
+          delete storeOptions.attachStore;
+        }
+
         var store = Flux.createStore(storeOptions);
+
         if (storeOptions.registerHandler) {
           store.register(storeOptions.registerHandler);
         }
+
+        attachStores.forEach(function (attachStore) {
+          if (this.isStore(attachStore)) {
+            store.attachStore(attachStore);
+          } else if (this.isString(attachStore)) {
+            store.attachStore(this.inject(attachStore));
+          } else if (this.isArray(attachStore)) {
+            if (this.isStore(attachStore[0], attachStore[1])) {
+              store.attachStore(attachStore[1]);
+            } else if (this.isString(attachStore[1])) {
+              store.attachStore(attachStore[0], this.inject(attachStore[1]));
+            }
+          }
+        }, this);
+
         return store;
+
       }, trace]);
     }
   },

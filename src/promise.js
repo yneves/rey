@@ -34,11 +34,19 @@ function toState (stateHolder, propertyName) {
     })
   }
 
-  function updateState () {
-    var state = {};
-    state[propertyName] = getState();
-    stateHolder.setState(state);
+  function updateState (value) {
+    var newState = getState();
+    if (Immutable.Map.isMap(stateHolder.state)) {
+      stateHolder.setState(stateHolder.state.mergeIn([propertyName], newState));
+    } else {
+      var state = {};
+      state[propertyName] = newState;
+      stateHolder.setState(state);
+    }
+    return value;
   }
+
+  updateState();
 
   return promise.bind(stateHolder)
     .then(updateState)
