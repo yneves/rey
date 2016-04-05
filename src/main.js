@@ -224,8 +224,8 @@ module.exports = factory.createClass({
           } else if (this.isString(attachStore)) {
             store.attachStore(this.inject(attachStore));
           } else if (this.isArray(attachStore)) {
-            if (this.isStore(attachStore[0], attachStore[1])) {
-              store.attachStore(attachStore[1]);
+            if (this.isStore(attachStore[1])) {
+              store.attachStore(attachStore[0], attachStore[1]);
             } else if (this.isString(attachStore[1])) {
               store.attachStore(attachStore[0], this.inject(attachStore[1]));
             }
