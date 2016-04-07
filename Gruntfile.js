@@ -10,21 +10,6 @@ module.exports = function (grunt) {
 
     browserify: {
 
-      development: {
-        options: {
-          detectGlobals: false,
-          browserifyOptions: {
-            standalone: 'rey'
-          },
-          alias: [
-            '../fluks/:fluks'
-          ]
-        },
-        files: {
-          './dist/rey.js': './src/index.js'
-        }
-      },
-
       distribute: {
         options: {
           detectGlobals: false,
@@ -33,10 +18,23 @@ module.exports = function (grunt) {
           }
         },
         files: {
-          './dist/rey.js': './src/index.js'
+          './dist/rey.dev.js': './src/index.js'
         }
       }
 
+    },
+
+    envify: {
+      distribute: {
+        options: {
+          env: {
+            NODE_ENV: 'production'
+          }
+        },
+        files: {
+          './dist/rey.dev.js': './dist/rey.js'
+        }
+      }
     },
 
     uglify: {
@@ -50,16 +48,18 @@ module.exports = function (grunt) {
 
   });
 
+  grunt.loadNpmTasks('grunt-envify');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-uglify');
 
-  grunt.registerTask('development', [
-    'browserify:development'
-  ]);
-
   grunt.registerTask('distribute', [
     'browserify:distribute',
+    'envify:distribute',
     'uglify:distribute'
+  ]);
+
+  grunt.registerTask('default', [
+    'distribute'
   ]);
 
 };
