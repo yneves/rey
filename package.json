@@ -1,6 +1,6 @@
 {
   "name": "rey",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "author": {
     "url": "http://yneves.com/",
     "name": "Yuri Neves Silveira",
@@ -13,7 +13,7 @@
     "bluebird": "^3.3.4",
     "classnames": "^2.2.3",
     "envify": "^3.4.0",
-    "fluks": "^0.3.13",
+    "fluks": "^0.3.14",
     "grunt": "^1.0.1",
     "grunt-browserify": "^5.0.0",
     "grunt-contrib-uglify": "^1.0.1",
