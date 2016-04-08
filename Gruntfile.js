@@ -32,7 +32,7 @@ module.exports = function (grunt) {
           }
         },
         files: {
-          './dist/rey.dev.js': './dist/rey.js'
+          './dist/rey.js': './dist/rey.dev.js'
         }
       }
     },
