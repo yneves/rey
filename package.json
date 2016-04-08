@@ -1,6 +1,6 @@
 {
   "name": "rey",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "author": {
     "url": "http://yneves.com/",
     "name": "Yuri Neves Silveira",
@@ -19,8 +19,9 @@
     "grunt-contrib-uglify": "^1.0.1",
     "jsdom": "^8.3.0",
     "mocha-jsdom": "^1.1.0",
-    "react-addons-css-transition-group": "^0.14.8",
-    "react-dom": "^0.14.8",
+    "react": "^15.0.0",
+    "react-addons-css-transition-group": "^15.0.0",
+    "react-dom": "^15.0.0",
     "react-immutable": "*",
     "rooter": "^0.1.16"
   }
