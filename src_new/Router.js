@@ -66,9 +66,11 @@ class Router extends StateHolder {
   deactivate() {
     if (this.locationHandler) {
       this.location.unregister(this.locationHandler);
+      this.locationHandler = undefined;
     }
     if (this.dispatcherHandler) {
       this.dispatcher.unregister(this.dispatcherHandler);
+      this.dispatcherHandler = undefined;
     }
   }
 
@@ -77,6 +79,7 @@ class Router extends StateHolder {
    * @param {string} the url
    */
   navigate(href) {
+    this.location.push(href);
     this.dispatcher.dispatch({
       actionType: 'ROUTER_NAVIGATE',
       href: href
@@ -95,27 +98,49 @@ class Router extends StateHolder {
   }
 
   /**
+   * Register the given routes.
+   * @param {object} routes to be registered
+   */
+  setRoutes(routes) {
+    if (!this.routes) {
+      this.routes = {};
+    }
+    for (let key in routes) {
+      this.routes[key] = routes[key];
+    }
+  }
+
+  /**
+   * Returns the registered routes.
+   * @return {object} regitered routes
+   */
+  getRoutes() {
+    return this.routes || {};
+  }
+
+  /**
    * Finds the route for the given url.
    * @param {string} url to be matched
    * @return {object} consolidated route object
    */
   matchRoute(href) {
+    const routes = this.getRoutes();
     const url = URLParser.parse(href, true);
     let route;
 
     // Exact match
-    if (this.routes[url.pathname]) {
+    if (routes[url.pathname]) {
       route = this.prepareRoute(url, this.routes[url.pathname]);
 
     // Match params
     } else {
-      for (let key in this.routes) {
+      for (let key in routes) {
         const params = key.match(/\{[\w]+\}/g);
         if (params) {
           const routeMatcher = new RegExp('^' + key.replace(/\{[\w]+\}/g, '([\\w0-9-]+)') + '$');
           const values = url.pathname ? url.pathname.match(routeMatcher) : undefined;
           if (values) {
-            route = this.prepareRoute(url, this.routes[key], params, values);
+            route = this.prepareRoute(url, routes[key], params, values);
           }
         }
         if (route) {

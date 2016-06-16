@@ -8,7 +8,7 @@
 
 'use strict';
 
-const CallbackRegistry = require('../CallbackRegistry.js');
+const CallbackRegistry = require('./CallbackRegistry.js');
 
 /**
  * Simple wrapper for window.location and window.history.

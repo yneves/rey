@@ -11,8 +11,15 @@
 const Dispatcher = require('./Dispatcher.js');
 const StateHolder = require('./StateHolder.js');
 
+/**
+ * Class to represent a Store.
+ */
 class Store extends StateHolder {
 
+  /**
+   * Creates a new store instance.
+   * @param {Dispatcher} dispatcher to use
+   */
   constructor(dispatcher) {
     if (!(dispatcher instanceof Dispatcher)) {
       throw new Error('Dispatcher must be provided');
@@ -21,13 +28,21 @@ class Store extends StateHolder {
     this.dispatcher = dispatcher;
   }
 
+  /**
+   * Activates the store by registering to handle actions.
+   */
   activate() {
-    const actionHandler = this.getActionHandler();
-    if (actionHandler) {
-      this.handler = this.dispatcher.register(actionHandler);
-    }
+    this.handler = this.dispatcher.register((action) => {
+      const actionHandler = this.getActionHandler();
+      if (actionHandler) {
+        actionHandler(action);
+      }
+    });
   }
 
+  /**
+   * Activates the store by deregistering the action handler.
+   */
   deactivate() {
     if (this.handler) {
       this.dispatcher.unregister(this.handler);
@@ -35,6 +50,18 @@ class Store extends StateHolder {
     }
   }
 
+  /**
+   * Sets the action handler.
+   * @param {function} the action handler
+   */
+  setActionHandler(handler) {
+    this.actionHandler = handler;
+  }
+
+  /**
+   * Gets the action handler.
+   * @return {function} the action handler
+   */
   getActionHandler() {
     return this.actionHandler;
   }

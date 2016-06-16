@@ -28,6 +28,25 @@ class Container extends React.Component {
     router: React.PropTypes.instanceOf(Router)
   }
 
+  componentWillMount() {
+    const updateState = () => this.setState(this.mapProps());
+    this.routerHandler = this.props.router.register(updateState);
+    this.storeHandlers = this.getStores().map((store) => store.register(updateState));
+  }
+
+  componentWillUnmount() {
+    this.props.router.unregister(this.routerHandler);
+    this.getStores.map((store, index) => store.unregister(this.storeHandlers[index]));
+  }
+
+  getStores() {
+    return [].concat(this.props.store);
+  }
+
+  getActions() {
+    return [].concat(this.props.actions);
+  }
+
   mapRouteToProps(router) {
     return router.state.toObject();
   }
@@ -47,8 +66,10 @@ class Container extends React.Component {
 
   mapActionsToProps() {
     const props = Immutable.Map();
+    const router = this.props.router;
+    const stores = this.getStores();
     Array.from(arguments).map(arg => {
-      props = props.merge(arg.getActions());
+      props = props.merge(arg.createActions(stores, router));
     });
     return props.toObject();
   }
@@ -56,8 +77,8 @@ class Container extends React.Component {
   mapProps() {
     const props = Immutable.Map();
     const router = this.props.router;
-    const stores = [].concat(this.props.store);
-    const actions = [].concat(this.props.actions);
+    const stores = this.getStores();
+    const actions = this.getActions();
     props = props.merge(this.mapRouteToProps(router));
     props = props.merge(this.mapStoreToProps(stores));
     props = props.merge(this.mapActionsToProps(actions));
@@ -65,7 +86,7 @@ class Container extends React.Component {
   }
 
   render() {
-    return React.createElement(this.props.component, this.mapProps());
+    return React.createElement(this.props.component, this.state);
   }
 };
 

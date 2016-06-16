@@ -11,33 +11,59 @@
 const Dispatcher = require('./Dispatcher.js');
 const StateHolder = require('./StateHolder.js');
 
-const defaultActionHandler = () => {};
-
+/**
+ * Class to manage action creators.
+ */
 class Actions {
 
+  /**
+   * Creates a new set of action creators.
+   * @param {Dispatcher} dispatcher to be used
+   */
   constructor(dispatcher) {
     if (!(dispatcher instanceof Dispatcher)) {
       throw new Error('Dispatcher must be provided');
     }
-    super();
     this.dispatcher = dispatcher;
   }
 
-  getActions() {
-    const actions = {};
-    if (typeof this.actions === 'object') {
-      for (let name in this.actions) {
-        actions[name] = this.createAction(this.actions[name]);
-      }
-    }
-    return actions;
+  /**
+   * Sets the registered actions.
+   * @param {object} a map of action name as key and function as value
+   */
+  setActions(actions) {
+    this.actions = actions;
   }
 
-  createAction(code) {
-    return () => {
+  /**
+   * Returns the registered actions.
+   * @return {object} a map of action name as key and function as value
+   */
+  getActions() {
+    return this.actions || {};
+  }
+
+  /**
+   * Creates the actions to be used by the container.
+   * @return {object} a map of action name as key and function as value
+   */
+  createActions() {
+
+    const dispatch = (arg) => this.dispatcher.dispatch(arg);
+
+    const getState = Array.from(arguments).map((stateHolder) => {
+      if (!(stateHolder instanceof StateHolder)) {
+        throw new Error('expected a StateHolder instance');
+      }
+      return (path) => stateHolder.getState(path);
+    });
+
+    const args = [].concat(dispatch, getState);
+
+    const createAction = (code) => () => {
       let payload = code.apply(this, arguments);
       if (typeof payload === 'function') {
-        payload = payload((arg) => this.dispatcher.dispatch(arg));
+        payload = payload.apply(undefined, args);
       }
       if (typeof payload === 'string') {
         payload = { actionType: payload };
@@ -46,6 +72,12 @@ class Actions {
         this.dispatcher.dispatch(payload);
       }
     };
+
+    const actions = {};
+    for (let name in actions) {
+      actions[name] = createAction(actions[name]);
+    }
+    return actions;
   }
 
 };
