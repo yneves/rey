@@ -17,7 +17,7 @@ class Location {
 
   /**
    * Creates a new location wrapper instance.
-   * @param {object} window object
+   * @param {Object} window
    */
   constructor(window) {
     if (!window) {
@@ -36,19 +36,23 @@ class Location {
         this.callbacks.run(event.state.href);
       }
     };
-    this.window.addEventListener('popstate', this.handler);
+    if (this.window.addEventListener) {
+      this.window.addEventListener('popstate', this.handler);
+    }
   }
 
   /**
    * Stops monitoring history popstate event.
    */
   deactivate() {
-    this.window.removeEventListener('popstate', this.handler);
+    if (this.window.removeEventListener) {
+      this.window.removeEventListener('popstate', this.handler);
+    }
   }
 
   /**
    * Returns current url.
-   * @return {string} current url
+   * @return {String} url
    */
   get() {
     return this.window.location.href;
@@ -56,7 +60,7 @@ class Location {
 
   /**
    * Specifies current url.
-   * @param {string} new url
+   * @param {String} url
    */
   set(href) {
     this.window.location.href = href;
@@ -64,7 +68,7 @@ class Location {
 
   /**
    * Adds an entry to history.
-   * @param {string} url
+   * @param {String} url
    */
   push(href) {
     this.window.history.pushState({href}, this.window.document.title, href);
@@ -72,7 +76,7 @@ class Location {
 
   /**
    * Replaces current history entry.
-   * @param {string} url
+   * @param {String} url
    */
   replace(href) {
     this.window.history.replaceState({href}, this.window.document.title, href);
@@ -88,10 +92,10 @@ class Location {
 
   /**
    * Registers a callback to be executed when history changes.
-   * @param {function} callback to be registered
-   * @param {object} this variable for the callback
-   * @param {error} trace error
-   * @return {function} added callback
+   * @param {Function} callback to be registered
+   * @param {Object} this variable for the callback
+   * @param {Error} trace error
+   * @return {Function} callback added callback
    */
   register(callback, context, trace) {
     return this.callbacks.add(callback, context, trace);
@@ -99,8 +103,8 @@ class Location {
 
   /**
    * Removes the given callback from the registry.
-   * @param {function} callback to be removed
-   * @return {boolean} true if the callback was found
+   * @param {Function} callback to be removed
+   * @return {Boolean} unregistered true if the callback was found
    */
   unregister(callback) {
     return this.callbacks.remove(callback);

@@ -43,7 +43,7 @@ class Dispatcher {
 
   /**
    * Dispatches an action, triggering the registered callbacks.
-   * @param {object} action payload
+   * @param {Object} payload
    */
   dispatch(payload) {
     this.payloads.push(payload);
@@ -54,10 +54,10 @@ class Dispatcher {
 
   /**
    * Registers a callback to be executed at every action.
-   * @param {function} callback to be registered
-   * @param {object} this variable for the callback
-   * @param {error} trace error
-   * @return {function} added callback
+   * @param {Function} callback to be registered
+   * @param {Object} context this variable for the callback
+   * @param {Error} trace error
+   * @return {Function} added callback
    */
   register(callback, context, trace) {
     return this.callbacks.add(callback, context, trace);
@@ -65,8 +65,8 @@ class Dispatcher {
 
   /**
    * Removes the given callback from the registry.
-   * @param {function} callback to be removed
-   * @return {boolean} true if the callback was found
+   * @param {Function} callback to be removed
+   * @return {Boolean} unregistered true if the callback was found
    */
   unregister(callback) {
     return this.callbacks.remove(callback);

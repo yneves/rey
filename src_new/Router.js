@@ -76,7 +76,7 @@ class Router extends StateHolder {
 
   /**
    * Navigates to the given url.
-   * @param {string} the url
+   * @param {String} url
    */
   navigate(href) {
     this.location.push(href);
@@ -88,7 +88,7 @@ class Router extends StateHolder {
 
   /**
    * Handle start, change and navigate actions.
-   * @param {string} the url
+   * @param {String} url
    */
   handleNavigation(href = this.location.get()) {
     const route = this.matchRoute(href);
@@ -99,7 +99,7 @@ class Router extends StateHolder {
 
   /**
    * Register the given routes.
-   * @param {object} routes to be registered
+   * @param {Object} routes
    */
   setRoutes(routes) {
     if (!this.routes) {
@@ -112,7 +112,7 @@ class Router extends StateHolder {
 
   /**
    * Returns the registered routes.
-   * @return {object} regitered routes
+   * @return {Object} routes
    */
   getRoutes() {
     return this.routes || {};
@@ -120,8 +120,8 @@ class Router extends StateHolder {
 
   /**
    * Finds the route for the given url.
-   * @param {string} url to be matched
-   * @return {object} consolidated route object
+   * @param {String} url
+   * @return {Object} route
    */
   matchRoute(href) {
     const routes = this.getRoutes();
@@ -153,11 +153,12 @@ class Router extends StateHolder {
 
   /**
    * Prepares a route object with given data.
-   * @param {object} parsed url
-   * @param {object} route properties
-   * @param {array} route matched parameters
-   * @param {array} value for each parameter
-   * @return {object} consolidated route object
+   * @private
+   * @param {Object} parsed url
+   * @param {Object} route properties
+   * @param {Array} route matched parameters
+   * @param {Array} value for each parameter
+   * @return {Object} consolidated route object
    */
   prepareRoute(url, props, params, values) {
     const route = {

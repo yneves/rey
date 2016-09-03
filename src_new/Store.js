@@ -18,7 +18,7 @@ class Store extends StateHolder {
 
   /**
    * Creates a new store instance.
-   * @param {Dispatcher} dispatcher to use
+   * @param {Dispatcher} dispatcher
    */
   constructor(dispatcher) {
     if (!(dispatcher instanceof Dispatcher)) {
@@ -52,7 +52,7 @@ class Store extends StateHolder {
 
   /**
    * Sets the action handler.
-   * @param {function} the action handler
+   * @param {Function} handler
    */
   setActionHandler(handler) {
     this.actionHandler = handler;
@@ -60,7 +60,7 @@ class Store extends StateHolder {
 
   /**
    * Gets the action handler.
-   * @return {function} the action handler
+   * @return {Function} handler
    */
   getActionHandler() {
     return this.actionHandler;

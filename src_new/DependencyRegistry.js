@@ -22,7 +22,7 @@ class DependencyRegistry {
 
   /**
    * Registers a new dependency.
-   * @param {object} dependency to be registered
+   * @param {Object} dependency to be registered
    */
   add(dep) {
     const valid = typeof dep === 'object' &&
@@ -50,7 +50,7 @@ class DependencyRegistry {
   /**
    * Returns the requested instance.
    * @param {string} name of the dependency
-   * @return {object} dependency instance
+   * @return {Object} dependency instance
    */
   get(name) {
     const dep = this.dependencies[name];

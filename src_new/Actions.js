@@ -18,7 +18,7 @@ class Actions {
 
   /**
    * Creates a new set of action creators.
-   * @param {Dispatcher} dispatcher to be used
+   * @param {Dispatcher} dispatcher
    */
   constructor(dispatcher) {
     if (!(dispatcher instanceof Dispatcher)) {
@@ -29,7 +29,7 @@ class Actions {
 
   /**
    * Sets the registered actions.
-   * @param {object} a map of action name as key and function as value
+   * @param {Object} actions
    */
   setActions(actions) {
     this.actions = actions;
@@ -37,33 +37,43 @@ class Actions {
 
   /**
    * Returns the registered actions.
-   * @return {object} a map of action name as key and function as value
+   * @return {Object} actions
    */
   getActions() {
     return this.actions || {};
   }
 
   /**
-   * Creates the actions to be used by the container.
-   * @return {object} a map of action name as key and function as value
+   * Returns arguments passed to the action creators.
+   * @private
+   * @return {Array} arguments
    */
-  createActions() {
+  getArgs(stores) {
 
     const dispatch = (arg) => this.dispatcher.dispatch(arg);
 
-    const getState = Array.from(arguments).map((stateHolder) => {
+    const getState = stores.map((stateHolder) => {
       if (!(stateHolder instanceof StateHolder)) {
         throw new Error('expected a StateHolder instance');
       }
       return (path) => stateHolder.getState(path);
     });
 
-    const args = [].concat(dispatch, getState);
+    return [].concat(dispatch, getState);
+  }
+
+  /**
+   * Creates the actions to be used by the container.
+   * @return {Object} actions
+   */
+  createActions() {
+
+    const stores = Array.from(arguments);
 
     const createAction = (code) => () => {
       let payload = code.apply(this, arguments);
       if (typeof payload === 'function') {
-        payload = payload.apply(undefined, args);
+        payload = payload.apply(undefined, this.getArgs(stores));
       }
       if (typeof payload === 'string') {
         payload = { actionType: payload };

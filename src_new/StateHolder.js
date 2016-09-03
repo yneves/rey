@@ -42,10 +42,10 @@ class StateHolder {
 
   /**
    * Registers a callback to be executed at every state change.
-   * @param {function} callback to be registered
-   * @param {object} this variable for the callback
-   * @param {error} trace error
-   * @return {function} added callback
+   * @param {Function} callback to be registered
+   * @param {Object} context this variable for the callback
+   * @param {Error} trace error
+   * @return {Function} callback added callback
    */
   register(callback, context, trace) {
     return this.callbacks.add(callback, context, trace);
@@ -53,7 +53,7 @@ class StateHolder {
 
   /**
    * Removes a callback previously registered.
-   * @param {function} callback to be removed
+   * @param {Function} callback to be removed
    */
   unregister(callback) {
     this.callbacks.remove(callback);
@@ -68,7 +68,7 @@ class StateHolder {
 
   /**
    * Returns the initial state for the object.
-   * @return {object} the initial state
+   * @return {Object} state
    */
   getInitialState() {
     return this.initialState;
@@ -84,8 +84,8 @@ class StateHolder {
 
   /**
    * Returns the state or the requested property.
-   * @param {string|array} path to the wanted state property
-   * @return {any} state vaue
+   * @param {Array} path to the wanted state property
+   * @return {any} value
    */
   getState() {
     const args = Array.from(arguments);
@@ -94,8 +94,8 @@ class StateHolder {
 
   /**
    * Sets given state values.
-   * @param {string|array} path to the state value
-   * @param {any} state value
+   * @param {Array} path to the state value
+   * @param {any} value
    */
   setState() {
     const args = Array.from(arguments);
@@ -111,8 +111,8 @@ class StateHolder {
 
   /**
    * Merges given state values.
-   * @param {string|array} path to the state value
-   * @param {any} state value
+   * @param {Array} path to the state value
+   * @param {any} value
    */
   mergeState() {
     const args = Array.from(arguments);
@@ -128,7 +128,7 @@ class StateHolder {
 
   /**
    * Deletes given state values.
-   * @param {string|array} path to the state value
+   * @param {Array} path to the state value
    */
   deleteState() {
     const args = Array.from(arguments);
@@ -144,8 +144,8 @@ class StateHolder {
 
   /**
    * Updates state values.
-   * @param {string|array} path to the state value
-   * @param {function} callback to return new state value
+   * @param {Array} path to the state value
+   * @param {Function} callback to return new state value
    */
   updateState() {
     const args = Array.from(arguments);

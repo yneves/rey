@@ -15,7 +15,7 @@ class CallbackRegistry {
 
   /**
    * Creates a new list of callbacks.
-   * @param {function} used to wrap non-function callbacks into function
+   * @param {Function} wrapper used to wrap non-function callbacks into function
    */
   constructor(wrapper) {
     this.wrapper = wrapper;
@@ -24,6 +24,7 @@ class CallbackRegistry {
 
   /**
    * Returns the number of registered callbacks.
+   * @return {Number} count
    */
   count() {
     return this.callbacks.length;
@@ -40,10 +41,10 @@ class CallbackRegistry {
    * Registers a new callback.
    * Call the wrapper passed on contructur if the argument is not a function.
    * Throws an exception if the callback is already registered.
-   * @param {function} callback to be registered
-   * @param {object} this variable for the callback
-   * @param {error} trace error
-   * @return {function} added callback
+   * @param {Function} callback to be registered
+   * @param {Object} context this variable for the callback
+   * @param {Error} trace error for tracing purposes
+   * @return {Function} wrappedCallback
    */
   add(callback, context, trace) {
     const wrapped = typeof callback === 'function'
@@ -63,8 +64,8 @@ class CallbackRegistry {
 
   /**
    * Finds the given callback within the list.
-   * @param {function} callback to be found
-   * @return {number} index of the callback within the list
+   * @param {Function} callback to be found
+   * @return {Number} index of the callback within the list
    */
   indexOf(callback) {
     let index = -1;
@@ -80,8 +81,8 @@ class CallbackRegistry {
 
   /**
    * Removes the given callback from the registry.
-   * @param {function} callback to be removed
-   * @return {boolean} true if the callback was found
+   * @param {Function} callback to be removed
+   * @return {Boolean} removed true if the callback was found
    */
   remove(callback) {
     const index = this.indexOf(callback);
@@ -94,8 +95,8 @@ class CallbackRegistry {
 
   /**
    * Executes the given callback passing arguments.
-   * @param {object} callback entry
-   * @param {array} arguments
+   * @param {Object} callback
+   * @param {Array} arguments
    */
   call(entry, args) {
     try {

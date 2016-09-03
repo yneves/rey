@@ -351,7 +351,7 @@ module.exports = InterceptorManager;
  * Dispatch a request to the server using whichever adapter
  * is supported by the current environment.
  *
- * @param {object} config The config that is to be used for the request
+ * @param {Object} config The config that is to be used for the request
  * @returns {Promise} The Promise to be fulfilled
  */
 module.exports = function dispatchRequest(config) {
@@ -520,7 +520,7 @@ function encode(val) {
  * Build a URL by appending params to the end
  *
  * @param {string} url The base of the url (e.g., http://www.google.com)
- * @param {object} [params] The params to be appended
+ * @param {Object} [params] The params to be appended
  * @returns {string} The formatted url
  */
 module.exports = function buildURL(url, params, paramsSerializer) {
@@ -771,7 +771,7 @@ module.exports = function parseHeaders(headers) {
  *
  * @param {Function} resolve A function that resolves the promise.
  * @param {Function} reject A function that rejects the promise.
- * @param {object} response The response.
+ * @param {Object} response The response.
  */
 module.exports = function settle(resolve, reject, response) {
   var validateStatus = response.config.validateStatus;
@@ -14743,7 +14743,7 @@ function isKeypressCommand(nativeEvent) {
  * Translate native top level events into event types.
  *
  * @param {string} topLevelType
- * @return {object}
+ * @return {Object}
  */
 function getCompositionEventType(topLevelType) {
   switch (topLevelType) {
@@ -14761,7 +14761,7 @@ function getCompositionEventType(topLevelType) {
  * composition has begun?
  *
  * @param {string} topLevelType
- * @param {object} nativeEvent
+ * @param {Object} nativeEvent
  * @return {boolean}
  */
 function isFallbackCompositionStart(topLevelType, nativeEvent) {
@@ -14772,7 +14772,7 @@ function isFallbackCompositionStart(topLevelType, nativeEvent) {
  * Does our fallback mode think that this event is the end of composition?
  *
  * @param {string} topLevelType
- * @param {object} nativeEvent
+ * @param {Object} nativeEvent
  * @return {boolean}
  */
 function isFallbackCompositionEnd(topLevelType, nativeEvent) {
@@ -14800,7 +14800,7 @@ function isFallbackCompositionEnd(topLevelType, nativeEvent) {
  * is available on the event object, use it. If not, this is a plain
  * composition event and we have nothing special to extract.
  *
- * @param {object} nativeEvent
+ * @param {Object} nativeEvent
  * @return {?string}
  */
 function getDataFromCustomEvent(nativeEvent) {
@@ -14866,7 +14866,7 @@ function extractCompositionEvent(topLevelType, targetInst, nativeEvent, nativeEv
 
 /**
  * @param {string} topLevelType Record from `EventConstants`.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @return {?string} The string corresponding to this `beforeInput` event.
  */
 function getNativeBeforeInputChars(topLevelType, nativeEvent) {
@@ -14920,7 +14920,7 @@ function getNativeBeforeInputChars(topLevelType, nativeEvent) {
  * appropriate string to use for SyntheticInputEvent.
  *
  * @param {string} topLevelType Record from `EventConstants`.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @return {?string} The fallback string for this `beforeInput` event.
  */
 function getFallbackBeforeInputChars(topLevelType, nativeEvent) {
@@ -15314,7 +15314,7 @@ var CSSPropertyOperations = {
    * Undefined values are ignored so that declarative programming is easier.
    * The result should be HTML-escaped before insertion into the DOM.
    *
-   * @param {object} styles
+   * @param {Object} styles
    * @param {ReactDOMComponent} component
    * @return {?string}
    */
@@ -15341,7 +15341,7 @@ var CSSPropertyOperations = {
    * '' (empty string), the corresponding style property will be unset.
    *
    * @param {DOMElement} node
-   * @param {object} styles
+   * @param {Object} styles
    * @param {ReactDOMComponent} component
    */
   setValueForStyles: function (node, styles, component) {
@@ -16162,7 +16162,7 @@ var DOMPropertyInjection = {
    * DOMMutationMethods: Properties that require special mutation methods. If
    * `value` is undefined, the mutation method should unset the property.
    *
-   * @param {object} domPropertyConfig the config as described above.
+   * @param {Object} domPropertyConfig the config as described above.
    */
   injectDOMPropertyConfig: function (domPropertyConfig) {
     var Injection = DOMPropertyInjection;
@@ -17031,7 +17031,7 @@ var executeDispatchesAndReleaseTopLevel = function (e) {
  *     Required. When a top-level event is fired, this method is expected to
  *     extract synthetic events that will in turn be queued and dispatched.
  *
- *   `eventTypes` {object}
+ *   `eventTypes` {Object}
  *     Optional, plugins that fire events must publish a mapping of registration
  *     names that are used to register listeners. Values of this mapping must
  *     be objects that contain `registrationName` or `phasedRegistrationNames`.
@@ -17058,7 +17058,7 @@ var EventPluginHub = {
     injectEventPluginOrder: EventPluginRegistry.injectEventPluginOrder,
 
     /**
-     * @param {object} injectedNamesToPlugins Map from names to plugin modules.
+     * @param {Object} injectedNamesToPlugins Map from names to plugin modules.
      */
     injectEventPluginsByName: EventPluginRegistry.injectEventPluginsByName
 
@@ -17067,7 +17067,7 @@ var EventPluginHub = {
   /**
    * Stores `listener` at `listenerBank[registrationName][id]`. Is idempotent.
    *
-   * @param {object} inst The instance, which is the source of events.
+   * @param {Object} inst The instance, which is the source of events.
    * @param {string} registrationName Name of listener (e.g. `onClick`).
    * @param {function} listener The callback to store.
    */
@@ -17084,7 +17084,7 @@ var EventPluginHub = {
   },
 
   /**
-   * @param {object} inst The instance, which is the source of events.
+   * @param {Object} inst The instance, which is the source of events.
    * @param {string} registrationName Name of listener (e.g. `onClick`).
    * @return {?function} The stored callback.
    */
@@ -17096,7 +17096,7 @@ var EventPluginHub = {
   /**
    * Deletes a listener from the registration bank.
    *
-   * @param {object} inst The instance, which is the source of events.
+   * @param {Object} inst The instance, which is the source of events.
    * @param {string} registrationName Name of listener (e.g. `onClick`).
    */
   deleteListener: function (inst, registrationName) {
@@ -17115,7 +17115,7 @@ var EventPluginHub = {
   /**
    * Deletes all listeners for the DOM element with the supplied ID.
    *
-   * @param {object} inst The instance, which is the source of events.
+   * @param {Object} inst The instance, which is the source of events.
    */
   deleteAllListeners: function (inst) {
     for (var registrationName in listenerBank) {
@@ -17259,8 +17259,8 @@ function recomputePluginOrdering() {
 /**
  * Publishes an event so that it can be dispatched by the supplied plugin.
  *
- * @param {object} dispatchConfig Dispatch configuration for the event.
- * @param {object} PluginModule Plugin publishing the event.
+ * @param {Object} dispatchConfig Dispatch configuration for the event.
+ * @param {Object} PluginModule Plugin publishing the event.
  * @return {boolean} True if the event was successfully published.
  * @private
  */
@@ -17289,7 +17289,7 @@ function publishEventForPlugin(dispatchConfig, PluginModule, eventName) {
  * can be used with `EventPluginHub.putListener` to register listeners.
  *
  * @param {string} registrationName Registration name to add.
- * @param {object} PluginModule Plugin publishing the event.
+ * @param {Object} PluginModule Plugin publishing the event.
  * @private
  */
 function publishRegistrationName(registrationName, PluginModule, eventName) {
@@ -17360,7 +17360,7 @@ var EventPluginRegistry = {
    *
    * Plugins can be injected as part of page initialization or on-the-fly.
    *
-   * @param {object} injectedNamesToPlugins Map from names to plugin modules.
+   * @param {Object} injectedNamesToPlugins Map from names to plugin modules.
    * @internal
    * @see {EventPluginHub.injection.injectEventPluginsByName}
    */
@@ -17385,7 +17385,7 @@ var EventPluginRegistry = {
   /**
    * Looks up the plugin for the supplied event.
    *
-   * @param {object} event A synthetic event.
+   * @param {Object} event A synthetic event.
    * @return {?object} The plugin that created the supplied event.
    * @internal
    */
@@ -18275,7 +18275,7 @@ var LinkedValueUtils = {
   },
 
   /**
-   * @param {object} inputProps Props for form component
+   * @param {Object} inputProps Props for form component
    * @return {*} current value of the input either from value prop or link.
    */
   getValue: function (inputProps) {
@@ -18287,7 +18287,7 @@ var LinkedValueUtils = {
   },
 
   /**
-   * @param {object} inputProps Props for form component
+   * @param {Object} inputProps Props for form component
    * @return {*} current checked status of the input either from checked prop
    *             or link.
    */
@@ -18300,7 +18300,7 @@ var LinkedValueUtils = {
   },
 
   /**
-   * @param {object} inputProps Props for form component
+   * @param {Object} inputProps Props for form component
    * @param {SyntheticEvent} event change event to handle
    */
   executeOnChange: function (inputProps, event) {
@@ -18718,7 +18718,7 @@ var ReactBrowserEventEmitter = _assign({}, ReactEventEmitterMixin, {
 
   injection: {
     /**
-     * @param {object} ReactEventListener
+     * @param {Object} ReactEventListener
      */
     injectReactEventListener: function (ReactEventListener) {
       ReactEventListener.setHandleTopLevel(ReactBrowserEventEmitter.handleTopLevel);
@@ -18763,7 +18763,7 @@ var ReactBrowserEventEmitter = _assign({}, ReactEventEmitterMixin, {
    * they bubble to document.
    *
    * @param {string} registrationName Name of listener (e.g. `onClick`).
-   * @param {object} contentDocumentHandle Document which owns the container
+   * @param {Object} contentDocumentHandle Document which owns the container
    */
   listenTo: function (registrationName, contentDocumentHandle) {
     var mountAt = contentDocumentHandle;
@@ -19155,7 +19155,7 @@ var ReactChildReconciler = {
    * @param {?object} prevChildren Previously initialized set of children.
    * @param {?object} nextChildren Flat child element maps.
    * @param {ReactReconcileTransaction} transaction
-   * @param {object} context
+   * @param {Object} context
    * @return {?object} A new set of child instances.
    * @internal
    */
@@ -19359,7 +19359,7 @@ function mapIntoWithKeyPrefixInternal(children, array, prefix, func, context) {
  * @param {?*} children Children tree container.
  * @param {function(*, int)} func The map function.
  * @param {*} context Context for mapFunction.
- * @return {object} Object containing the ordered map of results.
+ * @return {Object} Object containing the ordered map of results.
  */
 function mapChildren(children, func, context) {
   if (children == null) {
@@ -19498,7 +19498,7 @@ var ReactClassInterface = {
    * An object containing properties and methods that should be defined on
    * the component's constructor instead of its prototype (static methods).
    *
-   * @type {object}
+   * @type {Object}
    * @optional
    */
   statics: SpecPolicy.DEFINE_MANY,
@@ -19506,7 +19506,7 @@ var ReactClassInterface = {
   /**
    * Definition of prop types for this component.
    *
-   * @type {object}
+   * @type {Object}
    * @optional
    */
   propTypes: SpecPolicy.DEFINE_MANY,
@@ -19514,7 +19514,7 @@ var ReactClassInterface = {
   /**
    * Definition of context types for this component.
    *
-   * @type {object}
+   * @type {Object}
    * @optional
    */
   contextTypes: SpecPolicy.DEFINE_MANY,
@@ -19522,7 +19522,7 @@ var ReactClassInterface = {
   /**
    * Definition of context types this component sets for its children.
    *
-   * @type {object}
+   * @type {Object}
    * @optional
    */
   childContextTypes: SpecPolicy.DEFINE_MANY,
@@ -19536,7 +19536,7 @@ var ReactClassInterface = {
    * This method is invoked before `getInitialState` and therefore cannot rely
    * on `this.state` or use `this.setState`.
    *
-   * @return {object}
+   * @return {Object}
    * @optional
    */
   getDefaultProps: SpecPolicy.DEFINE_MANY_MERGED,
@@ -19552,13 +19552,13 @@ var ReactClassInterface = {
    *     }
    *   }
    *
-   * @return {object}
+   * @return {Object}
    * @optional
    */
   getInitialState: SpecPolicy.DEFINE_MANY_MERGED,
 
   /**
-   * @return {object}
+   * @return {Object}
    * @optional
    */
   getChildContext: SpecPolicy.DEFINE_MANY_MERGED,
@@ -19620,7 +19620,7 @@ var ReactClassInterface = {
    * transition may cause a state change, but the opposite is not true. If you
    * need it, you are probably looking for `componentWillUpdate`.
    *
-   * @param {object} nextProps
+   * @param {Object} nextProps
    * @optional
    */
   componentWillReceiveProps: SpecPolicy.DEFINE_MANY,
@@ -19639,7 +19639,7 @@ var ReactClassInterface = {
    *       !equal(nextContext, this.context);
    *   }
    *
-   * @param {object} nextProps
+   * @param {Object} nextProps
    * @param {?object} nextState
    * @param {?object} nextContext
    * @return {boolean} True if the component should update.
@@ -19656,7 +19656,7 @@ var ReactClassInterface = {
    *
    * NOTE: You **cannot** use `this.setState()` in this method.
    *
-   * @param {object} nextProps
+   * @param {Object} nextProps
    * @param {?object} nextState
    * @param {?object} nextContext
    * @param {ReactReconcileTransaction} transaction
@@ -19670,7 +19670,7 @@ var ReactClassInterface = {
    * Use this as an opportunity to operate on the DOM when the component has
    * been updated.
    *
-   * @param {object} prevProps
+   * @param {Object} prevProps
    * @param {?object} prevState
    * @param {?object} prevContext
    * @param {DOMElement} rootNode DOM element representing the component.
@@ -19887,9 +19887,9 @@ function mixStaticSpecIntoComponent(Constructor, statics) {
 /**
  * Merge two objects, but throw if both contain the same key.
  *
- * @param {object} one The first object, which is mutated.
- * @param {object} two The second object
- * @return {object} one after it has been mutated to contain everything in two.
+ * @param {Object} one The first object, which is mutated.
+ * @param {Object} two The second object
+ * @return {Object} one after it has been mutated to contain everything in two.
  */
 function mergeIntoWithNoDuplicateKeys(one, two) {
   !(one && two && typeof one === 'object' && typeof two === 'object') ? "production" !== 'production' ? invariant(false, 'mergeIntoWithNoDuplicateKeys(): Cannot merge non-objects.') : invariant(false) : void 0;
@@ -19945,7 +19945,7 @@ function createChainedFunction(one, two) {
 /**
  * Binds a method to the component.
  *
- * @param {object} component Component whose method is going to be bound.
+ * @param {Object} component Component whose method is going to be bound.
  * @param {function} method Method to be bound.
  * @return {function} The bound method.
  */
@@ -19984,7 +19984,7 @@ function bindAutoBindMethod(component, method) {
 /**
  * Binds all auto-bound methods in a component.
  *
- * @param {object} component Component whose method is going to be bound.
+ * @param {Object} component Component whose method is going to be bound.
  */
 function bindAutoBindMethods(component) {
   var pairs = component.__reactAutoBindPairs;
@@ -20036,7 +20036,7 @@ var ReactClass = {
   /**
    * Creates a composite component class given a class specification.
    *
-   * @param {object} spec Class specification (which must define `render`).
+   * @param {Object} spec Class specification (which must define `render`).
    * @return {function} Component constructor function.
    * @public
    */
@@ -20720,7 +20720,7 @@ var ReactCompositeComponentMixin = {
    * Filters the context object to only contain keys specified in
    * `contextTypes`
    *
-   * @param {object} context
+   * @param {Object} context
    * @return {?object}
    * @private
    */
@@ -20741,7 +20741,7 @@ var ReactCompositeComponentMixin = {
    * Filters the context object to only contain keys specified in
    * `contextTypes`, and asserts that they are valid.
    *
-   * @param {object} context
+   * @param {Object} context
    * @return {?object}
    * @private
    */
@@ -20757,8 +20757,8 @@ var ReactCompositeComponentMixin = {
   },
 
   /**
-   * @param {object} currentContext
-   * @return {object}
+   * @param {Object} currentContext
+   * @return {Object}
    * @private
    */
   _processChildContext: function (currentContext) {
@@ -20789,8 +20789,8 @@ var ReactCompositeComponentMixin = {
    * asserting that the props are valid. Does not mutate its argument; returns
    * a new props object with defaults merged in.
    *
-   * @param {object} newProps
-   * @return {object}
+   * @param {Object} newProps
+   * @return {Object}
    * @private
    */
   _processProps: function (newProps) {
@@ -20806,8 +20806,8 @@ var ReactCompositeComponentMixin = {
   /**
    * Assert that the props are valid
    *
-   * @param {object} propTypes Map of prop name to a ReactPropType
-   * @param {object} props
+   * @param {Object} propTypes Map of prop name to a ReactPropType
+   * @param {Object} props
    * @param {string} location e.g. "prop", "context", "child context"
    * @private
    */
@@ -20967,7 +20967,7 @@ var ReactCompositeComponentMixin = {
    * performs update.
    *
    * @param {ReactElement} nextElement Next element
-   * @param {object} nextProps Next public object to set as properties.
+   * @param {Object} nextProps Next public object to set as properties.
    * @param {?object} nextState Next object to set as state.
    * @param {?object} nextContext Next public object to set as context.
    * @param {ReactReconcileTransaction} transaction
@@ -21448,7 +21448,7 @@ function checkAndWarnForMutatedStyle(style1, style2, component) {
 }
 
 /**
- * @param {object} component
+ * @param {Object} component
  * @param {?object} props
  */
 function assertValidProps(component, props) {
@@ -21677,7 +21677,7 @@ ReactDOMComponent.Mixin = {
    * @param {ReactReconcileTransaction|ReactServerRenderingTransaction} transaction
    * @param {?ReactDOMComponent} the containing DOM component instance
    * @param {?object} info about the native container
-   * @param {object} context
+   * @param {Object} context
    * @return {string} The computed markup.
    */
   mountComponent: function (transaction, nativeParent, nativeContainerInfo, context) {
@@ -21827,7 +21827,7 @@ ReactDOMComponent.Mixin = {
    *
    * @private
    * @param {ReactReconcileTransaction|ReactServerRenderingTransaction} transaction
-   * @param {object} props
+   * @param {Object} props
    * @return {string} Markup of opening tag.
    */
   _createOpenTagMarkupAndPutListeners: function (transaction, props) {
@@ -21888,8 +21888,8 @@ ReactDOMComponent.Mixin = {
    *
    * @private
    * @param {ReactReconcileTransaction|ReactServerRenderingTransaction} transaction
-   * @param {object} props
-   * @param {object} context
+   * @param {Object} props
+   * @param {Object} context
    * @return {string} Content markup.
    */
   _createContentMarkup: function (transaction, props, context) {
@@ -21957,7 +21957,7 @@ ReactDOMComponent.Mixin = {
    * @internal
    * @param {ReactElement} nextElement
    * @param {ReactReconcileTransaction|ReactServerRenderingTransaction} transaction
-   * @param {object} context
+   * @param {Object} context
    */
   receiveComponent: function (nextElement, transaction, context) {
     var prevElement = this._currentElement;
@@ -22027,8 +22027,8 @@ ReactDOMComponent.Mixin = {
    * TODO: Benchmark areas that can be improved with caching.
    *
    * @private
-   * @param {object} lastProps
-   * @param {object} nextProps
+   * @param {Object} lastProps
+   * @param {Object} nextProps
    * @param {?DOMElement} node
    */
   _updateDOMProperties: function (lastProps, nextProps, transaction) {
@@ -22125,10 +22125,10 @@ ReactDOMComponent.Mixin = {
    * Reconciles the children with the various properties that affect the
    * children content.
    *
-   * @param {object} lastProps
-   * @param {object} nextProps
+   * @param {Object} lastProps
+   * @param {Object} nextProps
    * @param {ReactReconcileTransaction} transaction
-   * @param {object} context
+   * @param {Object} context
    */
   _updateDOMChildren: function (lastProps, nextProps, transaction, context) {
     var lastContent = CONTENT_TYPES[typeof lastProps.children] ? lastProps.children : null;
@@ -23425,7 +23425,7 @@ function isCollapsed(anchorNode, anchorOffset, focusNode, focusOffset) {
  * differ between the two APIs.
  *
  * @param {DOMElement} node
- * @return {object}
+ * @return {Object}
  */
 function getIEOffsets(node) {
   var selection = document.selection;
@@ -23510,7 +23510,7 @@ function getModernOffsets(node) {
 
 /**
  * @param {DOMElement|DOMTextNode} node
- * @param {object} offsets
+ * @param {Object} offsets
  */
 function setIEOffsets(node, offsets) {
   var range = document.selection.createRange().duplicate();
@@ -23544,7 +23544,7 @@ function setIEOffsets(node, offsets) {
  * versions, we use the old IE API to create our selections.
  *
  * @param {DOMElement|DOMTextNode} node
- * @param {object} offsets
+ * @param {Object} offsets
  */
 function setModernOffsets(node, offsets) {
   if (!window.getSelection) {
@@ -23592,7 +23592,7 @@ var ReactDOMSelection = {
 
   /**
    * @param {DOMElement|DOMTextNode} node
-   * @param {object} offsets
+   * @param {Object} offsets
    */
   setOffsets: useIEOffsets ? setIEOffsets : setModernOffsets
 };
@@ -25342,8 +25342,8 @@ function validateChildKeys(node, parentType) {
  * Assert that the props are valid
  *
  * @param {string} componentName Name of the component for error messages.
- * @param {object} propTypes Map of prop name to a ReactPropType
- * @param {object} props
+ * @param {Object} propTypes Map of prop name to a ReactPropType
+ * @param {Object} props
  * @param {string} location e.g. "prop", "context", "child context"
  * @private
  */
@@ -25712,7 +25712,7 @@ var ReactEventListener = {
    *
    * @param {string} topLevelType Record from `EventConstants`.
    * @param {string} handlerBaseName Event name (e.g. "click").
-   * @param {object} handle Element on which to attach listener.
+   * @param {Object} handle Element on which to attach listener.
    * @return {?object} An object with a remove function which will forcefully
    *                  remove the listener.
    * @internal
@@ -25730,7 +25730,7 @@ var ReactEventListener = {
    *
    * @param {string} topLevelType Record from `EventConstants`.
    * @param {string} handlerBaseName Event name (e.g. "click").
-   * @param {object} handle Element on which to attach listener.
+   * @param {Object} handle Element on which to attach listener.
    * @return {?object} An object with a remove function which will forcefully
    *                  remove the listener.
    * @internal
@@ -27238,7 +27238,7 @@ var ReactNoopUpdateQueue = {
    * accessing `this.state` after calling this method may return the old value.
    *
    * @param {ReactClass} publicInstance The instance that should rerender.
-   * @param {object} completeState Next state.
+   * @param {Object} completeState Next state.
    * @internal
    */
   enqueueReplaceState: function (publicInstance, completeState) {
@@ -27252,7 +27252,7 @@ var ReactNoopUpdateQueue = {
    * during the merge.
    *
    * @param {ReactClass} publicInstance The instance that should rerender.
-   * @param {object} partialState Next partial state to be merged with state.
+   * @param {Object} partialState Next partial state to be merged with state.
    * @internal
    */
   enqueueSetState: function (publicInstance, partialState) {
@@ -27391,7 +27391,7 @@ var ReactPerf = {
   storedMeasure: _noMeasure,
 
   /**
-   * @param {object} object
+   * @param {Object} object
    * @param {string} objectName
    * @param {object<string>} methodNames
    */
@@ -28016,7 +28016,7 @@ var Mixin = {
   },
 
   /**
-   * @return {object} The queue to collect `onDOMReady` callbacks with.
+   * @return {Object} The queue to collect `onDOMReady` callbacks with.
    */
   getReactMountReady: function () {
     return this.reactMountReady;
@@ -28128,7 +28128,7 @@ var ReactReconciler = {
    * @param {ReactComponent} internalInstance
    * @param {ReactElement} nextElement
    * @param {ReactReconcileTransaction} transaction
-   * @param {object} context
+   * @param {Object} context
    * @internal
    */
   receiveComponent: function (internalInstance, nextElement, transaction, context) {
@@ -28284,7 +28284,7 @@ var ReactTransitionChildMapping = {
    * simple syntactic sugar around flattenChildren().
    *
    * @param {*} children `this.props.children`
-   * @return {object} Mapping of key to child
+   * @return {Object} Mapping of key to child
    */
   getChildMapping: function (children) {
     if (!children) {
@@ -28303,11 +28303,11 @@ var ReactTransitionChildMapping = {
    * directly have this concept of the union of prevChildren and nextChildren
    * so we implement it here.
    *
-   * @param {object} prev prev children as returned from
+   * @param {Object} prev prev children as returned from
    * `ReactTransitionChildMapping.getChildMapping()`.
-   * @param {object} next next children as returned from
+   * @param {Object} next next children as returned from
    * `ReactTransitionChildMapping.getChildMapping()`.
-   * @return {object} a key set that contains all keys in `prev` and all keys
+   * @return {Object} a key set that contains all keys in `prev` and all keys
    * in `next` in a reasonable order.
    */
   mergeChildMappings: function (prev, next) {
@@ -28807,7 +28807,7 @@ var ReactUpdateQueue = {
    * accessing `this.state` after calling this method may return the old value.
    *
    * @param {ReactClass} publicInstance The instance that should rerender.
-   * @param {object} completeState Next state.
+   * @param {Object} completeState Next state.
    * @internal
    */
   enqueueReplaceState: function (publicInstance, completeState) {
@@ -28830,7 +28830,7 @@ var ReactUpdateQueue = {
    * during the merge.
    *
    * @param {ReactClass} publicInstance The instance that should rerender.
-   * @param {object} partialState Next partial state to be merged with state.
+   * @param {Object} partialState Next partial state to be merged with state.
    * @internal
    */
   enqueueSetState: function (publicInstance, partialState) {
@@ -29476,7 +29476,7 @@ var ON_SELECT_KEY = keyOf({ onSelect: null });
  * two identical selections on the same node will return identical objects.
  *
  * @param {DOMElement} node
- * @return {object}
+ * @return {Object}
  */
 function getSelection(node) {
   if ('selectionStart' in node && ReactInputSelection.hasSelectionCapabilities(node)) {
@@ -29506,7 +29506,7 @@ function getSelection(node) {
 /**
  * Poll selection to see whether it's changed.
  *
- * @param {object} nativeEvent
+ * @param {Object} nativeEvent
  * @return {?SyntheticEvent}
  */
 function constructSelectEvent(nativeEvent, nativeEventTarget) {
@@ -30274,9 +30274,9 @@ var AnimationEventInterface = {
 };
 
 /**
- * @param {object} dispatchConfig Configuration used to dispatch this event.
+ * @param {Object} dispatchConfig Configuration used to dispatch this event.
  * @param {string} dispatchMarker Marker identifying the event target.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @extends {SyntheticEvent}
  */
 function SyntheticAnimationEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget) {
@@ -30313,9 +30313,9 @@ var ClipboardEventInterface = {
 };
 
 /**
- * @param {object} dispatchConfig Configuration used to dispatch this event.
+ * @param {Object} dispatchConfig Configuration used to dispatch this event.
  * @param {string} dispatchMarker Marker identifying the event target.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @extends {SyntheticUIEvent}
  */
 function SyntheticClipboardEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget) {
@@ -30350,9 +30350,9 @@ var CompositionEventInterface = {
 };
 
 /**
- * @param {object} dispatchConfig Configuration used to dispatch this event.
+ * @param {Object} dispatchConfig Configuration used to dispatch this event.
  * @param {string} dispatchMarker Marker identifying the event target.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @extends {SyntheticUIEvent}
  */
 function SyntheticCompositionEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget) {
@@ -30387,9 +30387,9 @@ var DragEventInterface = {
 };
 
 /**
- * @param {object} dispatchConfig Configuration used to dispatch this event.
+ * @param {Object} dispatchConfig Configuration used to dispatch this event.
  * @param {string} dispatchMarker Marker identifying the event target.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @extends {SyntheticUIEvent}
  */
 function SyntheticDragEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget) {
@@ -30458,9 +30458,9 @@ var EventInterface = {
  * normalizing browser quirks. Subclasses do not necessarily have to implement a
  * DOM interface; custom application-specific events can also subclass this.
  *
- * @param {object} dispatchConfig Configuration used to dispatch this event.
+ * @param {Object} dispatchConfig Configuration used to dispatch this event.
  * @param {*} targetInst Marker identifying the event target.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @param {DOMEventTarget} nativeEventTarget Target node.
  */
 function SyntheticEvent(dispatchConfig, targetInst, nativeEvent, nativeEventTarget) {
@@ -30632,9 +30632,9 @@ module.exports = SyntheticEvent;
 /**
   * Helper to nullify syntheticEvent instance properties when destructing
   *
-  * @param {object} SyntheticEvent
+  * @param {Object} SyntheticEvent
   * @param {String} propName
-  * @return {object} defineProperty object
+  * @return {Object} defineProperty object
   */
 function getPooledWarningPropertyDefinition(propName, getVal) {
   var isFunction = typeof getVal === 'function';
@@ -30688,9 +30688,9 @@ var FocusEventInterface = {
 };
 
 /**
- * @param {object} dispatchConfig Configuration used to dispatch this event.
+ * @param {Object} dispatchConfig Configuration used to dispatch this event.
  * @param {string} dispatchMarker Marker identifying the event target.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @extends {SyntheticUIEvent}
  */
 function SyntheticFocusEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget) {
@@ -30726,9 +30726,9 @@ var InputEventInterface = {
 };
 
 /**
- * @param {object} dispatchConfig Configuration used to dispatch this event.
+ * @param {Object} dispatchConfig Configuration used to dispatch this event.
  * @param {string} dispatchMarker Marker identifying the event target.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @extends {SyntheticUIEvent}
  */
 function SyntheticInputEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget) {
@@ -30811,9 +30811,9 @@ var KeyboardEventInterface = {
 };
 
 /**
- * @param {object} dispatchConfig Configuration used to dispatch this event.
+ * @param {Object} dispatchConfig Configuration used to dispatch this event.
  * @param {string} dispatchMarker Marker identifying the event target.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @extends {SyntheticUIEvent}
  */
 function SyntheticKeyboardEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget) {
@@ -30884,9 +30884,9 @@ var MouseEventInterface = {
 };
 
 /**
- * @param {object} dispatchConfig Configuration used to dispatch this event.
+ * @param {Object} dispatchConfig Configuration used to dispatch this event.
  * @param {string} dispatchMarker Marker identifying the event target.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @extends {SyntheticUIEvent}
  */
 function SyntheticMouseEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget) {
@@ -30930,9 +30930,9 @@ var TouchEventInterface = {
 };
 
 /**
- * @param {object} dispatchConfig Configuration used to dispatch this event.
+ * @param {Object} dispatchConfig Configuration used to dispatch this event.
  * @param {string} dispatchMarker Marker identifying the event target.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @extends {SyntheticUIEvent}
  */
 function SyntheticTouchEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget) {
@@ -30970,9 +30970,9 @@ var TransitionEventInterface = {
 };
 
 /**
- * @param {object} dispatchConfig Configuration used to dispatch this event.
+ * @param {Object} dispatchConfig Configuration used to dispatch this event.
  * @param {string} dispatchMarker Marker identifying the event target.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @extends {SyntheticEvent}
  */
 function SyntheticTransitionEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget) {
@@ -31030,9 +31030,9 @@ var UIEventInterface = {
 };
 
 /**
- * @param {object} dispatchConfig Configuration used to dispatch this event.
+ * @param {Object} dispatchConfig Configuration used to dispatch this event.
  * @param {string} dispatchMarker Marker identifying the event target.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @extends {SyntheticEvent}
  */
 function SyntheticUIEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget) {
@@ -31085,9 +31085,9 @@ var WheelEventInterface = {
 };
 
 /**
- * @param {object} dispatchConfig Configuration used to dispatch this event.
+ * @param {Object} dispatchConfig Configuration used to dispatch this event.
  * @param {string} dispatchMarker Marker identifying the event target.
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @extends {SyntheticMouseEvent}
  */
 function SyntheticWheelEvent(dispatchConfig, dispatchMarker, nativeEvent, nativeEventTarget) {
@@ -31807,7 +31807,7 @@ module.exports = forEachAccumulated;
  * The Tab-key is considered non-printable and does not have a `charCode`,
  * presumably because it does not produce a tab-character in browsers.
  *
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @return {number} Normalized `charCode` property.
  */
 
@@ -31907,7 +31907,7 @@ var translateToKey = {
 };
 
 /**
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @return {string} Normalized `key` property.
  */
 function getEventKey(nativeEvent) {
@@ -32002,7 +32002,7 @@ module.exports = getEventModifierState;
  * Gets the target node from a native browser event by accounting for
  * inconsistencies in browser DOM APIs.
  *
- * @param {object} nativeEvent Native browser event.
+ * @param {Object} nativeEvent Native browser event.
  * @return {DOMEventTarget} Target node.
  */
 
@@ -32222,7 +32222,7 @@ var ExecutionEnvironment = require('fbjs/lib/ExecutionEnvironment');
  *
  * @param {string} styleProp
  * @param {string} eventName
- * @returns {object}
+ * @returns {Object}
  */
 function makePrefixMap(styleProp, eventName) {
   var prefixes = {};
@@ -32360,7 +32360,7 @@ function isInternalComponentType(type) {
  * Given a ReactNode, create an instance that will actually be mounted.
  *
  * @param {ReactNode} node
- * @return {object} A new instance of the element's constructor.
+ * @return {Object} A new instance of the element's constructor.
  * @protected
  */
 function instantiateReactComponent(node) {
@@ -33459,7 +33459,7 @@ var EventListener = {
    * @param {DOMEventTarget} target DOM element to register listener on.
    * @param {string} eventType Event type, e.g. 'click' or 'mouseover'.
    * @param {function} callback Callback function.
-   * @return {object} Object with a `remove` method.
+   * @return {Object} Object with a `remove` method.
    */
   listen: function (target, eventType, callback) {
     if (target.addEventListener) {
@@ -33485,7 +33485,7 @@ var EventListener = {
    * @param {DOMEventTarget} target DOM element to register listener on.
    * @param {string} eventType Event type, e.g. 'click' or 'mouseover'.
    * @param {function} callback Callback function.
-   * @return {object} Object with a `remove` method.
+   * @return {Object} Object with a `remove` method.
    */
   capture: function (target, eventType, callback) {
     if (target.addEventListener) {
@@ -34118,7 +34118,7 @@ module.exports = getMarkupWrap;
  * inertial scrolling).
  *
  * @param {DOMWindow|DOMElement} scrollable
- * @return {object} Map with `x` and `y` keys.
+ * @return {Object} Map with `x` and `y` keys.
  */
 
 function getUnboundedScrollPosition(scrollable) {
@@ -34339,8 +34339,8 @@ var invariant = require('./invariant');
  *   Input:  {key1: val1, key2: val2}
  *   Output: {key1: key1, key2: key2}
  *
- * @param {object} obj
- * @return {object}
+ * @param {Object} obj
+ * @return {Object}
  */
 var keyMirror = function (obj) {
   var ret = {};

@@ -13,20 +13,7 @@ const Store = require('./Store.js');
 const Router = require('./Router.js');
 const Actions = require('./Actions.js');
 
-class Container extends React.Component {
-
-  static propTypes = {
-    component: React.PropTypes.func.isRequired,
-    actions: React.PropTypes.oneOfType([
-      React.PropTypes.instanceOf(Actions),
-      React.PropTypes.arrayOf(React.PropTypes.instanceOf(Actions))
-    ]),
-    store: React.PropTypes.oneOfType([
-      React.PropTypes.instanceOf(Store),
-      React.PropTypes.arrayOf(React.PropTypes.instanceOf(Store))
-    ]),
-    router: React.PropTypes.instanceOf(Router)
-  }
+class Controller extends React.Component {
 
   componentWillMount() {
     const updateState = () => this.setState(this.mapProps());
@@ -90,6 +77,19 @@ class Container extends React.Component {
   }
 };
 
-module.exports = Container;
+Controller.propTypes = {
+  component: React.PropTypes.func.isRequired,
+  actions: React.PropTypes.oneOfType([
+    React.PropTypes.instanceOf(Actions),
+    React.PropTypes.arrayOf(React.PropTypes.instanceOf(Actions))
+  ]),
+  store: React.PropTypes.oneOfType([
+    React.PropTypes.instanceOf(Store),
+    React.PropTypes.arrayOf(React.PropTypes.instanceOf(Store))
+  ]),
+  router: React.PropTypes.instanceOf(Router)
+};
+
+module.exports = Controller;
 
 // - -------------------------------------------------------------------- - //
