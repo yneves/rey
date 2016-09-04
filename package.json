@@ -1,12 +1,12 @@
 {
   "name": "rey",
-  "version": "0.1.19",
+  "version": "1.0.0",
   "author": {
     "url": "http://yneves.com/",
     "name": "Yuri Neves Silveira",
     "email": "yurinevessilveira@gmail.com"
   },
-  "main": "./src/index.js",
+  "main": "./index.js",
   "dependencies": {
     "auto-bind": "^0.1.0",
     "bluebird": "^3.3.5",

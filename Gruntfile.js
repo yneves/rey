@@ -2,7 +2,7 @@
 
 'use strict';
 
-module.exports = function (grunt) {
+module.exports = (grunt) => {
 
   grunt.initConfig({
 
@@ -18,10 +18,9 @@ module.exports = function (grunt) {
           }
         },
         files: {
-          './dist/rey.dev.js': './src/index.js'
+          './dist/rey.dev.js': './index.js'
         }
       }
-
     },
 
     envify: {
@@ -43,9 +42,7 @@ module.exports = function (grunt) {
         src: './dist/rey.js',
         dest: './dist/rey.min.js'
       }
-
     }
-
   });
 
   grunt.loadNpmTasks('grunt-envify');

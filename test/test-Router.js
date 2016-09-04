@@ -10,7 +10,9 @@ const Dispatcher = require('../src/Dispatcher.js');
 
 describe('Router', () => {
 
-  jsdom();
+  jsdom({
+    url: 'http://localhost/'
+  });
 
   let dispatcher;
   let location;
