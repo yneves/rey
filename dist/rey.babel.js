@@ -52,11 +52,18 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
       'use strict';
 
+      var window = require('global/window');
+      var React = require('react');
+      var ReactDOM = require('react-dom');
+
+      window.React = React;
+      window.ReactDOM = ReactDOM;
+
       var Rey = require('./src/Rey.js');
       module.exports = new Rey();
 
       // - -------------------------------------------------------------------- - //
-    }, { "./src/Rey.js": 212 }], 2: [function (require, module, exports) {
+    }, { "./src/Rey.js": 212, "global/window": 38, "react": 198, "react-dom": 49 }], 2: [function (require, module, exports) {
       'use strict';
 
       module.exports = function (self) {

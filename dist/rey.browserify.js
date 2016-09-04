@@ -9,12 +9,19 @@
 
 'use strict';
 
+const window = require('global/window');
+const React = require('react');
+const ReactDOM = require('react-dom');
+
+window.React = React;
+window.ReactDOM = ReactDOM;
+
 const Rey = require('./src/Rey.js');
 module.exports = new Rey();
 
 // - -------------------------------------------------------------------- - //
 
-},{"./src/Rey.js":212}],2:[function(require,module,exports){
+},{"./src/Rey.js":212,"global/window":38,"react":198,"react-dom":49}],2:[function(require,module,exports){
 'use strict';
 module.exports = function (self) {
 	Object.getOwnPropertyNames(self.constructor.prototype).forEach(function (key) {
