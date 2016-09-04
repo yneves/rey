@@ -180,6 +180,18 @@ class Router extends StateHolder {
     return route;
   }
 
+  /**
+   * Exports route state to props object.
+   * @return {Object} props
+   */
+  toProps() {
+    return this.state.withMutations((route) => {
+      route.delete('controller');
+      route.delete('container');
+      return route;
+    }).toObject();
+  }
+
 };
 
 module.exports = Router;

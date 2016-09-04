@@ -11,7 +11,6 @@ describe('Utils', () => {
     assert.strictEqual(Utils.isArray([]), true);
     assert.strictEqual(Utils.isObject({}), true);
     assert.strictEqual(Utils.isObject([]), false);
-    assert.strictEqual(Utils.isStore({}), false);
     assert.strictEqual(Utils.isArguments([]), false);
     assert.strictEqual(Utils.isArguments(arguments), true);
   });

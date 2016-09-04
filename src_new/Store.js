@@ -110,6 +110,14 @@ class Store extends StateHolder {
     });
   }
 
+  /**
+   * Exports store state to props object.
+   * @return {Object} props
+   */
+  toProps() {
+    return this.state.toObject();
+  }
+
 };
 
 module.exports = Store;

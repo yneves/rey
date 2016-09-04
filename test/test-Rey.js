@@ -151,12 +151,12 @@ describe('Rey', () => {
         Location.activate();
         Router.activate();
         TodoAction.addTask('test');
-        // assert.deepEqual(parts, {
-        //   component: true,
-        //   action: true,
-        //   store: true,
-        //   componentTasks: true
-        // });
+        assert.deepEqual(parts, {
+          component: true,
+          action: true,
+          store: true,
+          componentTasks: true
+        });
         done();
       }]);
 

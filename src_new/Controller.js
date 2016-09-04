@@ -54,40 +54,29 @@ const Controller = React.createClass({
     return [].concat(this.props.actions);
   },
 
-  mapRouteToProps(router) {
-    return router.state.toObject();
-  },
-
-  mapStateToProps() {
-    let props = Immutable.Map();
-    Array.from(arguments).forEach(arg => {
-      props = props.merge(arg);
-    });
-    return props.toObject();
-  },
-
-  mapStoreToProps() {
-    const states = Array.from(arguments).map(store => store.state);
-    return this.mapStateToProps.apply(this, states);
-  },
-
-  mapActionsToProps() {
-    let props = Immutable.Map();
-    Array.from(arguments).map(arg => {
-      props = props.merge(arg);
-    });
-    return props.toObject();
-  },
-
   mapProps() {
-    let props = Immutable.Map();
-    const router = this.props.router;
-    const stores = this.getStores();
-    const actions = this.getActions();
-    props = props.merge(this.mapRouteToProps(router));
-    props = props.merge(this.mapStoreToProps(stores));
-    props = props.merge(this.mapActionsToProps(actions));
-    return props.toObject();
+    const props = {};
+
+    if (this.props.router) {
+      props.route = this.props.router.toProps();
+    }
+
+    this.getActions().forEach(actions => {
+      for (let key in actions) {
+        if (key !== 'extend' && key !== 'constructor') {
+          props[key] = actions[key];
+        }
+      }
+    });
+
+    this.getStores().forEach(store => {
+      const storeProps = store.toProps();
+      for (let key in storeProps) {
+        props[key] = storeProps[key];
+      }
+    });
+
+    return props;
   },
 
   render() {
