@@ -13,6 +13,7 @@ const document = require('global/document');
 const xhr = require('xhr');
 const React = require('react');
 const ReactDOM = require('react-dom');
+const ReactCSSTransitionGroup = require('react-addons-css-transition-group');
 
 const xtend = require('xtend');
 const autoBind = require('auto-bind');
@@ -93,6 +94,12 @@ class Rey extends EventEmitter {
       name: 'ReactDOM',
       type: 'core',
       factory: [() => ReactDOM]
+    });
+
+    this.deps.add({
+      name: 'ReactCSSTransitionGroup',
+      type: 'core',
+      factory: [() => ReactCSSTransitionGroup]
     });
 
     this.deps.add({

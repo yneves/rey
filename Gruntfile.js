@@ -11,7 +11,8 @@ module.exports = (grunt) => {
     babel: {
       distribute: {
         options: {
-          presets: ['es2015']
+          presets: ['es2015'],
+          compact: false
         },
         files: [{
           src: ['./dist/rey.browserify.js'],
