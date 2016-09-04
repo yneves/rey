@@ -36,7 +36,6 @@ class StateHolder {
    */
   constructor() {
     this.callbacks = new CallbackRegistry(callbackWrapper);
-    this.initialState = this.state;
     this.resetState();
   }
 
@@ -71,7 +70,7 @@ class StateHolder {
    * @return {Object} state
    */
   getInitialState() {
-    return this.initialState;
+    return Immutable.Map();
   }
 
   /**

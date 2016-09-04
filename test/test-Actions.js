@@ -21,13 +21,12 @@ describe('Actions', () => {
   it('should set and get actions', () => {
     const dispatcher = new Dispatcher();
     const actions = new Actions(dispatcher);
-    actions.setActions({
+    actions.extend({
       one: () => {},
       two: () => {}
     });
-    assert.strictEqual(typeof actions.getActions().one, 'function');
-    assert.strictEqual(typeof actions.getActions().two, 'function');
-    assert.strictEqual(Object.keys(actions.getActions()).length, 2);
+    assert.strictEqual(typeof actions.one, 'function');
+    assert.strictEqual(typeof actions.two, 'function');
   });
 
   it('should create actions', () => {

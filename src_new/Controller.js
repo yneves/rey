@@ -9,60 +9,78 @@
 'use strict';
 
 const React = require('react');
+const Immutable = require('Immutable');
 const Store = require('./Store.js');
 const Router = require('./Router.js');
 const Actions = require('./Actions.js');
 
-class Controller extends React.Component {
+const Controller = React.createClass({
+
+  displayName: 'Controller',
+
+  propTypes: {
+    component: React.PropTypes.any,
+    actions: React.PropTypes.oneOfType([
+      React.PropTypes.instanceOf(Actions),
+      React.PropTypes.arrayOf(React.PropTypes.instanceOf(Actions))
+    ]),
+    store: React.PropTypes.oneOfType([
+      React.PropTypes.instanceOf(Store),
+      React.PropTypes.arrayOf(React.PropTypes.instanceOf(Store))
+    ]),
+    router: React.PropTypes.instanceOf(Router)
+  },
+
+  getInitialState() {
+    return this.mapProps();
+  },
 
   componentWillMount() {
     const updateState = () => this.setState(this.mapProps());
     this.routerHandler = this.props.router.register(updateState);
     this.storeHandlers = this.getStores().map((store) => store.register(updateState));
-  }
+  },
 
   componentWillUnmount() {
     this.props.router.unregister(this.routerHandler);
     this.getStores.map((store, index) => store.unregister(this.storeHandlers[index]));
-  }
+  },
 
   getStores() {
     return [].concat(this.props.store);
-  }
+  },
 
   getActions() {
     return [].concat(this.props.actions);
-  }
+  },
 
   mapRouteToProps(router) {
     return router.state.toObject();
-  }
+  },
 
   mapStateToProps() {
-    const props = Immutable.Map();
+    let props = Immutable.Map();
     Array.from(arguments).forEach(arg => {
       props = props.merge(arg);
     });
     return props.toObject();
-  }
+  },
 
   mapStoreToProps() {
     const states = Array.from(arguments).map(store => store.state);
     return this.mapStateToProps.apply(this, states);
-  }
+  },
 
   mapActionsToProps() {
-    const props = Immutable.Map();
-    const router = this.props.router;
-    const stores = this.getStores();
+    let props = Immutable.Map();
     Array.from(arguments).map(arg => {
-      props = props.merge(arg.createActions(stores, router));
+      props = props.merge(arg);
     });
     return props.toObject();
-  }
+  },
 
   mapProps() {
-    const props = Immutable.Map();
+    let props = Immutable.Map();
     const router = this.props.router;
     const stores = this.getStores();
     const actions = this.getActions();
@@ -70,25 +88,12 @@ class Controller extends React.Component {
     props = props.merge(this.mapStoreToProps(stores));
     props = props.merge(this.mapActionsToProps(actions));
     return props.toObject();
-  }
+  },
 
   render() {
     return React.createElement(this.props.component, this.state);
   }
-};
-
-Controller.propTypes = {
-  component: React.PropTypes.func.isRequired,
-  actions: React.PropTypes.oneOfType([
-    React.PropTypes.instanceOf(Actions),
-    React.PropTypes.arrayOf(React.PropTypes.instanceOf(Actions))
-  ]),
-  store: React.PropTypes.oneOfType([
-    React.PropTypes.instanceOf(Store),
-    React.PropTypes.arrayOf(React.PropTypes.instanceOf(Store))
-  ]),
-  router: React.PropTypes.instanceOf(Router)
-};
+});
 
 module.exports = Controller;
 

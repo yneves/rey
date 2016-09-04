@@ -3,15 +3,23 @@
 'use strict';
 
 const assert = require('assert');
-const window = require('./mock/window.js');
+const jsdom = require('mocha-jsdom');
 const Router = require('../src_new/Router.js');
 const Location = require('../src_new/Location.js');
 const Dispatcher = require('../src_new/Dispatcher.js');
 
 describe('Router', () => {
 
-  const dispatcher = new Dispatcher();
-  const location = new Location(window);
+  jsdom();
+
+  let dispatcher;
+  let location;
+
+  before(() => {
+    dispatcher = new Dispatcher();
+    location = new Location(window);
+  });
+
 
   it('should require location and dispatcher', () => {
     assert.throws(() => {

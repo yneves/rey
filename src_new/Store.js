@@ -8,8 +8,16 @@
 
 'use strict';
 
+const Utils = require('./Utils.js');
 const Dispatcher = require('./Dispatcher.js');
 const StateHolder = require('./StateHolder.js');
+
+const reservedKeys = [
+  'constructor',
+  'registerHandler',
+  'actionHandler',
+  'attachStore'
+];
 
 /**
  * Class to represent a Store.
@@ -32,10 +40,17 @@ class Store extends StateHolder {
    * Activates the store by registering to handle actions.
    */
   activate() {
+    if (this.handler) {
+      throw new Error('store has been activated already');
+    }
+    this.resetState();
     this.handler = this.dispatcher.register((action) => {
       const actionHandler = this.getActionHandler();
-      if (actionHandler) {
-        actionHandler(action);
+      if (Utils.isFunction(actionHandler)) {
+        this.callActionHandler(actionHandler, action);
+      } else if (Utils.isObject(actionHandler)) {
+        const type = action.actionType || action.type;
+        this.callActionHandler(actionHandler[type], action);
       }
     });
   }
@@ -64,6 +79,35 @@ class Store extends StateHolder {
    */
   getActionHandler() {
     return this.actionHandler;
+  }
+
+  /**
+   * Calls the action handler.
+   * @private
+   * @param {Function} handler
+   * @param {Object} payload
+   */
+  callActionHandler(handler, action) {
+    if (!Utils.isFunction(handler)) {
+      return;
+    }
+    if (handler.length === 2) {
+      handler(this, action);
+    } else {
+      handler.call(this, action);
+    }
+  }
+
+  /**
+   * Extends the store with given methods.
+   * @param {Object} methods
+   */
+  extend(methods) {
+    Object.keys(methods).forEach(name => {
+      if (reservedKeys.indexOf(name) === -1) {
+        this[name] = methods[name].bind(this);
+      }
+    });
   }
 
 };

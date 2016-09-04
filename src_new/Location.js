@@ -36,18 +36,14 @@ class Location {
         this.callbacks.run(event.state.href);
       }
     };
-    if (this.window.addEventListener) {
-      this.window.addEventListener('popstate', this.handler);
-    }
+    this.window.addEventListener('popstate', this.handler);
   }
 
   /**
    * Stops monitoring history popstate event.
    */
   deactivate() {
-    if (this.window.removeEventListener) {
-      this.window.removeEventListener('popstate', this.handler);
-    }
+    this.window.removeEventListener('popstate', this.handler);
   }
 
   /**
@@ -63,7 +59,7 @@ class Location {
    * @param {String} url
    */
   set(href) {
-    this.window.location.href = href;
+    this.window.location.href;
   }
 
   /**

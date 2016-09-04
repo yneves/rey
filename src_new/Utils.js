@@ -8,11 +8,6 @@
 
 'use strict';
 
-const Store = require('./Store.js');
-const Actions = require('./Actions.js');
-const Router = require('./Router.js');
-const Dispatcher = require('./Dispatcher.js');
-
 const getObjectType = (arg) => {
   const type = Object.prototype.toString.call(arg);
   return type.substr(8, type.length - 9);
@@ -70,34 +65,6 @@ module.exports = {
 
   isArguments(arg) {
     return getObjectType(arg) === 'Arguments';
-  },
-
-  isStore(arg) {
-    return arg instanceof Store;
-  },
-
-  isActions(arg) {
-    return arg instanceof Actions;
-  },
-
-  isDispatcher(arg) {
-    return arg instanceof Dispatcher;
-  },
-
-  isRouter(arg) {
-    return arg instanceof Router;
-  },
-
-  isPromise() {
-
-  },
-
-  isComponent() {
-
-  },
-
-  isController() {
-
   }
 
 };

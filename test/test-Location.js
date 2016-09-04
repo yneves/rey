@@ -3,10 +3,12 @@
 'use strict';
 
 const assert = require('assert');
-const window = require('./mock/window.js');
+const jsdom = require('mocha-jsdom');
 const Location = require('../src_new/Location.js');
 
 describe('Location', () => {
+
+  jsdom();
 
   it('should require window object', () => {
     assert.throws(() => {

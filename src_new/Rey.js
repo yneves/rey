@@ -15,6 +15,7 @@ const Promise = require('bluebird');
 const React = require('react');
 const ReactDOM = require('react-dom');
 
+const xtend = require('xtend');
 const autoBind = require('auto-bind');
 const Immutable = require('immutable');
 const {EventEmitter} = require('events');
@@ -175,19 +176,7 @@ class Rey extends EventEmitter {
         }
       });
 
-      const ignoreKeys = [
-        'constructor',
-        'registerHandler',
-        'actionHandler',
-        'attachStore'
-      ];
-
-      Object.keys(storeOptions).forEach((key) => {
-        if (ignoreKeys.indexOf(key) === -1) {
-          store[key] = storeOptions[key];
-        }
-      });
-
+      store.extend(storeOptions);
       autoBind(store);
       return store;
     };
@@ -209,7 +198,7 @@ class Rey extends EventEmitter {
     const trace = new Error('actions: ' + name);
     const factory = (dispatcher) => {
       const actions = new Actions(dispatcher);
-      actions.setActions(this.deps.resolve(deps));
+      actions.extend(this.deps.resolve(deps));
       autoBind(actions);
       return actions;
     };
@@ -232,7 +221,8 @@ class Rey extends EventEmitter {
     const factory = (dispatcher, location, React, ReactDOM, document) => {
       const router = new Router(dispatcher, location);
       router.setRoutes(this.deps.resolve(deps));
-      router.register(route => {
+      router.register(() => {
+        const route = router.getState().toObject();
 
         if (Utils.isFunction(route.handler)) {
           route.handler(route);
@@ -250,11 +240,8 @@ class Rey extends EventEmitter {
           Utils.isFunction(route.container) ?
           route.container() : route.container;
 
-        const clone = React.cloneElement(controller, {
-          router: router
-        });
-
-        ReactDOM.render(clone, container);
+        const element = controller({ router });
+        ReactDOM.render(element, container);
       });
       autoBind(router);
       return router;
@@ -346,18 +333,18 @@ class Rey extends EventEmitter {
         this.deps.get(props.router) : Utils.isArray(props.router) ?
         this.deps.resolve(props.router) : props.router;
 
-      const controller = React.createElement(Controller, {
-        component,
-        store,
-        actions,
-        router
-      });
-
-      return controller;
+      return (props) => {
+        return React.createElement(Controller, xtend({
+          component,
+          store,
+          actions,
+          router
+        }, props));
+      };
     };
     this.deps.add({
       name,
-      type: 'router',
+      type: 'controller',
       factory: ['React', factory, trace]
     });
     return this;
