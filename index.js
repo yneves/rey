@@ -8,6 +8,13 @@
 
 'use strict';
 
+const window = require('global/window');
+const React = require('react');
+const ReactDOM = require('react-dom');
+
+window.React = React;
+window.ReactDOM = ReactDOM;
+
 const Rey = require('./src/Rey.js');
 module.exports = new Rey();
 
