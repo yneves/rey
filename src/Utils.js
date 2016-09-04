@@ -15,6 +15,10 @@ const getObjectType = (arg) => {
 
 module.exports = {
 
+  instanceOf(arg, cls) {
+    return arg instanceof cls;
+  },
+
   isString(arg) {
     return typeof arg === 'string' || arg instanceof Number;
   },

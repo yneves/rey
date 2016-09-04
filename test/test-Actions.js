@@ -3,8 +3,8 @@
 'use strict';
 
 const assert = require('assert');
-const Actions = require('../src_new/Actions.js');
-const Dispatcher = require('../src_new/Dispatcher.js');
+const Actions = require('../src/Actions.js');
+const Dispatcher = require('../src/Dispatcher.js');
 
 describe('Actions', () => {
 

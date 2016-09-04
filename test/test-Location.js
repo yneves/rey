@@ -4,7 +4,7 @@
 
 const assert = require('assert');
 const jsdom = require('mocha-jsdom');
-const Location = require('../src_new/Location.js');
+const Location = require('../src/Location.js');
 
 describe('Location', () => {
 

@@ -11,7 +11,6 @@
 const window = require('global/window');
 const document = require('global/document');
 const xhr = require('xhr');
-const Promise = require('bluebird');
 const React = require('react');
 const ReactDOM = require('react-dom');
 
@@ -28,6 +27,7 @@ const Router = require('./Router.js');
 const Controller = require('./Controller.js');
 const Dispatcher = require('./Dispatcher.js');
 const Location = require('./Location.js');
+const Promise = require('./Promise.js');
 const DependencyRegistry = require('./DependencyRegistry.js');
 
 
@@ -163,12 +163,12 @@ class Rey extends EventEmitter {
 
       // resolve and attach stores
       attachStores.forEach((attachStore) => {
-        if (Utils.isStore(attachStore)) {
+        if (Utils.instanceOf(attachStore, Store)) {
           store.attachStore(attachStore);
         } else if (Utils.isString(attachStore)) {
           store.attachStore(this.deps.get(attachStore));
         } else if (Utils.isArray(attachStore)) {
-          if (Utils.isStore(attachStore[1])) {
+          if (Utils.instanceOf(attachStore[1], Store)) {
             store.attachStore(attachStore[0], attachStore[1]);
           } else if (Utils.isString(attachStore[1])) {
             store.attachStore(attachStore[0], this.deps.get(attachStore[1]));

@@ -13,7 +13,7 @@ describe('Rey', () => {
 
   let Rey;
   before(() => {
-    Rey = require('../src_new/Rey.js');
+    Rey = require('../src/Rey.js');
   });
 
   it('constructor', () => {
@@ -159,7 +159,30 @@ describe('Rey', () => {
         });
         done();
       }]);
+  });
 
+  it('should attach stores', (done) => {
+    var rey = new Rey();
+    rey.store('ParentStore', [() => {
+      return {
+        attachStore: {
+          child: 'ChildStore'
+        }
+      };
+    }]);
+    rey.store('ChildStore', [() => {
+      return {};
+    }]);
+    rey.run(['ParentStore', 'ChildStore', (ParentStore, ChildStore) => {
+      var changed = false;
+      ParentStore.register(() => {
+        changed = true;
+      });
+      ChildStore.setState({ one: 1 });
+      assert.strictEqual(ParentStore.getState(['child', 'one']), 1);
+      assert.ok(changed);
+      done();
+    }]);
   });
 
 

@@ -3,7 +3,7 @@
 'use strict';
 
 const assert = require('assert');
-const DependencyRegistry = require('../src_new/DependencyRegistry.js');
+const DependencyRegistry = require('../src/DependencyRegistry.js');
 
 describe('DependencyRegistry', () => {
 

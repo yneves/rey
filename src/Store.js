@@ -16,7 +16,9 @@ const reservedKeys = [
   'constructor',
   'registerHandler',
   'actionHandler',
-  'attachStore'
+  'attachStore',
+  'attachedStores',
+  'detachStore'
 ];
 
 /**
@@ -34,6 +36,7 @@ class Store extends StateHolder {
     }
     super();
     this.dispatcher = dispatcher;
+    this.attachedStores = [];
   }
 
   /**
@@ -107,6 +110,42 @@ class Store extends StateHolder {
       if (reservedKeys.indexOf(name) === -1) {
         this[name] = methods[name].bind(this);
       }
+    });
+  }
+
+  /**
+   * Attaches another store to this store's state.
+   * @param {String} property
+   * @param {Store} store
+   * @return {Function} handler
+   */
+  attachStore(name, store) {
+    if (arguments.length === 1) {
+      store = name;
+      name = undefined;
+    }
+    const handler = store.register(state => {
+      if (name) {
+        this.setState([name], state);
+      } else {
+        this.setState(state);
+      }
+    });
+    this.attachedStores.push([name, store, handler]);
+    return handler;
+  }
+
+  /**
+   * Detaches a previously attached store from this store's state.
+   * @param {Store} store
+   */
+  detachStore(store) {
+    this.attachedStores = this.attachedStores.filter(entry => {
+      if (entry.store === store || entry.name === store || entry.handler === store) {
+        entry.store.unregister(entry.handler);
+        return false;
+      }
+      return true;
     });
   }
 

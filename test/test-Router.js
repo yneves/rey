@@ -4,9 +4,9 @@
 
 const assert = require('assert');
 const jsdom = require('mocha-jsdom');
-const Router = require('../src_new/Router.js');
-const Location = require('../src_new/Location.js');
-const Dispatcher = require('../src_new/Dispatcher.js');
+const Router = require('../src/Router.js');
+const Location = require('../src/Location.js');
+const Dispatcher = require('../src/Dispatcher.js');
 
 describe('Router', () => {
 

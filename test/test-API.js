@@ -6,7 +6,7 @@ const assert = require('assert');
 const Immutable = require('immutable');
 const xhr = require('xhr');
 const Promise = require('bluebird');
-const API = require('../src_new/API.js');
+const API = require('../src/API.js');
 
 describe('API', () => {
 

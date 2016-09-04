@@ -3,7 +3,7 @@
 'use strict';
 
 const assert = require('assert');
-const Utils = require('../src_new/Utils.js');
+const Utils = require('../src/Utils.js');
 
 describe('Utils', () => {
 

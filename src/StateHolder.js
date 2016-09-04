@@ -62,7 +62,7 @@ class StateHolder {
    * Runs all registered callbacks passing the object itself.
    */
   emitChange() {
-    this.callbacks.run(this);
+    this.callbacks.run(this.state);
   }
 
   /**
@@ -102,7 +102,7 @@ class StateHolder {
     if (length === 1) {
       this.state = this.state.merge(args[0]);
     } else if (length > 1) {
-      const path = concatPath(args, 1 );
+      const path = concatPath(args, 1);
       this.state = this.state.setIn(path, args[length - 1]);
     }
     this.emitChange();

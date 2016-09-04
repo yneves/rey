@@ -3,7 +3,7 @@
 'use strict';
 
 const assert = require('assert');
-const CallbackRegistry = require('../src_new/CallbackRegistry.js');
+const CallbackRegistry = require('../src/CallbackRegistry.js');
 
 describe('CallbackRegistry', () => {
 

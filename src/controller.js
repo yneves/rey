@@ -8,76 +8,82 @@
 
 'use strict';
 
-var factory = require('bauer-factory');
-var React = require('react-immutable');
+const React = require('react');
+const Immutable = require('Immutable');
+const Store = require('./Store.js');
+const Router = require('./Router.js');
+const Actions = require('./Actions.js');
 
-// - -------------------------------------------------------------------- - //
+const Controller = React.createClass({
 
-function defaultStoreChange (store) {
-  this.setState(store.getState());
-}
+  displayName: 'Controller',
 
-function createMixin (controller) {
-  var mixin = {};
-  var reserved = [
-    'storeDidChange',
-    'store',
-    'component',
-    'pageTitle'
-  ];
-  Object.keys(controller).forEach(function (key) {
-    if (reserved.indexOf(key) === -1) {
-      mixin[key] = controller[key];
+  propTypes: {
+    component: React.PropTypes.any,
+    actions: React.PropTypes.oneOfType([
+      React.PropTypes.instanceOf(Actions),
+      React.PropTypes.arrayOf(React.PropTypes.instanceOf(Actions))
+    ]),
+    store: React.PropTypes.oneOfType([
+      React.PropTypes.instanceOf(Store),
+      React.PropTypes.arrayOf(React.PropTypes.instanceOf(Store))
+    ]),
+    router: React.PropTypes.instanceOf(Router)
+  },
+
+  getInitialState() {
+    return this.mapProps();
+  },
+
+  componentWillMount() {
+    const updateState = () => this.setState(this.mapProps());
+    this.routerHandler = this.props.router.register(updateState);
+    this.storeHandlers = this.getStores().map((store) => store.register(updateState));
+  },
+
+  componentWillUnmount() {
+    this.props.router.unregister(this.routerHandler);
+    this.getStores.map((store, index) => store.unregister(this.storeHandlers[index]));
+  },
+
+  getStores() {
+    return [].concat(this.props.store);
+  },
+
+  getActions() {
+    return [].concat(this.props.actions);
+  },
+
+  mapProps() {
+    const props = {};
+
+    if (this.props.router) {
+      props.route = this.props.router.toProps();
     }
-  });
-  return mixin;
-}
 
-function createStoreMixin (store) {
-  if (!this.isStore(store)) {
-    store = this.inject(store);
-  }
-  if (this.isStore(store)) {
-    return store.createMixin();
-  }
-}
-
-module.exports = function createController (controller) {
-
-  var mixins = [createMixin(controller)];
-  if (this.isArray(controller.store)) {
-    mixins = mixins.concat(controller.store.map(createStoreMixin, this));
-  } else {
-    mixins.push(createStoreMixin.call(this, controller.store));
-  }
-
-  var storeDidChange = this.isFunction(controller.storeDidChange) ?
-    controller.storeDidChange : defaultStoreChange;
-
-  var component = this.isString(controller.component) ?
-    this.inject(controller.component) : controller.component;
-
-  return React.createClass({
-    displayName: name,
-    mixins: mixins,
-    storeDidChange: storeDidChange,
-    componentDidMount: function () {
-      if (controller.pageTitle) {
-        var pageTitle = factory.isFunction(controller.pageTitle) ?
-          controller.pageTitle.call(this) : controller.pageTitle;
-        this.previousTitle = document.title;
-        document.title = pageTitle;
+    this.getActions().forEach(actions => {
+      for (let key in actions) {
+        if (key !== 'extend' && key !== 'constructor') {
+          props[key] = actions[key];
+        }
       }
-    },
-    componentWillUnmount: function () {
-      if (this.previousTitle) {
-        document.title = this.previousTitle;
+    });
+
+    this.getStores().forEach(store => {
+      const storeProps = store.toProps();
+      for (let key in storeProps) {
+        props[key] = storeProps[key];
       }
-    },
-    render: function () {
-      return React.createElement(component, this.state);
-    }
-  });
-};
+    });
+
+    return props;
+  },
+
+  render() {
+    return React.createElement(this.props.component, this.state);
+  }
+});
+
+module.exports = Controller;
 
 // - -------------------------------------------------------------------- - //

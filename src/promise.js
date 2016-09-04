@@ -8,33 +8,32 @@
 
 'use strict';
 
-var factory = require('bauer-factory');
-var Immutable = require('immutable');
+const Promise = require('bluebird');
+const Immutable = require('immutable');
+const Utils = require('./Utils.js');
 
-function toState (stateHolder, propertyName) {
+Promise.prototype.toState = function(stateHolder, propertyName) {
 
-  if (!factory.isObject(stateHolder) || !factory.isFunction(stateHolder.setState)) {
+  if (!stateHolder || !Utils.isFunction(stateHolder.setState)) {
     throw new Error('state holder must have a setState method');
   }
 
-  if (!factory.isString(propertyName)) {
+  if (!Utils.isString(propertyName)) {
     throw new Error('state property name must be string');
   }
 
-  var promise = this;
-
-  function getState () {
+  const getState = () => {
     return Immutable.fromJS({
-      value: promise.isFulfilled() ? promise.value() : undefined,
-      reason: promise.isRejected() ? promise.reason() : undefined,
-      isFulfilled: promise.isFulfilled(),
-      isRejected: promise.isRejected(),
-      isPending: promise.isPending(),
-      isCancelled: promise.isCancelled()
+      value: this.isFulfilled() ? this.value() : undefined,
+      reason: this.isRejected() ? this.reason() : undefined,
+      isFulfilled: this.isFulfilled(),
+      isRejected: this.isRejected(),
+      isPending: this.isPending(),
+      isCancelled: this.isCancelled()
     })
-  }
+  };
 
-  function updateState (value) {
+  const updateState = (value) => {
     var newState = getState();
     if (Immutable.Map.isMap(stateHolder.state)) {
       stateHolder.setState(stateHolder.state.mergeIn([propertyName], newState));
@@ -44,19 +43,16 @@ function toState (stateHolder, propertyName) {
       stateHolder.setState(state);
     }
     return value;
-  }
+  };
 
   updateState();
 
-  return promise.bind(stateHolder)
+  return this.bind(stateHolder)
     .then(updateState)
     .catch(updateState)
     .finally(updateState);
 };
 
-module.exports = function (Promise) {
-  Promise.prototype.toState = toState;
-  return Promise;
-};
+module.exports = Promise;
 
 // - -------------------------------------------------------------------- - //

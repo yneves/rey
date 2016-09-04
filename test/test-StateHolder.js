@@ -3,7 +3,7 @@
 'use strict';
 
 const assert = require('assert');
-const StateHolder = require('../src_new/StateHolder.js');
+const StateHolder = require('../src/StateHolder.js');
 
 describe('StateHolder', () => {
 
