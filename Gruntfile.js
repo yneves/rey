@@ -8,6 +8,18 @@ module.exports = (grunt) => {
 
     package: grunt.file.readJSON('./package.json'),
 
+    babel: {
+      distribute: {
+        options: {
+          presets: ['es2015']
+        },
+        files: [{
+          src: ['./dist/rey.browserify.js'],
+          dest: './dist/rey.babel.js'
+        }]
+      }
+    },
+
     browserify: {
 
       distribute: {
@@ -18,7 +30,7 @@ module.exports = (grunt) => {
           }
         },
         files: {
-          './dist/rey.dev.js': './index.js'
+          './dist/rey.browserify.js': './index.js'
         }
       }
     },
@@ -31,7 +43,7 @@ module.exports = (grunt) => {
           }
         },
         files: {
-          './dist/rey.js': './dist/rey.dev.js'
+          './dist/rey.js': './dist/rey.babel.js'
         }
       }
     },
@@ -45,12 +57,14 @@ module.exports = (grunt) => {
     }
   });
 
+  grunt.loadNpmTasks('grunt-babel');
   grunt.loadNpmTasks('grunt-envify');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-uglify');
 
   grunt.registerTask('distribute', [
     'browserify:distribute',
+    'babel:distribute',
     'envify:distribute',
     'uglify:distribute'
   ]);
