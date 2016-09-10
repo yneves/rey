@@ -42,6 +42,8 @@ class Rey extends EventEmitter {
    */
   constructor() {
     super();
+    autoBind(this);
+
     this.deps = new DependencyRegistry();
 
     this.deps.add({
@@ -113,8 +115,6 @@ class Rey extends EventEmitter {
       type: 'core',
       factory: ['window', (window) => new Location(window)]
     });
-
-    autoBind(this);
   }
 
   /**
@@ -229,7 +229,7 @@ class Rey extends EventEmitter {
       const router = new Router(dispatcher, location);
       router.setRoutes(this.deps.resolve(deps));
       router.register(() => {
-        const route = router.getState().toObject();
+        const route = router.getState();
 
         if (Utils.isFunction(route.handler)) {
           route.handler(route);
@@ -247,7 +247,7 @@ class Rey extends EventEmitter {
           Utils.isFunction(route.container) ?
           route.container() : route.container;
 
-        const element = controller({ router });
+        const element = React.createElement(controller, { router });
         ReactDOM.render(element, container);
       });
       autoBind(router);
@@ -340,14 +340,34 @@ class Rey extends EventEmitter {
         this.deps.get(props.router) : Utils.isArray(props.router) ?
         this.deps.resolve(props.router) : props.router;
 
-      return (props) => {
-        return React.createElement(Controller, xtend({
-          component,
-          store,
-          actions,
-          router
-        }, props));
+      const defaultProps = {
+        component,
+        store,
+        actions,
+        router
       };
+
+      const componentMethods = {
+        displayName: name,
+        getDefaultProps() {
+          if (Utils.isFunction(props.getDefaultProps)) {
+            return xtend(defaultProps, props.getDefaultProps.call(this));
+          }
+          return defaultProps;
+        }
+      };
+
+      if (props.propTypes) {
+        componentMethods.propTypes = xtend(Controller.propTypes, props.propTypes);
+      }
+
+      Object.keys(props).forEach(prop => {
+        if (!defaultProps[prop] && prop !== 'getDefaultProps' && prop !== 'propTypes') {
+          componentMethods[prop] = props[prop];
+        }
+      });
+
+      return React.createClass(xtend(Controller, componentMethods));
     };
     this.deps.add({
       name,
@@ -402,7 +422,7 @@ class Rey extends EventEmitter {
    * @return {Rey} rey
    */
   load(deps) {
-    this.deps.resolve(deps);
+    this.deps.resolve(deps.concat(Utils.noop));
     return this;
   }
 

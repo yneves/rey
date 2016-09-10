@@ -17,11 +17,16 @@ window.React = React;
 window.ReactDOM = ReactDOM;
 
 const Rey = require('./src/Rey.js');
-module.exports = new Rey();
+const Utils = require('./src/Utils');
+const xtend = require('xtend');
+const deepExtend = require('deep-extend');
+const rey = new Rey();
+
+module.exports = xtend(rey, Utils, {extend: deepExtend});
 
 // - -------------------------------------------------------------------- - //
 
-},{"./src/Rey.js":212,"global/window":38,"react":198,"react-dom":49}],2:[function(require,module,exports){
+},{"./src/Rey.js":212,"./src/Utils":216,"deep-extend":8,"global/window":38,"react":198,"react-dom":49,"xtend":203}],2:[function(require,module,exports){
 'use strict';
 module.exports = function (self) {
 	Object.getOwnPropertyNames(self.constructor.prototype).forEach(function (key) {
@@ -36597,13 +36602,16 @@ class API {
    */
   request() {
     const options = this.prepare(Array.from(arguments));
-    return this.Promise.resolve(this.http.request(options))
-      .bind(this)
-      .then(function(response) {
+    const promise = new this.Promise((resolve, reject) => {
+      this.xhr(options, (error, response) => {
         if (response.statusCode === 200 && response.body) {
-          return Immutable.fromJS(JSON.parse(response.body));
+          resolve(Immutable.fromJS(response.body));
+        } else {
+          reject(error);
         }
       });
+    });
+    return promise.bind(this);
   }
 };
 
@@ -36810,9 +36818,9 @@ const Store = require('./Store.js');
 const Router = require('./Router.js');
 const Actions = require('./Actions.js');
 
-const Controller = React.createClass({
+const empty = [];
 
-  displayName: 'Controller',
+const Controller = {
 
   propTypes: {
     component: React.PropTypes.any,
@@ -36831,31 +36839,47 @@ const Controller = React.createClass({
     return this.mapProps();
   },
 
+  routeDidChange() {
+    this.setState(this.mapProps());
+  },
+
+  storeDidChange() {
+    this.setState(this.mapProps());
+  },
+
   componentWillMount() {
-    const updateState = () => this.setState(this.mapProps());
-    this.routerHandler = this.props.router.register(updateState);
-    this.storeHandlers = this.getStores().map((store) => store.register(updateState));
+    this.storeHandlers = this.getStores().map((store) => store.register(this.storeDidChange));
+    this.routerHandler = this.getRouters().map((router) => router.register(this.routeDidChange));
   },
 
   componentWillUnmount() {
-    this.props.router.unregister(this.routerHandler);
-    this.getStores.map((store, index) => store.unregister(this.storeHandlers[index]));
+    this.getStores().map((store, index) => store.unregister(this.storeHandlers[index]));
+    this.getRouters().map((store, index) => store.unregister(this.routerHandler[index]));
   },
 
   getStores() {
-    return [].concat(this.props.store);
+    if (!this.props.store) {
+      return empty;
+    }
+    return empty.concat(this.props.store);
   },
 
   getActions() {
-    return [].concat(this.props.actions);
+    if (!this.props.actions) {
+      return empty;
+    }
+    return empty.concat(this.props.actions);
+  },
+
+  getRouters() {
+    if (!this.props.router) {
+      return empty;
+    }
+    return empty.concat(this.props.router);
   },
 
   mapProps() {
     const props = {};
-
-    if (this.props.router) {
-      props.route = this.props.router.toProps();
-    }
 
     this.getActions().forEach(actions => {
       for (let key in actions) {
@@ -36872,13 +36896,26 @@ const Controller = React.createClass({
       }
     });
 
+    this.getRouters().forEach(router => {
+      const routerProps = router.toProps();
+      for (let key in routerProps) {
+        props[key] = routerProps[key];
+      }
+    });
+
+    for (let key in this.props) {
+      if (!Controller.propTypes[key]) {
+        props[key] = this.props[key];
+      }
+    }
+
     return props;
   },
 
   render() {
     return React.createElement(this.props.component, this.state);
   }
-});
+};
 
 module.exports = Controller;
 
@@ -37277,6 +37314,8 @@ class Rey extends EventEmitter {
    */
   constructor() {
     super();
+    autoBind(this);
+
     this.deps = new DependencyRegistry();
 
     this.deps.add({
@@ -37348,8 +37387,6 @@ class Rey extends EventEmitter {
       type: 'core',
       factory: ['window', (window) => new Location(window)]
     });
-
-    autoBind(this);
   }
 
   /**
@@ -37464,7 +37501,7 @@ class Rey extends EventEmitter {
       const router = new Router(dispatcher, location);
       router.setRoutes(this.deps.resolve(deps));
       router.register(() => {
-        const route = router.getState().toObject();
+        const route = router.getState();
 
         if (Utils.isFunction(route.handler)) {
           route.handler(route);
@@ -37482,7 +37519,7 @@ class Rey extends EventEmitter {
           Utils.isFunction(route.container) ?
           route.container() : route.container;
 
-        const element = controller({ router });
+        const element = React.createElement(controller, { router });
         ReactDOM.render(element, container);
       });
       autoBind(router);
@@ -37575,14 +37612,34 @@ class Rey extends EventEmitter {
         this.deps.get(props.router) : Utils.isArray(props.router) ?
         this.deps.resolve(props.router) : props.router;
 
-      return (props) => {
-        return React.createElement(Controller, xtend({
-          component,
-          store,
-          actions,
-          router
-        }, props));
+      const defaultProps = {
+        component,
+        store,
+        actions,
+        router
       };
+
+      const componentMethods = {
+        displayName: name,
+        getDefaultProps() {
+          if (Utils.isFunction(props.getDefaultProps)) {
+            return xtend(defaultProps, props.getDefaultProps.call(this));
+          }
+          return defaultProps;
+        }
+      };
+
+      if (props.propTypes) {
+        componentMethods.propTypes = xtend(Controller.propTypes, props.propTypes);
+      }
+
+      Object.keys(props).forEach(prop => {
+        if (!defaultProps[prop] && prop !== 'getDefaultProps' && prop !== 'propTypes') {
+          componentMethods[prop] = props[prop];
+        }
+      });
+
+      return React.createClass(xtend(Controller, componentMethods));
     };
     this.deps.add({
       name,
@@ -37637,7 +37694,7 @@ class Rey extends EventEmitter {
    * @return {Rey} rey
    */
   load(deps) {
-    this.deps.resolve(deps);
+    this.deps.resolve(deps.concat(Utils.noop));
     return this;
   }
 
@@ -37697,8 +37754,9 @@ class Router extends StateHolder {
 
   /**
    * Activates the store by hooking up dispatcher and location listeners.
+   * @param {String} href initial url
    */
-  activate() {
+  activate(initial) {
 
     this.locationHandler = this.location.register((href) => dispatch({
       actionType: 'ROUTER_CHANGE',
@@ -37716,7 +37774,8 @@ class Router extends StateHolder {
     });
 
     this.dispatcher.dispatch({
-      actionType: 'ROUTER_START'
+      actionType: 'ROUTER_START',
+      href: initial
     });
   }
 
@@ -37923,7 +37982,7 @@ class StateHolder {
    * Runs all registered callbacks passing the object itself.
    */
   emitChange() {
-    this.callbacks.run(this.state);
+    this.callbacks.run(this);
   }
 
   /**
@@ -37949,7 +38008,8 @@ class StateHolder {
    */
   getState() {
     const args = Array.from(arguments);
-    return args.length === 0 ? this.state : this.state.getIn(concatPath(args, 0));
+    return args.length === 0 ? this.state.toObject()
+      : this.state.getIn(concatPath(args, 0));
   }
 
   /**
@@ -38152,11 +38212,11 @@ class Store extends StateHolder {
       store = name;
       name = undefined;
     }
-    const handler = store.register(state => {
+    const handler = store.register(stateHolder => {
       if (name) {
-        this.setState([name], state);
+        this.setState([name], stateHolder.state);
       } else {
-        this.setState(state);
+        this.setState(stateHolder.state);
       }
     });
     this.attachedStores.push([name, store, handler]);
@@ -38182,7 +38242,7 @@ class Store extends StateHolder {
    * @return {Object} props
    */
   toProps() {
-    return this.state.toObject();
+    return this.getState();
   }
 
 };
@@ -38263,7 +38323,9 @@ module.exports = {
 
   isArguments(arg) {
     return getObjectType(arg) === 'Arguments';
-  }
+  },
+
+  noop() {}
 
 };
 

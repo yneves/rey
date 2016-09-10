@@ -86,13 +86,16 @@ class API {
    */
   request() {
     const options = this.prepare(Array.from(arguments));
-    return this.Promise.resolve(this.http.request(options))
-      .bind(this)
-      .then(function(response) {
+    const promise = new this.Promise((resolve, reject) => {
+      this.xhr(options, (error, response) => {
         if (response.statusCode === 200 && response.body) {
-          return Immutable.fromJS(JSON.parse(response.body));
+          resolve(Immutable.fromJS(response.body));
+        } else {
+          reject(error);
         }
       });
+    });
+    return promise.bind(this);
   }
 };
 

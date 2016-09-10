@@ -69,7 +69,9 @@ module.exports = {
 
   isArguments(arg) {
     return getObjectType(arg) === 'Arguments';
-  }
+  },
+
+  noop() {}
 
 };
 

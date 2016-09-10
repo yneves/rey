@@ -62,7 +62,7 @@ class StateHolder {
    * Runs all registered callbacks passing the object itself.
    */
   emitChange() {
-    this.callbacks.run(this.state);
+    this.callbacks.run(this);
   }
 
   /**
@@ -88,7 +88,8 @@ class StateHolder {
    */
   getState() {
     const args = Array.from(arguments);
-    return args.length === 0 ? this.state : this.state.getIn(concatPath(args, 0));
+    return args.length === 0 ? this.state.toObject()
+      : this.state.getIn(concatPath(args, 0));
   }
 
   /**

@@ -14,9 +14,9 @@ const Store = require('./Store.js');
 const Router = require('./Router.js');
 const Actions = require('./Actions.js');
 
-const Controller = React.createClass({
+const empty = [];
 
-  displayName: 'Controller',
+const Controller = {
 
   propTypes: {
     component: React.PropTypes.any,
@@ -35,31 +35,47 @@ const Controller = React.createClass({
     return this.mapProps();
   },
 
+  routeDidChange() {
+    this.setState(this.mapProps());
+  },
+
+  storeDidChange() {
+    this.setState(this.mapProps());
+  },
+
   componentWillMount() {
-    const updateState = () => this.setState(this.mapProps());
-    this.routerHandler = this.props.router.register(updateState);
-    this.storeHandlers = this.getStores().map((store) => store.register(updateState));
+    this.storeHandlers = this.getStores().map((store) => store.register(this.storeDidChange));
+    this.routerHandler = this.getRouters().map((router) => router.register(this.routeDidChange));
   },
 
   componentWillUnmount() {
-    this.props.router.unregister(this.routerHandler);
-    this.getStores.map((store, index) => store.unregister(this.storeHandlers[index]));
+    this.getStores().map((store, index) => store.unregister(this.storeHandlers[index]));
+    this.getRouters().map((store, index) => store.unregister(this.routerHandler[index]));
   },
 
   getStores() {
-    return [].concat(this.props.store);
+    if (!this.props.store) {
+      return empty;
+    }
+    return empty.concat(this.props.store);
   },
 
   getActions() {
-    return [].concat(this.props.actions);
+    if (!this.props.actions) {
+      return empty;
+    }
+    return empty.concat(this.props.actions);
+  },
+
+  getRouters() {
+    if (!this.props.router) {
+      return empty;
+    }
+    return empty.concat(this.props.router);
   },
 
   mapProps() {
     const props = {};
-
-    if (this.props.router) {
-      props.route = this.props.router.toProps();
-    }
 
     this.getActions().forEach(actions => {
       for (let key in actions) {
@@ -76,13 +92,26 @@ const Controller = React.createClass({
       }
     });
 
+    this.getRouters().forEach(router => {
+      const routerProps = router.toProps();
+      for (let key in routerProps) {
+        props[key] = routerProps[key];
+      }
+    });
+
+    for (let key in this.props) {
+      if (!Controller.propTypes[key]) {
+        props[key] = this.props[key];
+      }
+    }
+
     return props;
   },
 
   render() {
     return React.createElement(this.props.component, this.state);
   }
-});
+};
 
 module.exports = Controller;
 

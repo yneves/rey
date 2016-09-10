@@ -16,6 +16,11 @@ window.React = React;
 window.ReactDOM = ReactDOM;
 
 const Rey = require('./src/Rey.js');
-module.exports = new Rey();
+const Utils = require('./src/Utils');
+const xtend = require('xtend');
+const deepExtend = require('deep-extend');
+const rey = new Rey();
+
+module.exports = xtend(rey, Utils, {extend: deepExtend});
 
 // - -------------------------------------------------------------------- - //

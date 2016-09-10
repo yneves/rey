@@ -124,11 +124,11 @@ class Store extends StateHolder {
       store = name;
       name = undefined;
     }
-    const handler = store.register(state => {
+    const handler = store.register(stateHolder => {
       if (name) {
-        this.setState([name], state);
+        this.setState([name], stateHolder.state);
       } else {
-        this.setState(state);
+        this.setState(stateHolder.state);
       }
     });
     this.attachedStores.push([name, store, handler]);
@@ -154,7 +154,7 @@ class Store extends StateHolder {
    * @return {Object} props
    */
   toProps() {
-    return this.state.toObject();
+    return this.getState();
   }
 
 };

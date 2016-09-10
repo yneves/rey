@@ -60,10 +60,15 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       window.ReactDOM = ReactDOM;
 
       var Rey = require('./src/Rey.js');
-      module.exports = new Rey();
+      var Utils = require('./src/Utils');
+      var xtend = require('xtend');
+      var deepExtend = require('deep-extend');
+      var rey = new Rey();
+
+      module.exports = xtend(rey, Utils, { extend: deepExtend });
 
       // - -------------------------------------------------------------------- - //
-    }, { "./src/Rey.js": 212, "global/window": 38, "react": 198, "react-dom": 49 }], 2: [function (require, module, exports) {
+    }, { "./src/Rey.js": 212, "./src/Utils": 216, "deep-extend": 8, "global/window": 38, "react": 198, "react-dom": 49, "xtend": 203 }], 2: [function (require, module, exports) {
       'use strict';
 
       module.exports = function (self) {
@@ -36028,12 +36033,19 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "request",
           value: function request() {
+            var _this2 = this;
+
             var options = this.prepare(Array.from(arguments));
-            return this.Promise.resolve(this.http.request(options)).bind(this).then(function (response) {
-              if (response.statusCode === 200 && response.body) {
-                return Immutable.fromJS(JSON.parse(response.body));
-              }
+            var promise = new this.Promise(function (resolve, reject) {
+              _this2.xhr(options, function (error, response) {
+                if (response.statusCode === 200 && response.body) {
+                  resolve(Immutable.fromJS(response.body));
+                } else {
+                  reject(error);
+                }
+              });
             });
+            return promise.bind(this);
           }
         }]);
 
@@ -36087,12 +36099,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         _createClass(Actions, [{
           key: "extend",
           value: function extend(actions) {
-            var _this2 = this;
+            var _this3 = this;
 
             var dispatch = this.dispatcher.dispatch.bind(this.dispatcher);
             Object.keys(actions).forEach(function (name) {
               var code = actions[name];
-              _this2[name] = function () {
+              _this3[name] = function () {
                 var payload = code.apply(this, arguments);
                 if (typeof payload === 'string') {
                   payload = { actionType: payload };
@@ -36282,9 +36294,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       var Router = require('./Router.js');
       var Actions = require('./Actions.js');
 
-      var Controller = React.createClass({
+      var empty = [];
 
-        displayName: 'Controller',
+      var Controller = {
 
         propTypes: {
           component: React.PropTypes.any,
@@ -36296,37 +36308,52 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         getInitialState: function getInitialState() {
           return this.mapProps();
         },
+        routeDidChange: function routeDidChange() {
+          this.setState(this.mapProps());
+        },
+        storeDidChange: function storeDidChange() {
+          this.setState(this.mapProps());
+        },
         componentWillMount: function componentWillMount() {
-          var _this3 = this;
+          var _this4 = this;
 
-          var updateState = function updateState() {
-            return _this3.setState(_this3.mapProps());
-          };
-          this.routerHandler = this.props.router.register(updateState);
           this.storeHandlers = this.getStores().map(function (store) {
-            return store.register(updateState);
+            return store.register(_this4.storeDidChange);
+          });
+          this.routerHandler = this.getRouters().map(function (router) {
+            return router.register(_this4.routeDidChange);
           });
         },
         componentWillUnmount: function componentWillUnmount() {
-          var _this4 = this;
+          var _this5 = this;
 
-          this.props.router.unregister(this.routerHandler);
-          this.getStores.map(function (store, index) {
-            return store.unregister(_this4.storeHandlers[index]);
+          this.getStores().map(function (store, index) {
+            return store.unregister(_this5.storeHandlers[index]);
+          });
+          this.getRouters().map(function (store, index) {
+            return store.unregister(_this5.routerHandler[index]);
           });
         },
         getStores: function getStores() {
-          return [].concat(this.props.store);
+          if (!this.props.store) {
+            return empty;
+          }
+          return empty.concat(this.props.store);
         },
         getActions: function getActions() {
-          return [].concat(this.props.actions);
+          if (!this.props.actions) {
+            return empty;
+          }
+          return empty.concat(this.props.actions);
+        },
+        getRouters: function getRouters() {
+          if (!this.props.router) {
+            return empty;
+          }
+          return empty.concat(this.props.router);
         },
         mapProps: function mapProps() {
           var props = {};
-
-          if (this.props.router) {
-            props.route = this.props.router.toProps();
-          }
 
           this.getActions().forEach(function (actions) {
             for (var key in actions) {
@@ -36343,12 +36370,25 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }
           });
 
+          this.getRouters().forEach(function (router) {
+            var routerProps = router.toProps();
+            for (var key in routerProps) {
+              props[key] = routerProps[key];
+            }
+          });
+
+          for (var key in this.props) {
+            if (!Controller.propTypes[key]) {
+              props[key] = this.props[key];
+            }
+          }
+
           return props;
         },
         render: function render() {
           return React.createElement(this.props.component, this.state);
         }
-      });
+      };
 
       module.exports = Controller;
 
@@ -36604,11 +36644,11 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         _createClass(Location, [{
           key: "activate",
           value: function activate() {
-            var _this5 = this;
+            var _this6 = this;
 
             this.handler = function (event) {
               if (event && event.state) {
-                _this5.callbacks.run(event.state.href);
+                _this6.callbacks.run(event.state.href);
               }
             };
             this.window.addEventListener('popstate', this.handler);
@@ -36729,7 +36769,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       var Utils = require('./Utils.js');
 
       Promise.prototype.toState = function (stateHolder, propertyName) {
-        var _this6 = this;
+        var _this7 = this;
 
         if (!stateHolder || !Utils.isFunction(stateHolder.setState)) {
           throw new Error('state holder must have a setState method');
@@ -36741,12 +36781,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         var getState = function getState() {
           return Immutable.fromJS({
-            value: _this6.isFulfilled() ? _this6.value() : undefined,
-            reason: _this6.isRejected() ? _this6.reason() : undefined,
-            isFulfilled: _this6.isFulfilled(),
-            isRejected: _this6.isRejected(),
-            isPending: _this6.isPending(),
-            isCancelled: _this6.isCancelled()
+            value: _this7.isFulfilled() ? _this7.value() : undefined,
+            reason: _this7.isRejected() ? _this7.reason() : undefined,
+            isFulfilled: _this7.isFulfilled(),
+            isRejected: _this7.isRejected(),
+            isPending: _this7.isPending(),
+            isCancelled: _this7.isCancelled()
           });
         };
 
@@ -36821,11 +36861,13 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         function Rey() {
           _classCallCheck2(this, Rey);
 
-          var _this7 = _possibleConstructorReturn(this, (Rey.__proto__ || Object.getPrototypeOf(Rey)).call(this));
+          var _this8 = _possibleConstructorReturn(this, (Rey.__proto__ || Object.getPrototypeOf(Rey)).call(this));
 
-          _this7.deps = new DependencyRegistry();
+          autoBind(_this8);
 
-          _this7.deps.add({
+          _this8.deps = new DependencyRegistry();
+
+          _this8.deps.add({
             name: 'window',
             type: 'core',
             factory: [function () {
@@ -36833,7 +36875,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this7.deps.add({
+          _this8.deps.add({
             name: 'document',
             type: 'core',
             factory: [function () {
@@ -36841,7 +36883,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this7.deps.add({
+          _this8.deps.add({
             name: 'xhr',
             type: 'core',
             factory: [function () {
@@ -36849,7 +36891,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this7.deps.add({
+          _this8.deps.add({
             name: 'Promise',
             type: 'core',
             factory: [function () {
@@ -36857,7 +36899,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this7.deps.add({
+          _this8.deps.add({
             name: 'Immutable',
             type: 'core',
             factory: [function () {
@@ -36865,7 +36907,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this7.deps.add({
+          _this8.deps.add({
             name: 'React',
             type: 'core',
             factory: ['Immutable', function (Immutable) {
@@ -36877,7 +36919,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this7.deps.add({
+          _this8.deps.add({
             name: 'ReactDOM',
             type: 'core',
             factory: [function () {
@@ -36885,7 +36927,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this7.deps.add({
+          _this8.deps.add({
             name: 'ReactCSSTransitionGroup',
             type: 'core',
             factory: [function () {
@@ -36893,7 +36935,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this7.deps.add({
+          _this8.deps.add({
             name: 'Dispatcher',
             type: 'core',
             factory: [function () {
@@ -36901,16 +36943,14 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this7.deps.add({
+          _this8.deps.add({
             name: 'Location',
             type: 'core',
             factory: ['window', function (window) {
               return new Location(window);
             }]
           });
-
-          autoBind(_this7);
-          return _this7;
+          return _this8;
         }
 
         /**
@@ -36924,11 +36964,11 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         _createClass(Rey, [{
           key: "factory",
           value: function factory(name, deps) {
-            var _this8 = this;
+            var _this9 = this;
 
             var trace = new Error('factory: ' + name);
             var factory = function factory() {
-              return _this8.deps.resolve(deps);
+              return _this9.deps.resolve(deps);
             };
             this.deps.add({
               name: name,
@@ -36948,13 +36988,13 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "store",
           value: function store(name, deps) {
-            var _this9 = this;
+            var _this10 = this;
 
             var trace = new Error('store: ' + name);
             var factory = function factory(dispatcher) {
 
               var store = new Store(dispatcher);
-              var storeOptions = _this9.deps.resolve(deps);
+              var storeOptions = _this10.deps.resolve(deps);
 
               // set action handler
               if (storeOptions.registerHandler) {
@@ -36982,12 +37022,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
                 if (Utils.instanceOf(attachStore, Store)) {
                   store.attachStore(attachStore);
                 } else if (Utils.isString(attachStore)) {
-                  store.attachStore(_this9.deps.get(attachStore));
+                  store.attachStore(_this10.deps.get(attachStore));
                 } else if (Utils.isArray(attachStore)) {
                   if (Utils.instanceOf(attachStore[1], Store)) {
                     store.attachStore(attachStore[0], attachStore[1]);
                   } else if (Utils.isString(attachStore[1])) {
-                    store.attachStore(attachStore[0], _this9.deps.get(attachStore[1]));
+                    store.attachStore(attachStore[0], _this10.deps.get(attachStore[1]));
                   }
                 }
               });
@@ -37014,12 +37054,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "actions",
           value: function actions(name, deps) {
-            var _this10 = this;
+            var _this11 = this;
 
             var trace = new Error('actions: ' + name);
             var factory = function factory(dispatcher) {
               var actions = new Actions(dispatcher);
-              actions.extend(_this10.deps.resolve(deps));
+              actions.extend(_this11.deps.resolve(deps));
               autoBind(actions);
               return actions;
             };
@@ -37041,14 +37081,14 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "router",
           value: function router(name, deps) {
-            var _this11 = this;
+            var _this12 = this;
 
             var trace = new Error('router: ' + name);
             var factory = function factory(dispatcher, location, React, ReactDOM, document) {
               var router = new Router(dispatcher, location);
-              router.setRoutes(_this11.deps.resolve(deps));
+              router.setRoutes(_this12.deps.resolve(deps));
               router.register(function () {
-                var route = router.getState().toObject();
+                var route = router.getState();
 
                 if (Utils.isFunction(route.handler)) {
                   route.handler(route);
@@ -37056,12 +37096,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
                 }
 
                 // resolve the controller
-                var controller = Utils.isString(route.controller) ? _this11.deps.get(route.controller) : Utils.isArray(route.controller) ? _this11.deps.resolve(route.controller) : route.controller;
+                var controller = Utils.isString(route.controller) ? _this12.deps.get(route.controller) : Utils.isArray(route.controller) ? _this12.deps.resolve(route.controller) : route.controller;
 
                 // resolves the container
                 var container = Utils.isString(route.container) ? document.getElementById(route.container) : Utils.isFunction(route.container) ? route.container() : route.container;
 
-                var element = controller({ router: router });
+                var element = React.createElement(controller, { router: router });
                 ReactDOM.render(element, container);
               });
               autoBind(router);
@@ -37085,18 +37125,18 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "component",
           value: function component(name, deps) {
-            var _this12 = this;
+            var _this13 = this;
 
             var trace = new Error('component: ' + name);
             var factory = function factory(React) {
-              var component = _this12.deps.resolve(deps);
+              var component = _this13.deps.resolve(deps);
               if (!component.displayName) {
                 component.displayName = name;
               }
               if (Utils.isFunction(component.render)) {
                 (function () {
                   var render = component.render;
-                  var rey = _this12;
+                  var rey = _this13;
                   component.render = function () {
                     try {
                       return render.call(this);
@@ -37131,37 +37171,57 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "controller",
           value: function controller(name, deps) {
-            var _this13 = this;
+            var _this14 = this;
 
             var trace = new Error('controller: ' + name);
             var factory = function factory(React) {
 
-              var props = _this13.deps.resolve(deps);
+              var props = _this14.deps.resolve(deps);
 
               // resolve the component
-              var component = Utils.isString(props.component) ? _this13.deps.get(props.component) : Utils.isArray(props.component) ? _this13.deps.resolve(props.component) : props.component;
+              var component = Utils.isString(props.component) ? _this14.deps.get(props.component) : Utils.isArray(props.component) ? _this14.deps.resolve(props.component) : props.component;
 
               // resolve the stores
-              var store = Utils.isString(props.store) ? _this13.deps.get(props.store) : Utils.isArray(props.store) ? props.store.map(function (store) {
-                return Utils.isString(store) ? _this13.deps.get(store) : Utils.isArray(store) ? _this13.deps.resolve(store) : store;
+              var store = Utils.isString(props.store) ? _this14.deps.get(props.store) : Utils.isArray(props.store) ? props.store.map(function (store) {
+                return Utils.isString(store) ? _this14.deps.get(store) : Utils.isArray(store) ? _this14.deps.resolve(store) : store;
               }) : props.store;
 
               // resolve the actions
-              var actions = Utils.isString(props.actions) ? _this13.deps.get(props.actions) : Utils.isArray(props.actions) ? props.actions.map(function (actions) {
-                return Utils.isString(actions) ? _this13.deps.get(actions) : Utils.isArray(actions) ? _this13.deps.resolve(actions) : actions;
+              var actions = Utils.isString(props.actions) ? _this14.deps.get(props.actions) : Utils.isArray(props.actions) ? props.actions.map(function (actions) {
+                return Utils.isString(actions) ? _this14.deps.get(actions) : Utils.isArray(actions) ? _this14.deps.resolve(actions) : actions;
               }) : props.actions;
 
               // resolve the router
-              var router = Utils.isString(props.router) ? _this13.deps.get(props.router) : Utils.isArray(props.router) ? _this13.deps.resolve(props.router) : props.router;
+              var router = Utils.isString(props.router) ? _this14.deps.get(props.router) : Utils.isArray(props.router) ? _this14.deps.resolve(props.router) : props.router;
 
-              return function (props) {
-                return React.createElement(Controller, xtend({
-                  component: component,
-                  store: store,
-                  actions: actions,
-                  router: router
-                }, props));
+              var defaultProps = {
+                component: component,
+                store: store,
+                actions: actions,
+                router: router
               };
+
+              var componentMethods = {
+                displayName: name,
+                getDefaultProps: function getDefaultProps() {
+                  if (Utils.isFunction(props.getDefaultProps)) {
+                    return xtend(defaultProps, props.getDefaultProps.call(this));
+                  }
+                  return defaultProps;
+                }
+              };
+
+              if (props.propTypes) {
+                componentMethods.propTypes = xtend(Controller.propTypes, props.propTypes);
+              }
+
+              Object.keys(props).forEach(function (prop) {
+                if (!defaultProps[prop] && prop !== 'getDefaultProps' && prop !== 'propTypes') {
+                  componentMethods[prop] = props[prop];
+                }
+              });
+
+              return React.createClass(xtend(Controller, componentMethods));
             };
             this.deps.add({
               name: name,
@@ -37181,11 +37241,11 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "static",
           value: function _static(name, deps) {
-            var _this14 = this;
+            var _this15 = this;
 
             var trace = new Error('static: ' + name);
             var factory = function factory() {
-              return Immutable.fromJS(_this14.deps.resolve(deps));
+              return Immutable.fromJS(_this15.deps.resolve(deps));
             };
             this.deps.add({
               name: name,
@@ -37205,12 +37265,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "api",
           value: function api(name, deps) {
-            var _this15 = this;
+            var _this16 = this;
 
             var trace = new Error('api: ' + name);
             var factory = function factory(xhr, Promise) {
               var api = new API(xhr, Promise);
-              var methods = _this15.deps.resolve(deps);
+              var methods = _this16.deps.resolve(deps);
               api.extend(methods);
               return api;
             };
@@ -37231,7 +37291,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "load",
           value: function load(deps) {
-            this.deps.resolve(deps);
+            this.deps.resolve(deps.concat(Utils.noop));
             return this;
           }
 
@@ -37295,22 +37355,23 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             throw new Error('Location must be provided');
           }
 
-          var _this16 = _possibleConstructorReturn(this, (Router.__proto__ || Object.getPrototypeOf(Router)).call(this));
+          var _this17 = _possibleConstructorReturn(this, (Router.__proto__ || Object.getPrototypeOf(Router)).call(this));
 
-          _this16.location = location;
-          _this16.dispatcher = dispatcher;
-          return _this16;
+          _this17.location = location;
+          _this17.dispatcher = dispatcher;
+          return _this17;
         }
 
         /**
          * Activates the store by hooking up dispatcher and location listeners.
+         * @param {String} href initial url
          */
 
 
         _createClass(Router, [{
           key: "activate",
-          value: function activate() {
-            var _this17 = this;
+          value: function activate(initial) {
+            var _this18 = this;
 
             this.locationHandler = this.location.register(function (href) {
               return dispatch({
@@ -37324,13 +37385,14 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
                 case 'ROUTER_START':
                 case 'ROUTER_CHANGE':
                 case 'ROUTER_NAVIGATE':
-                  _this17.handleNavigation(payload.href);
+                  _this18.handleNavigation(payload.href);
                   break;
               }
             });
 
             this.dispatcher.dispatch({
-              actionType: 'ROUTER_START'
+              actionType: 'ROUTER_START',
+              href: initial
             });
           }
 
@@ -37581,7 +37643,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "emitChange",
           value: function emitChange() {
-            this.callbacks.run(this.state);
+            this.callbacks.run(this);
           }
 
           /**
@@ -37616,7 +37678,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           key: "getState",
           value: function getState() {
             var args = Array.from(arguments);
-            return args.length === 0 ? this.state : this.state.getIn(concatPath(args, 0));
+            return args.length === 0 ? this.state.toObject() : this.state.getIn(concatPath(args, 0));
           }
 
           /**
@@ -37742,11 +37804,11 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             throw new Error('Dispatcher must be provided');
           }
 
-          var _this18 = _possibleConstructorReturn(this, (Store.__proto__ || Object.getPrototypeOf(Store)).call(this));
+          var _this19 = _possibleConstructorReturn(this, (Store.__proto__ || Object.getPrototypeOf(Store)).call(this));
 
-          _this18.dispatcher = dispatcher;
-          _this18.attachedStores = [];
-          return _this18;
+          _this19.dispatcher = dispatcher;
+          _this19.attachedStores = [];
+          return _this19;
         }
 
         /**
@@ -37757,19 +37819,19 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         _createClass(Store, [{
           key: "activate",
           value: function activate() {
-            var _this19 = this;
+            var _this20 = this;
 
             if (this.handler) {
               throw new Error('store has been activated already');
             }
             this.resetState();
             this.handler = this.dispatcher.register(function (action) {
-              var actionHandler = _this19.getActionHandler();
+              var actionHandler = _this20.getActionHandler();
               if (Utils.isFunction(actionHandler)) {
-                _this19.callActionHandler(actionHandler, action);
+                _this20.callActionHandler(actionHandler, action);
               } else if (Utils.isObject(actionHandler)) {
                 var type = action.actionType || action.type;
-                _this19.callActionHandler(actionHandler[type], action);
+                _this20.callActionHandler(actionHandler[type], action);
               }
             });
           }
@@ -37837,11 +37899,11 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "extend",
           value: function extend(methods) {
-            var _this20 = this;
+            var _this21 = this;
 
             Object.keys(methods).forEach(function (name) {
               if (reservedKeys.indexOf(name) === -1) {
-                _this20[name] = methods[name].bind(_this20);
+                _this21[name] = methods[name].bind(_this21);
               }
             });
           }
@@ -37856,17 +37918,17 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "attachStore",
           value: function attachStore(name, store) {
-            var _this21 = this;
+            var _this22 = this;
 
             if (arguments.length === 1) {
               store = name;
               name = undefined;
             }
-            var handler = store.register(function (state) {
+            var handler = store.register(function (stateHolder) {
               if (name) {
-                _this21.setState([name], state);
+                _this22.setState([name], stateHolder.state);
               } else {
-                _this21.setState(state);
+                _this22.setState(stateHolder.state);
               }
             });
             this.attachedStores.push([name, store, handler]);
@@ -37898,7 +37960,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "toProps",
           value: function toProps() {
-            return this.state.toObject();
+            return this.getState();
           }
         }]);
 
@@ -37968,7 +38030,8 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         },
         isArguments: function isArguments(arg) {
           return getObjectType(arg) === 'Arguments';
-        }
+        },
+        noop: function noop() {}
       };
 
       // - -------------------------------------------------------------------- - //

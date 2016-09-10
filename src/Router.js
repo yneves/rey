@@ -37,8 +37,9 @@ class Router extends StateHolder {
 
   /**
    * Activates the store by hooking up dispatcher and location listeners.
+   * @param {String} href initial url
    */
-  activate() {
+  activate(initial) {
 
     this.locationHandler = this.location.register((href) => dispatch({
       actionType: 'ROUTER_CHANGE',
@@ -56,7 +57,8 @@ class Router extends StateHolder {
     });
 
     this.dispatcher.dispatch({
-      actionType: 'ROUTER_START'
+      actionType: 'ROUTER_START',
+      href: initial
     });
   }
 
