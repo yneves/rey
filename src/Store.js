@@ -40,12 +40,31 @@ class Store extends StateHolder {
   }
 
   /**
+   * Called before store is activated.
+   */
+  storeWillActivate() {
+  }
+
+  /**
+   * Called after store is activated.
+   */
+  storeDidActivate() {
+  }
+
+  /**
+   * Called before store is deactivated.
+   */
+  storeWillDeactivate() {
+  }
+
+  /**
    * Activates the store by registering to handle actions.
    */
   activate() {
     if (this.handler) {
       throw new Error('store has been activated already');
     }
+    this.storeWillActivate();
     this.resetState();
     this.handler = this.dispatcher.register((action) => {
       const actionHandler = this.getActionHandler();
@@ -56,15 +75,37 @@ class Store extends StateHolder {
         this.callActionHandler(actionHandler[type], action);
       }
     });
+    this.storeDidActivate();
   }
 
   /**
    * Activates the store by deregistering the action handler.
    */
   deactivate() {
+    this.storeWillDeactivate();
     if (this.handler) {
       this.dispatcher.unregister(this.handler);
       this.handler = undefined;
+    }
+  }
+
+  /**
+   * Activates the store only if its not activate yet
+   * and there's at least one callback registered.
+   */
+  autoActivate() {
+    if (!this.handler && this.callbacks.count()) {
+      this.activate();
+    }
+  }
+
+  /**
+   * Deactivates the store only if its been activated
+   * and there aren't any callbacks registered.
+   */
+  autoDeactivate() {
+    if (this.handler && !this.callbacks.count()) {
+      this.deactivate();
     }
   }
 

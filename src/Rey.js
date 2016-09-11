@@ -402,8 +402,8 @@ class Rey extends EventEmitter {
    */
   api(name, deps) {
     const trace = new Error('api: ' + name);
-    const factory = (xhr, Promise) => {
-      const api = new API(xhr, Promise);
+    const factory = (xhr, Promise, Location) => {
+      const api = new API(xhr, Promise, Location);
       const methods = this.deps.resolve(deps);
       api.extend(methods);
       return api;
@@ -411,7 +411,7 @@ class Rey extends EventEmitter {
     this.deps.add({
       name,
       type: 'api',
-      factory: ['xhr', 'Promise', factory, trace]
+      factory: ['xhr', 'Promise', 'Location', factory, trace]
     });
     return this;
   }

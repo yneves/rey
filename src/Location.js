@@ -8,6 +8,8 @@
 
 'use strict';
 
+const URLParser = require('url');
+const Utils = require('./Utils.js');
 const CallbackRegistry = require('./CallbackRegistry.js');
 
 /**
@@ -75,6 +77,9 @@ class Location {
    * @param {String} url
    */
   replace(href) {
+    if (Utils.isObject(href)) {
+      href = this.format(href);
+    }
     this.window.history.replaceState({href}, this.window.document.title, href);
   }
 
@@ -104,6 +109,24 @@ class Location {
    */
   unregister(callback) {
     return this.callbacks.remove(callback);
+  }
+
+  /**
+   * Parses the given url.
+   * @param {String} url
+   * @return {Object} parsed
+   */
+  parse(href) {
+    return URLParser.parse(href, true);
+  }
+
+  /**
+   * Formats given properties into an url.
+   * @param {Object} properties
+   * @return {String} url
+   */
+  format(href) {
+    return URLParser.format(href);
   }
 
 };

@@ -8,7 +8,6 @@
 
 'use strict';
 
-const URLParser = require('url');
 const Location = require('./Location.js');
 const Dispatcher = require('./Dispatcher.js');
 const StateHolder = require('./StateHolder.js');
@@ -127,7 +126,7 @@ class Router extends StateHolder {
    */
   matchRoute(href) {
     const routes = this.getRoutes();
-    const url = URLParser.parse(href, true);
+    const url = this.location.parse(href);
     let route;
 
     // Exact match

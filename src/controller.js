@@ -46,11 +46,13 @@ const Controller = {
   componentWillMount() {
     this.storeHandlers = this.getStores().map((store) => store.register(this.storeDidChange));
     this.routerHandler = this.getRouters().map((router) => router.register(this.routeDidChange));
+    this.getStores().map((store) => store.autoActivate());
   },
 
   componentWillUnmount() {
     this.getStores().map((store, index) => store.unregister(this.storeHandlers[index]));
     this.getRouters().map((store, index) => store.unregister(this.routerHandler[index]));
+    this.getStores().map((store) => store.autoDeactivate());
   },
 
   getStores() {

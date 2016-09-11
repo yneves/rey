@@ -35959,11 +35959,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         /**
          * Creates a new API wrapper.
          */
-        function API(xhr, Promise) {
+        function API(xhr, Promise, location) {
           _classCallCheck2(this, API);
 
           this.xhr = xhr;
           this.Promise = Promise;
+          this.location = location;
           this.defaults = {};
         }
 
@@ -36020,8 +36021,22 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
                 }
               }
             });
-            // console.log(args);
-            return deepExtend.apply(undefined, args);
+
+            var options = deepExtend.apply(undefined, args);
+
+            if (options.query) {
+              var parsed = Utils.isString(options.url) ? this.location.parse(options.url) : Utils.isObject(options.url) ? options.url : {};
+              parsed.query = options.query;
+              delete options.query;
+              options.url = this.location.format(parsed);
+            }
+
+            if (Utils.isObject(options.body)) {
+              options.json = options.body;
+              delete options.body;
+            }
+
+            return options;
           }
 
           /**
@@ -36323,6 +36338,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           this.routerHandler = this.getRouters().map(function (router) {
             return router.register(_this4.routeDidChange);
           });
+          this.getStores().map(function (store) {
+            return store.autoActivate();
+          });
         },
         componentWillUnmount: function componentWillUnmount() {
           var _this5 = this;
@@ -36332,6 +36350,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           });
           this.getRouters().map(function (store, index) {
             return store.unregister(_this5.routerHandler[index]);
+          });
+          this.getStores().map(function (store) {
+            return store.autoDeactivate();
           });
         },
         getStores: function getStores() {
@@ -36614,6 +36635,8 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
       'use strict';
 
+      var URLParser = require('url');
+      var Utils = require('./Utils.js');
       var CallbackRegistry = require('./CallbackRegistry.js');
 
       /**
@@ -36705,6 +36728,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "replace",
           value: function replace(href) {
+            if (Utils.isObject(href)) {
+              href = this.format(href);
+            }
             this.window.history.replaceState({ href: href }, this.window.document.title, href);
           }
 
@@ -36743,6 +36769,30 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           value: function unregister(callback) {
             return this.callbacks.remove(callback);
           }
+
+          /**
+           * Parses the given url.
+           * @param {String} url
+           * @return {Object} parsed
+           */
+
+        }, {
+          key: "parse",
+          value: function parse(href) {
+            return URLParser.parse(href, true);
+          }
+
+          /**
+           * Formats given properties into an url.
+           * @param {Object} properties
+           * @return {String} url
+           */
+
+        }, {
+          key: "format",
+          value: function format(href) {
+            return URLParser.format(href);
+          }
         }]);
 
         return Location;
@@ -36753,7 +36803,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       module.exports = Location;
 
       // - -------------------------------------------------------------------- - //
-    }, { "./CallbackRegistry.js": 206 }], 211: [function (require, module, exports) {
+    }, { "./CallbackRegistry.js": 206, "./Utils.js": 216, "url": 200 }], 211: [function (require, module, exports) {
       /*!
       **  rey -- React & Flux framework.
       **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -37268,8 +37318,8 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             var _this16 = this;
 
             var trace = new Error('api: ' + name);
-            var factory = function factory(xhr, Promise) {
-              var api = new API(xhr, Promise);
+            var factory = function factory(xhr, Promise, Location) {
+              var api = new API(xhr, Promise, Location);
               var methods = _this16.deps.resolve(deps);
               api.extend(methods);
               return api;
@@ -37277,7 +37327,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             this.deps.add({
               name: name,
               type: 'api',
-              factory: ['xhr', 'Promise', factory, trace]
+              factory: ['xhr', 'Promise', 'Location', factory, trace]
             });
             return this;
           }
@@ -37328,7 +37378,6 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
       'use strict';
 
-      var URLParser = require('url');
       var Location = require('./Location.js');
       var Dispatcher = require('./Dispatcher.js');
       var StateHolder = require('./StateHolder.js');
@@ -37481,7 +37530,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           key: "matchRoute",
           value: function matchRoute(href) {
             var routes = this.getRoutes();
-            var url = URLParser.parse(href, true);
+            var url = this.location.parse(href);
             var route = void 0;
 
             // Exact match
@@ -37563,7 +37612,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       module.exports = Router;
 
       // - -------------------------------------------------------------------- - //
-    }, { "./Dispatcher.js": 209, "./Location.js": 210, "./StateHolder.js": 214, "url": 200 }], 214: [function (require, module, exports) {
+    }, { "./Dispatcher.js": 209, "./Location.js": 210, "./StateHolder.js": 214 }], 214: [function (require, module, exports) {
       /*!
       **  rey -- React & Flux framework.
       **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -37812,11 +37861,35 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }
 
         /**
-         * Activates the store by registering to handle actions.
+         * Called before store is activated.
          */
 
 
         _createClass(Store, [{
+          key: "storeWillActivate",
+          value: function storeWillActivate() {}
+
+          /**
+           * Called after store is activated.
+           */
+
+        }, {
+          key: "storeDidActivate",
+          value: function storeDidActivate() {}
+
+          /**
+           * Called before store is deactivated.
+           */
+
+        }, {
+          key: "storeWillDeactivate",
+          value: function storeWillDeactivate() {}
+
+          /**
+           * Activates the store by registering to handle actions.
+           */
+
+        }, {
           key: "activate",
           value: function activate() {
             var _this20 = this;
@@ -37824,6 +37897,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             if (this.handler) {
               throw new Error('store has been activated already');
             }
+            this.storeWillActivate();
             this.resetState();
             this.handler = this.dispatcher.register(function (action) {
               var actionHandler = _this20.getActionHandler();
@@ -37834,6 +37908,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
                 _this20.callActionHandler(actionHandler[type], action);
               }
             });
+            this.storeDidActivate();
           }
 
           /**
@@ -37843,9 +37918,36 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "deactivate",
           value: function deactivate() {
+            this.storeWillDeactivate();
             if (this.handler) {
               this.dispatcher.unregister(this.handler);
               this.handler = undefined;
+            }
+          }
+
+          /**
+           * Activates the store only if its not activate yet
+           * and there's at least one callback registered.
+           */
+
+        }, {
+          key: "autoActivate",
+          value: function autoActivate() {
+            if (!this.handler && this.callbacks.count()) {
+              this.activate();
+            }
+          }
+
+          /**
+           * Deactivates the store only if its been activated
+           * and there aren't any callbacks registered.
+           */
+
+        }, {
+          key: "autoDeactivate",
+          value: function autoDeactivate() {
+            if (this.handler && !this.callbacks.count()) {
+              this.deactivate();
             }
           }
 

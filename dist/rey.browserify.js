@@ -36539,9 +36539,10 @@ class API {
   /**
    * Creates a new API wrapper.
    */
-  constructor(xhr, Promise) {
+  constructor(xhr, Promise, location) {
     this.xhr = xhr;
     this.Promise = Promise;
+    this.location = location;
     this.defaults = {};
   }
 
@@ -36591,8 +36592,24 @@ class API {
         }
       }
     });
-    // console.log(args);
-    return deepExtend.apply(undefined, args);
+
+    const options = deepExtend.apply(undefined, args);
+
+    if (options.query) {
+      const parsed = Utils.isString(options.url) ?
+        this.location.parse(options.url) : Utils.isObject(options.url) ?
+        options.url : {};
+      parsed.query = options.query;
+      delete options.query;
+      options.url = this.location.format(parsed);
+    }
+
+    if (Utils.isObject(options.body)) {
+      options.json = options.body;
+      delete options.body;
+    }
+
+    return options;
   }
 
   /**
@@ -36850,11 +36867,13 @@ const Controller = {
   componentWillMount() {
     this.storeHandlers = this.getStores().map((store) => store.register(this.storeDidChange));
     this.routerHandler = this.getRouters().map((router) => router.register(this.routeDidChange));
+    this.getStores().map((store) => store.autoActivate());
   },
 
   componentWillUnmount() {
     this.getStores().map((store, index) => store.unregister(this.storeHandlers[index]));
     this.getRouters().map((store, index) => store.unregister(this.routerHandler[index]));
+    this.getStores().map((store) => store.autoDeactivate());
   },
 
   getStores() {
@@ -37105,6 +37124,8 @@ module.exports = Dispatcher;
 
 'use strict';
 
+const URLParser = require('url');
+const Utils = require('./Utils.js');
 const CallbackRegistry = require('./CallbackRegistry.js');
 
 /**
@@ -37172,6 +37193,9 @@ class Location {
    * @param {String} url
    */
   replace(href) {
+    if (Utils.isObject(href)) {
+      href = this.format(href);
+    }
     this.window.history.replaceState({href}, this.window.document.title, href);
   }
 
@@ -37203,13 +37227,31 @@ class Location {
     return this.callbacks.remove(callback);
   }
 
+  /**
+   * Parses the given url.
+   * @param {String} url
+   * @return {Object} parsed
+   */
+  parse(href) {
+    return URLParser.parse(href, true);
+  }
+
+  /**
+   * Formats given properties into an url.
+   * @param {Object} properties
+   * @return {String} url
+   */
+  format(href) {
+    return URLParser.format(href);
+  }
+
 };
 
 module.exports = Location;
 
 // - -------------------------------------------------------------------- - //
 
-},{"./CallbackRegistry.js":206}],211:[function(require,module,exports){
+},{"./CallbackRegistry.js":206,"./Utils.js":216,"url":200}],211:[function(require,module,exports){
 /*!
 **  rey -- React & Flux framework.
 **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -37674,8 +37716,8 @@ class Rey extends EventEmitter {
    */
   api(name, deps) {
     const trace = new Error('api: ' + name);
-    const factory = (xhr, Promise) => {
-      const api = new API(xhr, Promise);
+    const factory = (xhr, Promise, Location) => {
+      const api = new API(xhr, Promise, Location);
       const methods = this.deps.resolve(deps);
       api.extend(methods);
       return api;
@@ -37683,7 +37725,7 @@ class Rey extends EventEmitter {
     this.deps.add({
       name,
       type: 'api',
-      factory: ['xhr', 'Promise', factory, trace]
+      factory: ['xhr', 'Promise', 'Location', factory, trace]
     });
     return this;
   }
@@ -37725,7 +37767,6 @@ module.exports = Rey;
 
 'use strict';
 
-const URLParser = require('url');
 const Location = require('./Location.js');
 const Dispatcher = require('./Dispatcher.js');
 const StateHolder = require('./StateHolder.js');
@@ -37844,7 +37885,7 @@ class Router extends StateHolder {
    */
   matchRoute(href) {
     const routes = this.getRoutes();
-    const url = URLParser.parse(href, true);
+    const url = this.location.parse(href);
     let route;
 
     // Exact match
@@ -37917,7 +37958,7 @@ module.exports = Router;
 
 // - -------------------------------------------------------------------- - //
 
-},{"./Dispatcher.js":209,"./Location.js":210,"./StateHolder.js":214,"url":200}],214:[function(require,module,exports){
+},{"./Dispatcher.js":209,"./Location.js":210,"./StateHolder.js":214}],214:[function(require,module,exports){
 /*!
 **  rey -- React & Flux framework.
 **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -38128,12 +38169,31 @@ class Store extends StateHolder {
   }
 
   /**
+   * Called before store is activated.
+   */
+  storeWillActivate() {
+  }
+
+  /**
+   * Called after store is activated.
+   */
+  storeDidActivate() {
+  }
+
+  /**
+   * Called before store is deactivated.
+   */
+  storeWillDeactivate() {
+  }
+
+  /**
    * Activates the store by registering to handle actions.
    */
   activate() {
     if (this.handler) {
       throw new Error('store has been activated already');
     }
+    this.storeWillActivate();
     this.resetState();
     this.handler = this.dispatcher.register((action) => {
       const actionHandler = this.getActionHandler();
@@ -38144,15 +38204,37 @@ class Store extends StateHolder {
         this.callActionHandler(actionHandler[type], action);
       }
     });
+    this.storeDidActivate();
   }
 
   /**
    * Activates the store by deregistering the action handler.
    */
   deactivate() {
+    this.storeWillDeactivate();
     if (this.handler) {
       this.dispatcher.unregister(this.handler);
       this.handler = undefined;
+    }
+  }
+
+  /**
+   * Activates the store only if its not activate yet
+   * and there's at least one callback registered.
+   */
+  autoActivate() {
+    if (!this.handler && this.callbacks.count()) {
+      this.activate();
+    }
+  }
+
+  /**
+   * Deactivates the store only if its been activated
+   * and there aren't any callbacks registered.
+   */
+  autoDeactivate() {
+    if (this.handler && !this.callbacks.count()) {
+      this.deactivate();
     }
   }
 
