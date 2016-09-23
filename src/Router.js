@@ -41,7 +41,7 @@ class Router extends StateHolder {
   activate(initial) {
 
     this.locationHandler = this.location.register((href) => {
-      this.dispacher.dispatch({
+      this.dispatcher.dispatch({
         actionType: 'ROUTER_CHANGE',
         href: href
       });
