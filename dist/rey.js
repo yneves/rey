@@ -37429,7 +37429,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             var _this18 = this;
 
             this.locationHandler = this.location.register(function (href) {
-              _this18.dispacher.dispatch({
+              _this18.dispatcher.dispatch({
                 actionType: 'ROUTER_CHANGE',
                 href: href
               });
