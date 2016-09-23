@@ -36717,6 +36717,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "push",
           value: function push(href) {
+            if (Utils.isObject(href)) {
+              href = this.format(href);
+            }
             this.window.history.pushState({ href: href }, this.window.document.title, href);
           }
 
@@ -36779,6 +36782,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "parse",
           value: function parse(href) {
+            if (Utils.isObject(href)) {
+              href = this.format(href);
+            }
             return URLParser.parse(href, true);
           }
 
@@ -37423,7 +37429,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             var _this18 = this;
 
             this.locationHandler = this.location.register(function (href) {
-              return dispatch({
+              _this18.dispacher.dispatch({
                 actionType: 'ROUTER_CHANGE',
                 href: href
               });

@@ -37185,6 +37185,9 @@ class Location {
    * @param {String} url
    */
   push(href) {
+    if (Utils.isObject(href)) {
+      href = this.format(href);
+    }
     this.window.history.pushState({href}, this.window.document.title, href);
   }
 
@@ -37205,7 +37208,6 @@ class Location {
   back() {
     this.window.history.back();
   }
-
 
   /**
    * Registers a callback to be executed when history changes.
@@ -37233,6 +37235,9 @@ class Location {
    * @return {Object} parsed
    */
   parse(href) {
+    if (Utils.isObject(href)) {
+      href = this.format(href);
+    }
     return URLParser.parse(href, true);
   }
 
@@ -37799,10 +37804,12 @@ class Router extends StateHolder {
    */
   activate(initial) {
 
-    this.locationHandler = this.location.register((href) => dispatch({
-      actionType: 'ROUTER_CHANGE',
-      href: href
-    }));
+    this.locationHandler = this.location.register((href) => {
+      this.dispacher.dispatch({
+        actionType: 'ROUTER_CHANGE',
+        href: href
+      });
+    });
 
     this.dispatcherHandler = this.dispatcher.register(payload => {
       switch (payload.actionType) {
