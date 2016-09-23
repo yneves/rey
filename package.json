@@ -6,6 +6,9 @@
     "name": "Yuri Neves Silveira",
     "email": "yurinevessilveira@gmail.com"
   },
+  "scripts": {
+    "test": "mocha"
+  },
   "main": "./index.js",
   "dependencies": {
     "auto-bind": "^0.1.0",

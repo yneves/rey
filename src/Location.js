@@ -69,6 +69,9 @@ class Location {
    * @param {String} url
    */
   push(href) {
+    if (Utils.isObject(href)) {
+      href = this.format(href);
+    }
     this.window.history.pushState({href}, this.window.document.title, href);
   }
 
@@ -89,7 +92,6 @@ class Location {
   back() {
     this.window.history.back();
   }
-
 
   /**
    * Registers a callback to be executed when history changes.
@@ -117,6 +119,9 @@ class Location {
    * @return {Object} parsed
    */
   parse(href) {
+    if (Utils.isObject(href)) {
+      href = this.format(href);
+    }
     return URLParser.parse(href, true);
   }
 
