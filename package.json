@@ -22,6 +22,7 @@
     "grunt-browserify": "^5.0.0",
     "grunt-contrib-uglify": "^2.0.0",
     "grunt-envify": "^0.1.0",
+    "immutable": "^3.8.1",
     "jsdom": "^9.5.0",
     "mocha": "^3.0.2",
     "mocha-jsdom": "^1.1.0",
