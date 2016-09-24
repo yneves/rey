@@ -9,7 +9,7 @@
 'use strict';
 
 const React = require('react');
-const Immutable = require('Immutable');
+const Immutable = require('immutable');
 const Store = require('./Store.js');
 const Router = require('./Router.js');
 const Actions = require('./Actions.js');
