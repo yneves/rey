@@ -15185,8 +15185,10 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       function getFallbackBeforeInputChars(topLevelType, nativeEvent) {
         // If we are currently composing (IME) and using a fallback to do so,
         // try to extract the composed characters from the fallback object.
+        // If composition event is available, we extract a string only at
+        // compositionevent, otherwise extract it at fallback events.
         if (currentComposition) {
-          if (topLevelType === topLevelTypes.topCompositionEnd || isFallbackCompositionEnd(topLevelType, nativeEvent)) {
+          if (topLevelType === topLevelTypes.topCompositionEnd || !canUseCompositionEvent && isFallbackCompositionEnd(topLevelType, nativeEvent)) {
             var chars = currentComposition.getData();
             FallbackCompositionState.release(currentComposition);
             currentComposition = null;
@@ -15808,7 +15810,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       var doesChangeEventBubble = false;
       if (ExecutionEnvironment.canUseDOM) {
         // See `handleChange` comment below
-        doesChangeEventBubble = isEventSupported('change') && (!('documentMode' in document) || document.documentMode > 8);
+        doesChangeEventBubble = isEventSupported('change') && (!document.documentMode || document.documentMode > 8);
       }
 
       function manualDispatchChangeEvent(nativeEvent) {
@@ -15874,7 +15876,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         // deleting text, so we ignore its input events.
         // IE10+ fire input events to often, such when a placeholder
         // changes or when an input with a placeholder is focused.
-        isInputEventSupported = isEventSupported('input') && (!('documentMode' in document) || document.documentMode > 11);
+        isInputEventSupported = isEventSupported('input') && (!document.documentMode || document.documentMode > 11);
       }
 
       /**
@@ -18187,6 +18189,8 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           allowFullScreen: HAS_BOOLEAN_VALUE,
           allowTransparency: 0,
           alt: 0,
+          // specifies target context for links with `preload` type
+          as: 0,
           async: HAS_BOOLEAN_VALUE,
           autoComplete: 0,
           // autoFocus is polyfilled/normalized by AutoFocusUtils
@@ -18267,6 +18271,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           optimum: 0,
           pattern: 0,
           placeholder: 0,
+          playsInline: HAS_BOOLEAN_VALUE,
           poster: 0,
           preload: 0,
           profile: 0,
@@ -19071,6 +19076,19 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         },
 
         /**
+         * Protect against document.createEvent() returning null
+         * Some popup blocker extensions appear to do this:
+         * https://github.com/facebook/react/issues/6887
+         */
+        supportsEventPageXY: function supportsEventPageXY() {
+          if (!document.createEvent) {
+            return false;
+          }
+          var ev = document.createEvent('MouseEvent');
+          return ev != null && 'pageX' in ev;
+        },
+
+        /**
          * Listens to window scroll and resize events. We cache scroll values so that
          * application code can access them without triggering reflows.
          *
@@ -19083,7 +19101,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
          */
         ensureScrollValueMonitoring: function ensureScrollValueMonitoring() {
           if (hasEventPageXY === undefined) {
-            hasEventPageXY = document.createEvent && 'pageX' in document.createEvent('MouseEvent');
+            hasEventPageXY = ReactBrowserEventEmitter.supportsEventPageXY();
           }
           if (!hasEventPageXY && !isMonitoringScrollValue) {
             var refresh = ViewportMetrics.refreshScrollValues;
@@ -21091,34 +21109,29 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           }
         }
 
-        function invokeComponentDidMountWithTimer() {
-          var publicInstance = this._instance;
-          if (this._debugID !== 0) {
-            ReactInstrumentation.debugTool.onBeginLifeCycleTimer(this._debugID, 'componentDidMount');
-          }
-          publicInstance.componentDidMount();
-          if (this._debugID !== 0) {
-            ReactInstrumentation.debugTool.onEndLifeCycleTimer(this._debugID, 'componentDidMount');
-          }
-        }
-
-        function invokeComponentDidUpdateWithTimer(prevProps, prevState, prevContext) {
-          var publicInstance = this._instance;
-          if (this._debugID !== 0) {
-            ReactInstrumentation.debugTool.onBeginLifeCycleTimer(this._debugID, 'componentDidUpdate');
-          }
-          publicInstance.componentDidUpdate(prevProps, prevState, prevContext);
-          if (this._debugID !== 0) {
-            ReactInstrumentation.debugTool.onEndLifeCycleTimer(this._debugID, 'componentDidUpdate');
-          }
-        }
-
         function shouldConstruct(Component) {
           return !!(Component.prototype && Component.prototype.isReactComponent);
         }
 
         function isPureComponent(Component) {
           return !!(Component.prototype && Component.prototype.isPureReactComponent);
+        }
+
+        // Separated into a function to contain deoptimizations caused by try/finally.
+        function measureLifeCyclePerf(fn, debugID, timerType) {
+          if (debugID === 0) {
+            // Top-level wrappers (see ReactMount) and empty components (see
+            // ReactDOMEmptyComponent) are invisible to hooks and devtools.
+            // Both are implementation details that should go away in the future.
+            return fn();
+          }
+
+          ReactInstrumentation.debugTool.onBeginLifeCycleTimer(debugID, timerType);
+          try {
+            return fn();
+          } finally {
+            ReactInstrumentation.debugTool.onEndLifeCycleTimer(debugID, timerType);
+          }
         }
 
         /**
@@ -21212,6 +21225,8 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
            * @internal
            */
           mountComponent: function mountComponent(transaction, hostParent, hostContainerInfo, context) {
+            var _this = this;
+
             this._context = context;
             this._mountOrder = nextMountID++;
             this._hostParent = hostParent;
@@ -21301,7 +21316,11 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
             if (inst.componentDidMount) {
               if (process.env.NODE_ENV !== 'production') {
-                transaction.getReactMountReady().enqueue(invokeComponentDidMountWithTimer, this);
+                transaction.getReactMountReady().enqueue(function () {
+                  measureLifeCyclePerf(function () {
+                    return inst.componentDidMount();
+                  }, _this._debugID, 'componentDidMount');
+                });
               } else {
                 transaction.getReactMountReady().enqueue(inst.componentDidMount, inst);
               }
@@ -21325,35 +21344,26 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
           _constructComponentWithoutOwner: function _constructComponentWithoutOwner(doConstruct, publicProps, publicContext, updateQueue) {
             var Component = this._currentElement.type;
-            var instanceOrElement;
+
             if (doConstruct) {
               if (process.env.NODE_ENV !== 'production') {
-                if (this._debugID !== 0) {
-                  ReactInstrumentation.debugTool.onBeginLifeCycleTimer(this._debugID, 'ctor');
-                }
-              }
-              instanceOrElement = new Component(publicProps, publicContext, updateQueue);
-              if (process.env.NODE_ENV !== 'production') {
-                if (this._debugID !== 0) {
-                  ReactInstrumentation.debugTool.onEndLifeCycleTimer(this._debugID, 'ctor');
-                }
-              }
-            } else {
-              // This can still be an instance in case of factory components
-              // but we'll count this as time spent rendering as the more common case.
-              if (process.env.NODE_ENV !== 'production') {
-                if (this._debugID !== 0) {
-                  ReactInstrumentation.debugTool.onBeginLifeCycleTimer(this._debugID, 'render');
-                }
-              }
-              instanceOrElement = Component(publicProps, publicContext, updateQueue);
-              if (process.env.NODE_ENV !== 'production') {
-                if (this._debugID !== 0) {
-                  ReactInstrumentation.debugTool.onEndLifeCycleTimer(this._debugID, 'render');
-                }
+                return measureLifeCyclePerf(function () {
+                  return new Component(publicProps, publicContext, updateQueue);
+                }, this._debugID, 'ctor');
+              } else {
+                return new Component(publicProps, publicContext, updateQueue);
               }
             }
-            return instanceOrElement;
+
+            // This can still be an instance in case of factory components
+            // but we'll count this as time spent rendering as the more common case.
+            if (process.env.NODE_ENV !== 'production') {
+              return measureLifeCyclePerf(function () {
+                return Component(publicProps, publicContext, updateQueue);
+              }, this._debugID, 'render');
+            } else {
+              return Component(publicProps, publicContext, updateQueue);
+            }
           },
 
           performInitialMountWithErrorHandling: function performInitialMountWithErrorHandling(renderedElement, hostParent, hostContainerInfo, transaction, context) {
@@ -21362,11 +21372,6 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             try {
               markup = this.performInitialMount(renderedElement, hostParent, hostContainerInfo, transaction, context);
             } catch (e) {
-              if (process.env.NODE_ENV !== 'production') {
-                if (this._debugID !== 0) {
-                  ReactInstrumentation.debugTool.onError();
-                }
-              }
               // Roll back to checkpoint, handle error (which may add items to the transaction), and take a new checkpoint
               transaction.rollback(checkpoint);
               this._instance.unstable_handleError(e);
@@ -21387,17 +21392,19 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
           performInitialMount: function performInitialMount(renderedElement, hostParent, hostContainerInfo, transaction, context) {
             var inst = this._instance;
+
+            var debugID = 0;
+            if (process.env.NODE_ENV !== 'production') {
+              debugID = this._debugID;
+            }
+
             if (inst.componentWillMount) {
               if (process.env.NODE_ENV !== 'production') {
-                if (this._debugID !== 0) {
-                  ReactInstrumentation.debugTool.onBeginLifeCycleTimer(this._debugID, 'componentWillMount');
-                }
-              }
-              inst.componentWillMount();
-              if (process.env.NODE_ENV !== 'production') {
-                if (this._debugID !== 0) {
-                  ReactInstrumentation.debugTool.onEndLifeCycleTimer(this._debugID, 'componentWillMount');
-                }
+                measureLifeCyclePerf(function () {
+                  return inst.componentWillMount();
+                }, debugID, 'componentWillMount');
+              } else {
+                inst.componentWillMount();
               }
               // When mounting, calls to `setState` by `componentWillMount` will set
               // `this._pendingStateQueue` without triggering a re-render.
@@ -21417,15 +21424,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             );
             this._renderedComponent = child;
 
-            var selfDebugID = 0;
-            if (process.env.NODE_ENV !== 'production') {
-              selfDebugID = this._debugID;
-            }
-            var markup = ReactReconciler.mountComponent(child, transaction, hostParent, hostContainerInfo, this._processChildContext(context), selfDebugID);
+            var markup = ReactReconciler.mountComponent(child, transaction, hostParent, hostContainerInfo, this._processChildContext(context), debugID);
 
             if (process.env.NODE_ENV !== 'production') {
-              if (this._debugID !== 0) {
-                ReactInstrumentation.debugTool.onSetChildren(this._debugID, child._debugID !== 0 ? [child._debugID] : []);
+              if (debugID !== 0) {
+                var childDebugIDs = child._debugID !== 0 ? [child._debugID] : [];
+                ReactInstrumentation.debugTool.onSetChildren(debugID, childDebugIDs);
               }
             }
 
@@ -21446,24 +21450,22 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             if (!this._renderedComponent) {
               return;
             }
+
             var inst = this._instance;
 
             if (inst.componentWillUnmount && !inst._calledComponentWillUnmount) {
               inst._calledComponentWillUnmount = true;
-              if (process.env.NODE_ENV !== 'production') {
-                if (this._debugID !== 0) {
-                  ReactInstrumentation.debugTool.onBeginLifeCycleTimer(this._debugID, 'componentWillUnmount');
-                }
-              }
+
               if (safely) {
                 var name = this.getName() + '.componentWillUnmount()';
                 ReactErrorUtils.invokeGuardedCallback(name, inst.componentWillUnmount.bind(inst));
               } else {
-                inst.componentWillUnmount();
-              }
-              if (process.env.NODE_ENV !== 'production') {
-                if (this._debugID !== 0) {
-                  ReactInstrumentation.debugTool.onEndLifeCycleTimer(this._debugID, 'componentWillUnmount');
+                if (process.env.NODE_ENV !== 'production') {
+                  measureLifeCyclePerf(function () {
+                    return inst.componentWillUnmount();
+                  }, this._debugID, 'componentWillUnmount');
+                } else {
+                  inst.componentWillUnmount();
                 }
               }
             }
@@ -21550,13 +21552,21 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           _processChildContext: function _processChildContext(currentContext) {
             var Component = this._currentElement.type;
             var inst = this._instance;
-            if (process.env.NODE_ENV !== 'production') {
-              ReactInstrumentation.debugTool.onBeginProcessingChildContext();
+            var childContext;
+
+            if (inst.getChildContext) {
+              if (process.env.NODE_ENV !== 'production') {
+                ReactInstrumentation.debugTool.onBeginProcessingChildContext();
+                try {
+                  childContext = inst.getChildContext();
+                } finally {
+                  ReactInstrumentation.debugTool.onEndProcessingChildContext();
+                }
+              } else {
+                childContext = inst.getChildContext();
+              }
             }
-            var childContext = inst.getChildContext && inst.getChildContext();
-            if (process.env.NODE_ENV !== 'production') {
-              ReactInstrumentation.debugTool.onEndProcessingChildContext();
-            }
+
             if (childContext) {
               !(_typeof(Component.childContextTypes) === 'object') ? process.env.NODE_ENV !== 'production' ? invariant(false, '%s.getChildContext(): childContextTypes must be defined in order to use getChildContext().', this.getName() || 'ReactCompositeComponent') : _prodInvariant('107', this.getName() || 'ReactCompositeComponent') : void 0;
               if (process.env.NODE_ENV !== 'production') {
@@ -21651,15 +21661,11 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             // immediately reconciled instead of waiting for the next batch.
             if (willReceive && inst.componentWillReceiveProps) {
               if (process.env.NODE_ENV !== 'production') {
-                if (this._debugID !== 0) {
-                  ReactInstrumentation.debugTool.onBeginLifeCycleTimer(this._debugID, 'componentWillReceiveProps');
-                }
-              }
-              inst.componentWillReceiveProps(nextProps, nextContext);
-              if (process.env.NODE_ENV !== 'production') {
-                if (this._debugID !== 0) {
-                  ReactInstrumentation.debugTool.onEndLifeCycleTimer(this._debugID, 'componentWillReceiveProps');
-                }
+                measureLifeCyclePerf(function () {
+                  return inst.componentWillReceiveProps(nextProps, nextContext);
+                }, this._debugID, 'componentWillReceiveProps');
+              } else {
+                inst.componentWillReceiveProps(nextProps, nextContext);
               }
             }
 
@@ -21669,15 +21675,11 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             if (!this._pendingForceUpdate) {
               if (inst.shouldComponentUpdate) {
                 if (process.env.NODE_ENV !== 'production') {
-                  if (this._debugID !== 0) {
-                    ReactInstrumentation.debugTool.onBeginLifeCycleTimer(this._debugID, 'shouldComponentUpdate');
-                  }
-                }
-                shouldUpdate = inst.shouldComponentUpdate(nextProps, nextState, nextContext);
-                if (process.env.NODE_ENV !== 'production') {
-                  if (this._debugID !== 0) {
-                    ReactInstrumentation.debugTool.onEndLifeCycleTimer(this._debugID, 'shouldComponentUpdate');
-                  }
+                  shouldUpdate = measureLifeCyclePerf(function () {
+                    return inst.shouldComponentUpdate(nextProps, nextState, nextContext);
+                  }, this._debugID, 'shouldComponentUpdate');
+                } else {
+                  shouldUpdate = inst.shouldComponentUpdate(nextProps, nextState, nextContext);
                 }
               } else {
                 if (this._compositeType === CompositeTypes.PureClass) {
@@ -21743,6 +21745,8 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
            * @private
            */
           _performComponentUpdate: function _performComponentUpdate(nextElement, nextProps, nextState, nextContext, transaction, unmaskedContext) {
+            var _this2 = this;
+
             var inst = this._instance;
 
             var hasComponentDidUpdate = Boolean(inst.componentDidUpdate);
@@ -21757,15 +21761,11 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
             if (inst.componentWillUpdate) {
               if (process.env.NODE_ENV !== 'production') {
-                if (this._debugID !== 0) {
-                  ReactInstrumentation.debugTool.onBeginLifeCycleTimer(this._debugID, 'componentWillUpdate');
-                }
-              }
-              inst.componentWillUpdate(nextProps, nextState, nextContext);
-              if (process.env.NODE_ENV !== 'production') {
-                if (this._debugID !== 0) {
-                  ReactInstrumentation.debugTool.onEndLifeCycleTimer(this._debugID, 'componentWillUpdate');
-                }
+                measureLifeCyclePerf(function () {
+                  return inst.componentWillUpdate(nextProps, nextState, nextContext);
+                }, this._debugID, 'componentWillUpdate');
+              } else {
+                inst.componentWillUpdate(nextProps, nextState, nextContext);
               }
             }
 
@@ -21779,7 +21779,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
             if (hasComponentDidUpdate) {
               if (process.env.NODE_ENV !== 'production') {
-                transaction.getReactMountReady().enqueue(invokeComponentDidUpdateWithTimer.bind(this, prevProps, prevState, prevContext), this);
+                transaction.getReactMountReady().enqueue(function () {
+                  measureLifeCyclePerf(inst.componentDidUpdate.bind(inst, prevProps, prevState, prevContext), _this2._debugID, 'componentDidUpdate');
+                });
               } else {
                 transaction.getReactMountReady().enqueue(inst.componentDidUpdate.bind(inst, prevProps, prevState, prevContext), inst);
               }
@@ -21796,6 +21798,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             var prevComponentInstance = this._renderedComponent;
             var prevRenderedElement = prevComponentInstance._currentElement;
             var nextRenderedElement = this._renderValidatedComponent();
+
+            var debugID = 0;
+            if (process.env.NODE_ENV !== 'production') {
+              debugID = this._debugID;
+            }
+
             if (shouldUpdateReactComponent(prevRenderedElement, nextRenderedElement)) {
               ReactReconciler.receiveComponent(prevComponentInstance, nextRenderedElement, transaction, this._processChildContext(context));
             } else {
@@ -21808,15 +21816,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
               );
               this._renderedComponent = child;
 
-              var selfDebugID = 0;
-              if (process.env.NODE_ENV !== 'production') {
-                selfDebugID = this._debugID;
-              }
-              var nextMarkup = ReactReconciler.mountComponent(child, transaction, this._hostParent, this._hostContainerInfo, this._processChildContext(context), selfDebugID);
+              var nextMarkup = ReactReconciler.mountComponent(child, transaction, this._hostParent, this._hostContainerInfo, this._processChildContext(context), debugID);
 
               if (process.env.NODE_ENV !== 'production') {
-                if (this._debugID !== 0) {
-                  ReactInstrumentation.debugTool.onSetChildren(this._debugID, child._debugID !== 0 ? [child._debugID] : []);
+                if (debugID !== 0) {
+                  var childDebugIDs = child._debugID !== 0 ? [child._debugID] : [];
+                  ReactInstrumentation.debugTool.onSetChildren(debugID, childDebugIDs);
                 }
               }
 
@@ -21838,17 +21843,14 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
            */
           _renderValidatedComponentWithoutOwnerOrContext: function _renderValidatedComponentWithoutOwnerOrContext() {
             var inst = this._instance;
+            var renderedComponent;
 
             if (process.env.NODE_ENV !== 'production') {
-              if (this._debugID !== 0) {
-                ReactInstrumentation.debugTool.onBeginLifeCycleTimer(this._debugID, 'render');
-              }
-            }
-            var renderedComponent = inst.render();
-            if (process.env.NODE_ENV !== 'production') {
-              if (this._debugID !== 0) {
-                ReactInstrumentation.debugTool.onEndLifeCycleTimer(this._debugID, 'render');
-              }
+              renderedComponent = measureLifeCyclePerf(function () {
+                return inst.render();
+              }, this._debugID, 'render');
+            } else {
+              renderedComponent = inst.render();
             }
 
             if (process.env.NODE_ENV !== 'production') {
@@ -21899,7 +21901,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             var publicComponentInstance = component.getPublicInstance();
             if (process.env.NODE_ENV !== 'production') {
               var componentName = component && component.getName ? component.getName() : 'a component';
-              process.env.NODE_ENV !== 'production' ? warning(publicComponentInstance != null, 'Stateless function components cannot be given refs ' + '(See ref "%s" in %s created by %s). ' + 'Attempts to access this ref will fail.', ref, componentName, this.getName()) : void 0;
+              process.env.NODE_ENV !== 'production' ? warning(publicComponentInstance != null || component._compositeType !== CompositeTypes.StatelessFunctional, 'Stateless function components cannot be given refs ' + '(See ref "%s" in %s created by %s). ' + 'Attempts to access this ref will fail.', ref, componentName, this.getName()) : void 0;
             }
             var refs = inst.refs === emptyObject ? inst.refs = {} : inst.refs;
             refs[ref] = publicComponentInstance;
@@ -22327,9 +22329,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           ReactDOMOption.postMountWrapper(inst);
         }
 
-        var setContentChildForInstrumentation = emptyFunction;
+        var setAndValidateContentChildDev = emptyFunction;
         if (process.env.NODE_ENV !== 'production') {
-          setContentChildForInstrumentation = function setContentChildForInstrumentation(content) {
+          setAndValidateContentChildDev = function setAndValidateContentChildDev(content) {
             var hasExistingContent = this._contentDebugID != null;
             var debugID = this._debugID;
             // This ID represents the inlined child that has no backing instance:
@@ -22343,6 +22345,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
               return;
             }
 
+            validateDOMNesting(null, String(content), this, this._ancestorInfo);
             this._contentDebugID = contentDebugID;
             if (hasExistingContent) {
               ReactInstrumentation.debugTool.onBeforeUpdateComponent(contentDebugID, content);
@@ -22517,7 +22520,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           this._flags = 0;
           if (process.env.NODE_ENV !== 'production') {
             this._ancestorInfo = null;
-            setContentChildForInstrumentation.call(this, null);
+            setAndValidateContentChildDev.call(this, null);
           }
         }
 
@@ -22617,7 +22620,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
               if (parentInfo) {
                 // parentInfo should always be present except for the top-level
                 // component when server rendering
-                validateDOMNesting(this._tag, this, parentInfo);
+                validateDOMNesting(this._tag, null, this, parentInfo);
               }
               this._ancestorInfo = validateDOMNesting.updatedAncestorInfo(parentInfo, this._tag, this);
             }
@@ -22786,7 +22789,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
                 // TODO: Validate that text is allowed as a child of this node
                 ret = escapeTextContentForBrowser(contentToUse);
                 if (process.env.NODE_ENV !== 'production') {
-                  setContentChildForInstrumentation.call(this, contentToUse);
+                  setAndValidateContentChildDev.call(this, contentToUse);
                 }
               } else if (childrenToUse != null) {
                 var mountImages = this.mountChildren(childrenToUse, transaction, context);
@@ -22823,7 +22826,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
               if (contentToUse != null) {
                 // TODO: Validate that text is allowed as a child of this node
                 if (process.env.NODE_ENV !== 'production') {
-                  setContentChildForInstrumentation.call(this, contentToUse);
+                  setAndValidateContentChildDev.call(this, contentToUse);
                 }
                 DOMLazyTree.queueText(lazyTree, contentToUse);
               } else if (childrenToUse != null) {
@@ -23055,7 +23058,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
               if (lastContent !== nextContent) {
                 this.updateTextContent('' + nextContent);
                 if (process.env.NODE_ENV !== 'production') {
-                  setContentChildForInstrumentation.call(this, nextContent);
+                  setAndValidateContentChildDev.call(this, nextContent);
                 }
               }
             } else if (nextHtml != null) {
@@ -23067,7 +23070,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
               }
             } else if (nextChildren != null) {
               if (process.env.NODE_ENV !== 'production') {
-                setContentChildForInstrumentation.call(this, null);
+                setAndValidateContentChildDev.call(this, null);
               }
 
               this.updateChildren(nextChildren, transaction, context);
@@ -23122,7 +23125,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             this._wrapperState = null;
 
             if (process.env.NODE_ENV !== 'production') {
-              setContentChildForInstrumentation.call(this, null);
+              setAndValidateContentChildDev.call(this, null);
             }
           },
 
@@ -23713,7 +23716,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         function isControlled(props) {
           var usesChecked = props.type === 'checkbox' || props.type === 'radio';
-          return usesChecked ? props.checked !== undefined : props.value !== undefined;
+          return usesChecked ? props.checked != null : props.value != null;
         }
 
         /**
@@ -24608,7 +24611,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
               if (parentInfo) {
                 // parentInfo should always be present except for the top-level
                 // component when server rendering
-                validateDOMNesting('#text', this, parentInfo);
+                validateDOMNesting(null, this._stringText, this, parentInfo);
               }
             }
 
@@ -25352,12 +25355,6 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             endLifeCycleTimer(debugID, timerType);
             emitEvent('onEndLifeCycleTimer', debugID, timerType);
           },
-          onError: function onError(debugID) {
-            if (currentTimerDebugID != null) {
-              endLifeCycleTimer(currentTimerDebugID, currentTimerType);
-            }
-            emitEvent('onError', debugID);
-          },
           onBeginProcessingChildContext: function onBeginProcessingChildContext() {
             emitEvent('onBeginProcessingChildContext');
           },
@@ -25768,14 +25765,6 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           var source = null;
 
           if (config != null) {
-            if (process.env.NODE_ENV !== 'production') {
-              process.env.NODE_ENV !== 'production' ? warning(
-              /* eslint-disable no-proto */
-              config.__proto__ == null || config.__proto__ === Object.prototype,
-              /* eslint-enable no-proto */
-              'React.createElement(...): Expected props argument to be a plain object. ' + 'Properties defined in its prototype chain will be ignored.') : void 0;
-            }
-
             if (hasValidRef(config)) {
               ref = config.ref;
             }
@@ -25876,14 +25865,6 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           var owner = element._owner;
 
           if (config != null) {
-            if (process.env.NODE_ENV !== 'production') {
-              process.env.NODE_ENV !== 'production' ? warning(
-              /* eslint-disable no-proto */
-              config.__proto__ == null || config.__proto__ === Object.prototype,
-              /* eslint-enable no-proto */
-              'React.cloneElement(...): Expected props argument to be a plain object. ' + 'Properties defined in its prototype chain will be ignored.') : void 0;
-            }
-
             if (hasValidRef(config)) {
               // Silently steal the ref from the parent.
               ref = config.ref;
@@ -30341,7 +30322,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
       'use strict';
 
-      module.exports = '15.3.1';
+      module.exports = '15.3.2';
     }, {}], 148: [function (require, module, exports) {
       /**
        * Copyright 2013-present, Facebook, Inc.
@@ -30681,7 +30662,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             bubbled: keyOf({ onSelect: null }),
             captured: keyOf({ onSelectCapture: null })
           },
-          dependencies: [topLevelTypes.topBlur, topLevelTypes.topContextMenu, topLevelTypes.topFocus, topLevelTypes.topKeyDown, topLevelTypes.topMouseDown, topLevelTypes.topMouseUp, topLevelTypes.topSelectionChange]
+          dependencies: [topLevelTypes.topBlur, topLevelTypes.topContextMenu, topLevelTypes.topFocus, topLevelTypes.topKeyDown, topLevelTypes.topKeyUp, topLevelTypes.topMouseDown, topLevelTypes.topMouseUp, topLevelTypes.topSelectionChange]
         }
       };
 
@@ -31750,7 +31731,8 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
             if (event.preventDefault) {
               event.preventDefault();
-            } else {
+            } else if (typeof event.returnValue !== 'unknown') {
+              // eslint-disable-line valid-typeof
               event.returnValue = false;
             }
             this.isDefaultPrevented = emptyFunction.thatReturnsTrue;
@@ -34155,9 +34137,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         if (node.namespaceURI === DOMNamespaces.svg && !('innerHTML' in node)) {
           reusableSVGContainer = reusableSVGContainer || document.createElement('div');
           reusableSVGContainer.innerHTML = '<svg>' + html + '</svg>';
-          var newNodes = reusableSVGContainer.firstChild.childNodes;
-          for (var i = 0; i < newNodes.length; i++) {
-            node.appendChild(newNodes[i]);
+          var svgNode = reusableSVGContainer.firstChild;
+          while (svgNode.firstChild) {
+            node.appendChild(svgNode.firstChild);
           }
         } else {
           node.innerHTML = html;
@@ -34767,10 +34749,15 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
           var didWarn = {};
 
-          validateDOMNesting = function validateDOMNesting(childTag, childInstance, ancestorInfo) {
+          validateDOMNesting = function validateDOMNesting(childTag, childText, childInstance, ancestorInfo) {
             ancestorInfo = ancestorInfo || emptyAncestorInfo;
             var parentInfo = ancestorInfo.current;
             var parentTag = parentInfo && parentInfo.tag;
+
+            if (childText != null) {
+              process.env.NODE_ENV !== 'production' ? warning(childTag == null, 'validateDOMNesting: when childText is passed, childTag should be null') : void 0;
+              childTag = '#text';
+            }
 
             var invalidParent = isTagValidWithParent(childTag, parentTag) ? null : parentInfo;
             var invalidAncestor = invalidParent ? null : findInvalidAncestorForTag(childTag, ancestorInfo);
@@ -34819,7 +34806,15 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
               didWarn[warnKey] = true;
 
               var tagDisplayName = childTag;
-              if (childTag !== '#text') {
+              var whitespaceInfo = '';
+              if (childTag === '#text') {
+                if (/\S/.test(childText)) {
+                  tagDisplayName = 'Text nodes';
+                } else {
+                  tagDisplayName = 'Whitespace text nodes';
+                  whitespaceInfo = ' Make sure you don\'t have any extra whitespace between tags on ' + 'each line of your source code.';
+                }
+              } else {
                 tagDisplayName = '<' + childTag + '>';
               }
 
@@ -34828,7 +34823,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
                 if (ancestorTag === 'table' && childTag === 'tr') {
                   info += ' Add a <tbody> to your code to match the DOM tree generated by ' + 'the browser.';
                 }
-                process.env.NODE_ENV !== 'production' ? warning(false, 'validateDOMNesting(...): %s cannot appear as a child of <%s>. ' + 'See %s.%s', tagDisplayName, ancestorTag, ownerInfo, info) : void 0;
+                process.env.NODE_ENV !== 'production' ? warning(false, 'validateDOMNesting(...): %s cannot appear as a child of <%s>.%s ' + 'See %s.%s', tagDisplayName, ancestorTag, whitespaceInfo, ownerInfo, info) : void 0;
               } else {
                 process.env.NODE_ENV !== 'production' ? warning(false, 'validateDOMNesting(...): %s cannot appear as a descendant of ' + '<%s>. See %s.', tagDisplayName, ancestorTag, ownerInfo) : void 0;
               }
@@ -35939,8 +35934,6 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       */
       // - -------------------------------------------------------------------- - //
 
-      'use strict';
-
       var deepExtend = require('deep-extend');
       var Immutable = require('immutable');
 
@@ -35958,6 +35951,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         /**
          * Creates a new API wrapper.
+         * @param {Function} xhr
+         * @param {Function} Promise
+         * @param {Location} location
          */
         function API(xhr, Promise, location) {
           _classCallCheck2(this, API);
@@ -35977,17 +35973,17 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         _createClass(API, [{
           key: "extend",
           value: function extend(methods) {
-            var _this = this;
+            var _this3 = this;
 
             Object.keys(methods).forEach(function (name) {
               var method = methods[name];
-              _this[name] = Utils.isFunction(method) ? method.bind(_this) : _this.request.bind(_this, method);
+              _this3[name] = Utils.isFunction(method) ? method.bind(_this3) : _this3.request.bind(_this3, method);
             });
           }
 
           /**
            * Combines multiple arguments into a single xhr options object.
-           * @param {Array} args
+           * @param {Array} givenArgs
            */
 
         }, {
@@ -36047,12 +36043,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "request",
-          value: function request() {
-            var _this2 = this;
+          value: function request(args) {
+            var _this4 = this;
 
             var options = this.prepare(Array.from(arguments));
             var promise = new this.Promise(function (resolve, reject) {
-              _this2.xhr(options, function (error, response) {
+              _this4.xhr(options, function (error, response) {
                 if (response.statusCode === 200 && response.body) {
                   resolve(Immutable.fromJS(response.body));
                 } else {
@@ -36080,8 +36076,6 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       **  Distributed on <http://github.com/yneves/rey>
       */
       // - -------------------------------------------------------------------- - //
-
-      'use strict';
 
       var Dispatcher = require('./Dispatcher.js');
       var StateHolder = require('./StateHolder.js');
@@ -36114,12 +36108,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         _createClass(Actions, [{
           key: "extend",
           value: function extend(actions) {
-            var _this3 = this;
+            var _this5 = this;
 
             var dispatch = this.dispatcher.dispatch.bind(this.dispatcher);
             Object.keys(actions).forEach(function (name) {
               var code = actions[name];
-              _this3[name] = function () {
+              _this5[name] = function () {
                 var payload = code.apply(this, arguments);
                 if (typeof payload === 'string') {
                   payload = { actionType: payload };
@@ -36149,12 +36143,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       */
       // - -------------------------------------------------------------------- - //
 
-      'use strict';
-
       /**
        * Generic class to manage a list of callbacks.
        */
-
       var CallbackRegistry = function () {
 
         /**
@@ -36255,8 +36246,8 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
           /**
            * Executes the given callback passing arguments.
-           * @param {Object} callback
-           * @param {Array} arguments
+           * @param {Object} entry
+           * @param {Array} args
            */
 
         }, {
@@ -36301,10 +36292,8 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       */
       // - -------------------------------------------------------------------- - //
 
-      'use strict';
-
       var React = require('react');
-      var Immutable = require('Immutable');
+      var Immutable = require('immutable');
       var Store = require('./Store.js');
       var Router = require('./Router.js');
       var Actions = require('./Actions.js');
@@ -36330,26 +36319,26 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           this.setState(this.mapProps());
         },
         componentWillMount: function componentWillMount() {
-          var _this4 = this;
+          var _this6 = this;
 
           this.storeHandlers = this.getStores().map(function (store) {
-            return store.register(_this4.storeDidChange);
+            return store.register(_this6.storeDidChange);
           });
           this.routerHandler = this.getRouters().map(function (router) {
-            return router.register(_this4.routeDidChange);
+            return router.register(_this6.routeDidChange);
           });
           this.getStores().map(function (store) {
             return store.autoActivate();
           });
         },
         componentWillUnmount: function componentWillUnmount() {
-          var _this5 = this;
+          var _this7 = this;
 
           this.getStores().map(function (store, index) {
-            return store.unregister(_this5.storeHandlers[index]);
+            return store.unregister(_this7.storeHandlers[index]);
           });
           this.getRouters().map(function (store, index) {
-            return store.unregister(_this5.routerHandler[index]);
+            return store.unregister(_this7.routerHandler[index]);
           });
           this.getStores().map(function (store) {
             return store.autoDeactivate();
@@ -36414,7 +36403,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       module.exports = Controller;
 
       // - -------------------------------------------------------------------- - //
-    }, { "./Actions.js": 205, "./Router.js": 213, "./Store.js": 215, "Immutable": 40, "react": 198 }], 208: [function (require, module, exports) {
+    }, { "./Actions.js": 205, "./Router.js": 213, "./Store.js": 215, "immutable": 40, "react": 198 }], 208: [function (require, module, exports) {
       /*!
       **  rey -- React & Flux framework.
       **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -36423,12 +36412,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       */
       // - -------------------------------------------------------------------- - //
 
-      'use strict';
-
       /**
        * Dependency registry.
        */
-
       var DependencyRegistry = function () {
 
         /**
@@ -36442,38 +36428,38 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         /**
          * Registers a new dependency.
-         * @param {Object} dependency to be registered
+         * @param {Object} dependency - dependency to be registered
          */
 
 
         _createClass(DependencyRegistry, [{
           key: "add",
-          value: function add(dep) {
-            var valid = (typeof dep === "undefined" ? "undefined" : _typeof(dep)) === 'object' && typeof dep.name === 'string' && (dep.factory instanceof Array || typeof dep.factory === 'function');
+          value: function add(dependency) {
+            var valid = (typeof dependency === "undefined" ? "undefined" : _typeof(dependency)) === 'object' && typeof dependency.name === 'string' && (dependency.factory instanceof Array || typeof dependency.factory === 'function');
             if (!valid) {
               throw new Error('invalid dependency');
             }
-            this.dependencies[dep.name] = dep;
+            this.dependencies[dependency.name] = dependency;
           }
 
           /**
            * Removes a dependency from the registry.
-           * @param {string|object} dependency to be removed
+           * @param {String} dependency - dependency to be removed
            */
 
         }, {
           key: "remove",
-          value: function remove(dep) {
-            if (typeof dep === 'string') {
-              delete this.dependencies[dep];
-            } else if ((typeof dep === "undefined" ? "undefined" : _typeof(dep)) === 'object' && typeof dep.name === 'string') {
-              delete this.dependencies[dep.name];
+          value: function remove(dependency) {
+            if (typeof dependency === 'string') {
+              delete this.dependencies[dependency];
+            } else if ((typeof dependency === "undefined" ? "undefined" : _typeof(dependency)) === 'object' && typeof dependency.name === 'string') {
+              delete this.dependencies[dependency.name];
             }
           }
 
           /**
            * Returns the requested instance.
-           * @param {string} name of the dependency
+           * @param {String} name of the dependency
            * @return {Object} dependency instance
            */
 
@@ -36492,19 +36478,19 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
           /**
            * Resolves dependencies for the given factory.
-           * @param {array} list of dependencies, factory is last element
+           * @param {Array} dependencies - list of dependencies, factory is last element
            */
 
         }, {
           key: "resolve",
-          value: function resolve(deps) {
-            var hasTrace = deps[deps.length - 1] instanceof Error;
-            var codeIndex = hasTrace ? deps.length - 2 : deps.length - 1;
-            var trace = hasTrace ? deps[codeIndex + 1] : null;
-            var code = deps[codeIndex];
+          value: function resolve(dependencies) {
+            var hasTrace = dependencies[dependencies.length - 1] instanceof Error;
+            var codeIndex = hasTrace ? dependencies.length - 2 : dependencies.length - 1;
+            var trace = hasTrace ? dependencies[codeIndex + 1] : null;
+            var code = dependencies[codeIndex];
             var args = [];
             for (var i = 0; i < codeIndex; i++) {
-              args[i] = this.get(deps[i]);
+              args[i] = this.get(dependencies[i]);
             }
             try {
               return code.apply(this, args);
@@ -36530,8 +36516,6 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       **  Distributed on <http://github.com/yneves/rey>
       */
       // - -------------------------------------------------------------------- - //
-
-      'use strict';
 
       var CallbackRegistry = require('./CallbackRegistry.js');
 
@@ -36633,8 +36617,6 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       */
       // - -------------------------------------------------------------------- - //
 
-      'use strict';
-
       var URLParser = require('url');
       var Utils = require('./Utils.js');
       var CallbackRegistry = require('./CallbackRegistry.js');
@@ -36667,11 +36649,11 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         _createClass(Location, [{
           key: "activate",
           value: function activate() {
-            var _this6 = this;
+            var _this8 = this;
 
             this.handler = function (event) {
               if (event && event.state) {
-                _this6.callbacks.run(event.state.href);
+                _this8.callbacks.run(event.state.href);
               }
             };
             this.window.addEventListener('popstate', this.handler);
@@ -36700,7 +36682,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
           /**
            * Specifies current url.
-           * @param {String} url
+           * @param {String} href
            */
 
         }, {
@@ -36711,7 +36693,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
           /**
            * Adds an entry to history.
-           * @param {String} url
+           * @param {String} href
            */
 
         }, {
@@ -36725,7 +36707,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
           /**
            * Replaces current history entry.
-           * @param {String} url
+           * @param {String} href
            */
 
         }, {
@@ -36749,8 +36731,8 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
           /**
            * Registers a callback to be executed when history changes.
-           * @param {Function} callback to be registered
-           * @param {Object} this variable for the callback
+           * @param {Function} callback callback to be registered
+           * @param {Object} context this variable for the callback
            * @param {Error} trace error
            * @return {Function} callback added callback
            */
@@ -36775,7 +36757,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
           /**
            * Parses the given url.
-           * @param {String} url
+           * @param {String} href
            * @return {Object} parsed
            */
 
@@ -36796,8 +36778,8 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "format",
-          value: function format(href) {
-            return URLParser.format(href);
+          value: function format(properties) {
+            return URLParser.format(properties);
           }
         }]);
 
@@ -36818,14 +36800,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       */
       // - -------------------------------------------------------------------- - //
 
-      'use strict';
-
       var Promise = require('bluebird');
       var Immutable = require('immutable');
       var Utils = require('./Utils.js');
 
       Promise.prototype.toState = function (stateHolder, propertyName) {
-        var _this7 = this;
+        var _this9 = this;
 
         if (!stateHolder || !Utils.isFunction(stateHolder.setState)) {
           throw new Error('state holder must have a setState method');
@@ -36837,12 +36817,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         var getState = function getState() {
           return Immutable.fromJS({
-            value: _this7.isFulfilled() ? _this7.value() : undefined,
-            reason: _this7.isRejected() ? _this7.reason() : undefined,
-            isFulfilled: _this7.isFulfilled(),
-            isRejected: _this7.isRejected(),
-            isPending: _this7.isPending(),
-            isCancelled: _this7.isCancelled()
+            value: _this9.isFulfilled() ? _this9.value() : undefined,
+            reason: _this9.isRejected() ? _this9.reason() : undefined,
+            isFulfilled: _this9.isFulfilled(),
+            isRejected: _this9.isRejected(),
+            isPending: _this9.isPending(),
+            isCancelled: _this9.isCancelled()
           });
         };
 
@@ -36874,8 +36854,6 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       **  Distributed on <http://github.com/yneves/rey>
       */
       // - -------------------------------------------------------------------- - //
-
-      'use strict';
 
       var window = require('global/window');
       var document = require('global/document');
@@ -36917,13 +36895,13 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         function Rey() {
           _classCallCheck2(this, Rey);
 
-          var _this8 = _possibleConstructorReturn(this, (Rey.__proto__ || Object.getPrototypeOf(Rey)).call(this));
+          var _this10 = _possibleConstructorReturn(this, (Rey.__proto__ || Object.getPrototypeOf(Rey)).call(this));
 
-          autoBind(_this8);
+          autoBind(_this10);
 
-          _this8.deps = new DependencyRegistry();
+          _this10.deps = new DependencyRegistry();
 
-          _this8.deps.add({
+          _this10.deps.add({
             name: 'window',
             type: 'core',
             factory: [function () {
@@ -36931,7 +36909,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this8.deps.add({
+          _this10.deps.add({
             name: 'document',
             type: 'core',
             factory: [function () {
@@ -36939,7 +36917,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this8.deps.add({
+          _this10.deps.add({
             name: 'xhr',
             type: 'core',
             factory: [function () {
@@ -36947,7 +36925,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this8.deps.add({
+          _this10.deps.add({
             name: 'Promise',
             type: 'core',
             factory: [function () {
@@ -36955,7 +36933,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this8.deps.add({
+          _this10.deps.add({
             name: 'Immutable',
             type: 'core',
             factory: [function () {
@@ -36963,7 +36941,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this8.deps.add({
+          _this10.deps.add({
             name: 'React',
             type: 'core',
             factory: ['Immutable', function (Immutable) {
@@ -36975,7 +36953,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this8.deps.add({
+          _this10.deps.add({
             name: 'ReactDOM',
             type: 'core',
             factory: [function () {
@@ -36983,7 +36961,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this8.deps.add({
+          _this10.deps.add({
             name: 'ReactCSSTransitionGroup',
             type: 'core',
             factory: [function () {
@@ -36991,7 +36969,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this8.deps.add({
+          _this10.deps.add({
             name: 'Dispatcher',
             type: 'core',
             factory: [function () {
@@ -36999,14 +36977,14 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }]
           });
 
-          _this8.deps.add({
+          _this10.deps.add({
             name: 'Location',
             type: 'core',
             factory: ['window', function (window) {
               return new Location(window);
             }]
           });
-          return _this8;
+          return _this10;
         }
 
         /**
@@ -37019,12 +36997,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         _createClass(Rey, [{
           key: "factory",
-          value: function factory(name, deps) {
-            var _this9 = this;
+          value: function factory(name, dependencies) {
+            var _this11 = this;
 
             var trace = new Error('factory: ' + name);
             var factory = function factory() {
-              return _this9.deps.resolve(deps);
+              return _this11.deps.resolve(dependencies);
             };
             this.deps.add({
               name: name,
@@ -37043,14 +37021,14 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "store",
-          value: function store(name, deps) {
-            var _this10 = this;
+          value: function store(name, dependencies) {
+            var _this12 = this;
 
             var trace = new Error('store: ' + name);
             var factory = function factory(dispatcher) {
 
               var store = new Store(dispatcher);
-              var storeOptions = _this10.deps.resolve(deps);
+              var storeOptions = _this12.deps.resolve(dependencies);
 
               // set action handler
               if (storeOptions.registerHandler) {
@@ -37078,12 +37056,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
                 if (Utils.instanceOf(attachStore, Store)) {
                   store.attachStore(attachStore);
                 } else if (Utils.isString(attachStore)) {
-                  store.attachStore(_this10.deps.get(attachStore));
+                  store.attachStore(_this12.deps.get(attachStore));
                 } else if (Utils.isArray(attachStore)) {
                   if (Utils.instanceOf(attachStore[1], Store)) {
                     store.attachStore(attachStore[0], attachStore[1]);
                   } else if (Utils.isString(attachStore[1])) {
-                    store.attachStore(attachStore[0], _this10.deps.get(attachStore[1]));
+                    store.attachStore(attachStore[0], _this12.deps.get(attachStore[1]));
                   }
                 }
               });
@@ -37109,13 +37087,13 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "actions",
-          value: function actions(name, deps) {
-            var _this11 = this;
+          value: function actions(name, dependencies) {
+            var _this13 = this;
 
             var trace = new Error('actions: ' + name);
             var factory = function factory(dispatcher) {
               var actions = new Actions(dispatcher);
-              actions.extend(_this11.deps.resolve(deps));
+              actions.extend(_this13.deps.resolve(dependencies));
               autoBind(actions);
               return actions;
             };
@@ -37136,13 +37114,13 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "router",
-          value: function router(name, deps) {
-            var _this12 = this;
+          value: function router(name, dependencies) {
+            var _this14 = this;
 
             var trace = new Error('router: ' + name);
             var factory = function factory(dispatcher, location, React, ReactDOM, document) {
               var router = new Router(dispatcher, location);
-              router.setRoutes(_this12.deps.resolve(deps));
+              router.setRoutes(_this14.deps.resolve(dependencies));
               router.register(function () {
                 var route = router.getState();
 
@@ -37152,7 +37130,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
                 }
 
                 // resolve the controller
-                var controller = Utils.isString(route.controller) ? _this12.deps.get(route.controller) : Utils.isArray(route.controller) ? _this12.deps.resolve(route.controller) : route.controller;
+                var controller = Utils.isString(route.controller) ? _this14.deps.get(route.controller) : Utils.isArray(route.controller) ? _this14.deps.resolve(route.controller) : route.controller;
 
                 // resolves the container
                 var container = Utils.isString(route.container) ? document.getElementById(route.container) : Utils.isFunction(route.container) ? route.container() : route.container;
@@ -37180,19 +37158,19 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "component",
-          value: function component(name, deps) {
-            var _this13 = this;
+          value: function component(name, dependencies) {
+            var _this15 = this;
 
             var trace = new Error('component: ' + name);
             var factory = function factory(React) {
-              var component = _this13.deps.resolve(deps);
+              var component = _this15.deps.resolve(dependencies);
               if (!component.displayName) {
                 component.displayName = name;
               }
               if (Utils.isFunction(component.render)) {
                 (function () {
                   var render = component.render;
-                  var rey = _this13;
+                  var rey = _this15;
                   component.render = function () {
                     try {
                       return render.call(this);
@@ -37226,29 +37204,29 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "controller",
-          value: function controller(name, deps) {
-            var _this14 = this;
+          value: function controller(name, dependencies) {
+            var _this16 = this;
 
             var trace = new Error('controller: ' + name);
             var factory = function factory(React) {
 
-              var props = _this14.deps.resolve(deps);
+              var props = _this16.deps.resolve(dependencies);
 
               // resolve the component
-              var component = Utils.isString(props.component) ? _this14.deps.get(props.component) : Utils.isArray(props.component) ? _this14.deps.resolve(props.component) : props.component;
+              var component = Utils.isString(props.component) ? _this16.deps.get(props.component) : Utils.isArray(props.component) ? _this16.deps.resolve(props.component) : props.component;
 
               // resolve the stores
-              var store = Utils.isString(props.store) ? _this14.deps.get(props.store) : Utils.isArray(props.store) ? props.store.map(function (store) {
-                return Utils.isString(store) ? _this14.deps.get(store) : Utils.isArray(store) ? _this14.deps.resolve(store) : store;
+              var store = Utils.isString(props.store) ? _this16.deps.get(props.store) : Utils.isArray(props.store) ? props.store.map(function (store) {
+                return Utils.isString(store) ? _this16.deps.get(store) : Utils.isArray(store) ? _this16.deps.resolve(store) : store;
               }) : props.store;
 
               // resolve the actions
-              var actions = Utils.isString(props.actions) ? _this14.deps.get(props.actions) : Utils.isArray(props.actions) ? props.actions.map(function (actions) {
-                return Utils.isString(actions) ? _this14.deps.get(actions) : Utils.isArray(actions) ? _this14.deps.resolve(actions) : actions;
+              var actions = Utils.isString(props.actions) ? _this16.deps.get(props.actions) : Utils.isArray(props.actions) ? props.actions.map(function (actions) {
+                return Utils.isString(actions) ? _this16.deps.get(actions) : Utils.isArray(actions) ? _this16.deps.resolve(actions) : actions;
               }) : props.actions;
 
               // resolve the router
-              var router = Utils.isString(props.router) ? _this14.deps.get(props.router) : Utils.isArray(props.router) ? _this14.deps.resolve(props.router) : props.router;
+              var router = Utils.isString(props.router) ? _this16.deps.get(props.router) : Utils.isArray(props.router) ? _this16.deps.resolve(props.router) : props.router;
 
               var defaultProps = {
                 component: component,
@@ -37296,12 +37274,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "static",
-          value: function _static(name, deps) {
-            var _this15 = this;
+          value: function _static(name, dependencies) {
+            var _this17 = this;
 
             var trace = new Error('static: ' + name);
             var factory = function factory() {
-              return Immutable.fromJS(_this15.deps.resolve(deps));
+              return Immutable.fromJS(_this17.deps.resolve(dependencies));
             };
             this.deps.add({
               name: name,
@@ -37320,13 +37298,13 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "api",
-          value: function api(name, deps) {
-            var _this16 = this;
+          value: function api(name, dependencies) {
+            var _this18 = this;
 
             var trace = new Error('api: ' + name);
             var factory = function factory(xhr, Promise, Location) {
               var api = new API(xhr, Promise, Location);
-              var methods = _this16.deps.resolve(deps);
+              var methods = _this18.deps.resolve(dependencies);
               api.extend(methods);
               return api;
             };
@@ -37346,7 +37324,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "load",
-          value: function load(deps) {
+          value: function load(dependencies) {
             this.deps.resolve(deps.concat(Utils.noop));
             return this;
           }
@@ -37359,8 +37337,8 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "run",
-          value: function run(deps) {
-            this.deps.resolve(deps);
+          value: function run(dependencies) {
+            this.deps.resolve(dependencies);
             return this;
           }
         }]);
@@ -37381,8 +37359,6 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       **  Distributed on <http://github.com/yneves/rey>
       */
       // - -------------------------------------------------------------------- - //
-
-      'use strict';
 
       var Location = require('./Location.js');
       var Dispatcher = require('./Dispatcher.js');
@@ -37410,26 +37386,26 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             throw new Error('Location must be provided');
           }
 
-          var _this17 = _possibleConstructorReturn(this, (Router.__proto__ || Object.getPrototypeOf(Router)).call(this));
+          var _this19 = _possibleConstructorReturn(this, (Router.__proto__ || Object.getPrototypeOf(Router)).call(this));
 
-          _this17.location = location;
-          _this17.dispatcher = dispatcher;
-          return _this17;
+          _this19.location = location;
+          _this19.dispatcher = dispatcher;
+          return _this19;
         }
 
         /**
          * Activates the store by hooking up dispatcher and location listeners.
-         * @param {String} href initial url
+         * @param {String} initialURI - initial url
          */
 
 
         _createClass(Router, [{
           key: "activate",
-          value: function activate(initial) {
-            var _this18 = this;
+          value: function activate(initialURI) {
+            var _this20 = this;
 
             this.locationHandler = this.location.register(function (href) {
-              _this18.dispatcher.dispatch({
+              _this20.dispatcher.dispatch({
                 actionType: 'ROUTER_CHANGE',
                 href: href
               });
@@ -37440,14 +37416,14 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
                 case 'ROUTER_START':
                 case 'ROUTER_CHANGE':
                 case 'ROUTER_NAVIGATE':
-                  _this18.handleNavigation(payload.href);
+                  _this20.handleNavigation(payload.href);
                   break;
               }
             });
 
             this.dispatcher.dispatch({
               actionType: 'ROUTER_START',
-              href: initial
+              href: initialURI
             });
           }
 
@@ -37470,7 +37446,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
           /**
            * Navigates to the given url.
-           * @param {String} url
+           * @param {String} href
            */
 
         }, {
@@ -37485,7 +37461,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
           /**
            * Handle start, change and navigate actions.
-           * @param {String} url
+           * @param {String} href
            */
 
         }, {
@@ -37528,7 +37504,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
           /**
            * Finds the route for the given url.
-           * @param {String} url
+           * @param {String} href
            * @return {Object} route
            */
 
@@ -37565,20 +37541,20 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           /**
            * Prepares a route object with given data.
            * @private
-           * @param {Object} parsed url
-           * @param {Object} route properties
-           * @param {Array} route matched parameters
-           * @param {Array} value for each parameter
+           * @param {Object} href - parsed url
+           * @param {Object} props - route properties
+           * @param {Array} params - matched parameters
+           * @param {Array} values - value for each parameter
            * @return {Object} consolidated route object
            */
 
         }, {
           key: "prepareRoute",
-          value: function prepareRoute(url, props, params, values) {
+          value: function prepareRoute(href, props, params, values) {
             var route = {
-              path: url.path,
-              query: url.query,
-              pathname: url.pathname,
+              path: href.path,
+              query: href.query,
+              pathname: href.pathname,
               params: {}
             };
             for (var prop in props) {
@@ -37626,8 +37602,6 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       **  Distributed on <http://github.com/yneves/rey>
       */
       // - -------------------------------------------------------------------- - //
-
-      'use strict';
 
       var Immutable = require('immutable');
       var CallbackRegistry = require('./CallbackRegistry.js');
@@ -37731,7 +37705,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "getState",
-          value: function getState() {
+          value: function getState(path) {
             var args = Array.from(arguments);
             return args.length === 0 ? this.state.toObject() : this.state.getIn(concatPath(args, 0));
           }
@@ -37744,14 +37718,14 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "setState",
-          value: function setState() {
+          value: function setState(path, value) {
             var args = Array.from(arguments);
             var length = args.length;
             if (length === 1) {
               this.state = this.state.merge(args[0]);
             } else if (length > 1) {
-              var path = concatPath(args, 1);
-              this.state = this.state.setIn(path, args[length - 1]);
+              var _path = concatPath(args, 1);
+              this.state = this.state.setIn(_path, args[length - 1]);
             }
             this.emitChange();
           }
@@ -37764,14 +37738,14 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "mergeState",
-          value: function mergeState() {
+          value: function mergeState(path, value) {
             var args = Array.from(arguments);
             var length = args.length;
             if (length === 1) {
               this.state = this.state.merge(args[0]);
             } else if (length > 1) {
-              var path = concatPath(args, 1);
-              this.state = this.state.mergeIn(path, args[length - 1]);
+              var _path2 = concatPath(args, 1);
+              this.state = this.state.mergeIn(_path2, args[length - 1]);
             }
             this.emitChange();
           }
@@ -37783,14 +37757,14 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "deleteState",
-          value: function deleteState() {
+          value: function deleteState(path) {
             var args = Array.from(arguments);
             var length = args.length;
             if (length === 0) {
               this.state = this.state.clear();
             } else if (length > 0) {
-              var path = concatPath(args, 0);
-              this.state = this.state.deleteIn(path);
+              var _path3 = concatPath(args, 0);
+              this.state = this.state.deleteIn(_path3);
             }
             this.emitChange();
           }
@@ -37803,14 +37777,14 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
 
         }, {
           key: "updateState",
-          value: function updateState() {
+          value: function updateState(path, callback) {
             var args = Array.from(arguments);
             var length = args.length;
             if (length === 1) {
               this.state = this.state.update(args[0]);
             } else if (length > 1) {
-              var path = concatPath(args, 1);
-              this.state = this.state.updateIn(path, args[length - 1]);
+              var _path4 = concatPath(args, 1);
+              this.state = this.state.updateIn(_path4, args[length - 1]);
             }
             this.emitChange();
           }
@@ -37832,8 +37806,6 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       **  Distributed on <http://github.com/yneves/rey>
       */
       // - -------------------------------------------------------------------- - //
-
-      'use strict';
 
       var Utils = require('./Utils.js');
       var Dispatcher = require('./Dispatcher.js');
@@ -37859,11 +37831,11 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             throw new Error('Dispatcher must be provided');
           }
 
-          var _this19 = _possibleConstructorReturn(this, (Store.__proto__ || Object.getPrototypeOf(Store)).call(this));
+          var _this21 = _possibleConstructorReturn(this, (Store.__proto__ || Object.getPrototypeOf(Store)).call(this));
 
-          _this19.dispatcher = dispatcher;
-          _this19.attachedStores = [];
-          return _this19;
+          _this21.dispatcher = dispatcher;
+          _this21.attachedStores = [];
+          return _this21;
         }
 
         /**
@@ -37898,7 +37870,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "activate",
           value: function activate() {
-            var _this20 = this;
+            var _this22 = this;
 
             if (this.handler) {
               throw new Error('store has been activated already');
@@ -37906,12 +37878,12 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             this.storeWillActivate();
             this.resetState();
             this.handler = this.dispatcher.register(function (action) {
-              var actionHandler = _this20.getActionHandler();
+              var actionHandler = _this22.getActionHandler();
               if (Utils.isFunction(actionHandler)) {
-                _this20.callActionHandler(actionHandler, action);
+                _this22.callActionHandler(actionHandler, action);
               } else if (Utils.isObject(actionHandler)) {
                 var type = action.actionType || action.type;
-                _this20.callActionHandler(actionHandler[type], action);
+                _this22.callActionHandler(actionHandler[type], action);
               }
             });
             this.storeDidActivate();
@@ -37983,7 +37955,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
            * Calls the action handler.
            * @private
            * @param {Function} handler
-           * @param {Object} payload
+           * @param {Object} action
            */
 
         }, {
@@ -38007,18 +37979,18 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "extend",
           value: function extend(methods) {
-            var _this21 = this;
+            var _this23 = this;
 
             Object.keys(methods).forEach(function (name) {
               if (reservedKeys.indexOf(name) === -1) {
-                _this21[name] = methods[name].bind(_this21);
+                _this23[name] = methods[name].bind(_this23);
               }
             });
           }
 
           /**
            * Attaches another store to this store's state.
-           * @param {String} property
+           * @param {String} name
            * @param {Store} store
            * @return {Function} handler
            */
@@ -38026,7 +37998,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "attachStore",
           value: function attachStore(name, store) {
-            var _this22 = this;
+            var _this24 = this;
 
             if (arguments.length === 1) {
               store = name;
@@ -38034,9 +38006,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
             }
             var handler = store.register(function (stateHolder) {
               if (name) {
-                _this22.setState([name], stateHolder.state);
+                _this24.setState([name], stateHolder.state);
               } else {
-                _this22.setState(stateHolder.state);
+                _this24.setState(stateHolder.state);
               }
             });
             this.attachedStores.push([name, store, handler]);
@@ -38088,8 +38060,6 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
       **  Distributed on <http://github.com/yneves/rey>
       */
       // - -------------------------------------------------------------------- - //
-
-      'use strict';
 
       var getObjectType = function getObjectType(arg) {
         var type = Object.prototype.toString.call(arg);
