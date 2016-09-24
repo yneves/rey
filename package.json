@@ -23,6 +23,7 @@
     "grunt-contrib-uglify": "^2.0.0",
     "grunt-envify": "^0.1.0",
     "jsdom": "^9.5.0",
+    "mocha": "^3.0.2",
     "mocha-jsdom": "^1.1.0",
     "react": "^15.0.2",
     "react-addons-css-transition-group": "^15.3.1",
