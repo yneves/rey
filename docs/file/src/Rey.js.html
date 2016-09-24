@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/Rey.js | API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/API.js~API.html">API</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Actions.js~Actions.html">Actions</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/CallbackRegistry.js~CallbackRegistry.html">CallbackRegistry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/DependencyRegistry.js~DependencyRegistry.html">DependencyRegistry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Dispatcher.js~Dispatcher.html">Dispatcher</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Location.js~Location.html">Location</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Rey.js~Rey.html">Rey</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Router.js~Router.html">Router</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/StateHolder.js~StateHolder.html">StateHolder</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Store.js~Store.html">Store</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-toState">toState</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Immutable">Immutable</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Utils">Utils</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-deepExtend">deepExtend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-toJS">toJS</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Dispatcher">Dispatcher</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-StateHolder">StateHolder</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Actions">Actions</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Controller">Controller</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Immutable">Immutable</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-React">React</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Router">Router</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Store">Store</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-empty">empty</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-CallbackRegistry">CallbackRegistry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-callbackWrapper">callbackWrapper</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-CallbackRegistry">CallbackRegistry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-URLParser">URLParser</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Utils">Utils</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Immutable">Immutable</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Promise">Promise</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Utils">Utils</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-API">API</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Actions">Actions</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Controller">Controller</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-DependencyRegistry">DependencyRegistry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Dispatcher">Dispatcher</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-EventEmitter">EventEmitter</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Immutable">Immutable</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Location">Location</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Promise">Promise</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-React">React</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-ReactCSSTransitionGroup">ReactCSSTransitionGroup</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-ReactDOM">ReactDOM</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Router">Router</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Store">Store</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Utils">Utils</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-autoBind">autoBind</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-document">document</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-window">window</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-xhr">xhr</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-xtend">xtend</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Dispatcher">Dispatcher</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Location">Location</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-StateHolder">StateHolder</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-CallbackRegistry">CallbackRegistry</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Immutable">Immutable</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-callbackWrapper">callbackWrapper</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-concatPath">concatPath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Dispatcher">Dispatcher</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-StateHolder">StateHolder</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Utils">Utils</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-reservedKeys">reservedKeys</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-getObjectType">getObjectType</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/Rey.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/*!
+**  rey -- React &amp; Flux framework.
+**  Copyright (c) 2016 Yuri Neves Silveira &lt;http://yneves.com&gt;
+**  Licensed under The MIT License &lt;http://opensource.org/licenses/MIT&gt;
+**  Distributed on &lt;http://github.com/yneves/rey&gt;
+*/
+// - -------------------------------------------------------------------- - //
+
+const window = require(&apos;global/window&apos;);
+const document = require(&apos;global/document&apos;);
+const xhr = require(&apos;xhr&apos;);
+const React = require(&apos;react&apos;);
+const ReactDOM = require(&apos;react-dom&apos;);
+const ReactCSSTransitionGroup = require(&apos;react-addons-css-transition-group&apos;);
+
+const xtend = require(&apos;xtend&apos;);
+const autoBind = require(&apos;auto-bind&apos;);
+const Immutable = require(&apos;immutable&apos;);
+const {EventEmitter} = require(&apos;events&apos;);
+
+const API = require(&apos;./API.js&apos;);
+const Utils = require(&apos;./Utils.js&apos;);
+const Store = require(&apos;./Store.js&apos;);
+const Actions = require(&apos;./Actions.js&apos;);
+const Router = require(&apos;./Router.js&apos;);
+const Controller = require(&apos;./Controller.js&apos;);
+const Dispatcher = require(&apos;./Dispatcher.js&apos;);
+const Location = require(&apos;./Location.js&apos;);
+const Promise = require(&apos;./Promise.js&apos;);
+const DependencyRegistry = require(&apos;./DependencyRegistry.js&apos;);
+
+
+/**
+ * Main class.
+ */
+class Rey extends EventEmitter {
+
+  /**
+   * Creates a new Rey instance.
+   */
+  constructor() {
+    super();
+    autoBind(this);
+
+    this.deps = new DependencyRegistry();
+
+    this.deps.add({
+      name: &apos;window&apos;,
+      type: &apos;core&apos;,
+      factory: [() =&gt; window]
+    });
+
+    this.deps.add({
+      name: &apos;document&apos;,
+      type: &apos;core&apos;,
+      factory: [() =&gt; document]
+    });
+
+    this.deps.add({
+      name: &apos;xhr&apos;,
+      type: &apos;core&apos;,
+      factory: [() =&gt; xhr]
+    });
+
+    this.deps.add({
+      name: &apos;Promise&apos;,
+      type: &apos;core&apos;,
+      factory: [() =&gt; Promise]
+    });
+
+    this.deps.add({
+      name: &apos;Immutable&apos;,
+      type: &apos;core&apos;,
+      factory: [() =&gt; Immutable]
+    });
+
+    this.deps.add({
+      name: &apos;React&apos;,
+      type: &apos;core&apos;,
+      factory: [&apos;Immutable&apos;, (Immutable) =&gt; {
+        const ImmutableTypes = [
+          &apos;Iterable&apos;, &apos;Seq&apos;, &apos;Collection&apos;, &apos;Map&apos;,
+          &apos;OrderedMap&apos;, &apos;List&apos;, &apos;Stack&apos;, &apos;Set&apos;,
+          &apos;OrderedSet&apos;, &apos;Record&apos;, &apos;Range&apos;, &apos;Repeat&apos;
+        ];
+        ImmutableTypes.forEach((type) =&gt; {
+          React.PropTypes[type] = React.PropTypes.instanceOf(Immutable[type]);
+        });
+        return React;
+      }]
+    });
+
+    this.deps.add({
+      name: &apos;ReactDOM&apos;,
+      type: &apos;core&apos;,
+      factory: [() =&gt; ReactDOM]
+    });
+
+    this.deps.add({
+      name: &apos;ReactCSSTransitionGroup&apos;,
+      type: &apos;core&apos;,
+      factory: [() =&gt; ReactCSSTransitionGroup]
+    });
+
+    this.deps.add({
+      name: &apos;Dispatcher&apos;,
+      type: &apos;core&apos;,
+      factory: [() =&gt; new Dispatcher()]
+    });
+
+    this.deps.add({
+      name: &apos;Location&apos;,
+      type: &apos;core&apos;,
+      factory: [&apos;window&apos;, (window) =&gt; new Location(window)]
+    });
+  }
+
+  /**
+   * Registers a new factory.
+   * @param {String} name
+   * @param {Array} dependencies
+   * @return {Rey} rey
+   */
+  factory(name, dependencies) {
+    const trace = new Error(&apos;factory: &apos; + name);
+    const factory = () =&gt; this.deps.resolve(dependencies);
+    this.deps.add({
+      name,
+      type: &apos;factory&apos;,
+      factory: [factory, trace]
+    });
+    return this;
+  }
+
+  /**
+   * Registers a new store.
+   * @param {String} name
+   * @param {Array} dependencies
+   * @return {Rey} rey
+   */
+  store(name, dependencies) {
+    const trace = new Error(&apos;store: &apos; + name);
+    const factory = (dispatcher) =&gt; {
+
+      const store = new Store(dispatcher);
+      const storeOptions = this.deps.resolve(dependencies);
+
+      // set action handler
+      if (storeOptions.registerHandler) {
+        store.setActionHandler(storeOptions.registerHandler);
+      } else if (storeOptions.actionHandler) {
+        store.setActionHandler(storeOptions.actionHandler);
+      }
+
+      // get stores to attach
+      let attachStores = [];
+      if (storeOptions.attachStore) {
+        if (Utils.isArray(storeOptions.attachStore)) {
+          attachStores = storeOptions.attachStore;
+        } else if (Utils.isObject(storeOptions.attachStore)) {
+          Object.keys(storeOptions.attachStore).forEach(function(key, value) {
+            attachStores.push([key, storeOptions.attachStore[key]]);
+          });
+        } else {
+          attachStores.push(storeOptions.attachStore);
+        }
+      }
+
+      // resolve and attach stores
+      attachStores.forEach((attachStore) =&gt; {
+        if (Utils.instanceOf(attachStore, Store)) {
+          store.attachStore(attachStore);
+        } else if (Utils.isString(attachStore)) {
+          store.attachStore(this.deps.get(attachStore));
+        } else if (Utils.isArray(attachStore)) {
+          if (Utils.instanceOf(attachStore[1], Store)) {
+            store.attachStore(attachStore[0], attachStore[1]);
+          } else if (Utils.isString(attachStore[1])) {
+            store.attachStore(attachStore[0], this.deps.get(attachStore[1]));
+          }
+        }
+      });
+
+      store.extend(storeOptions);
+      autoBind(store);
+      return store;
+    };
+    this.deps.add({
+      name,
+      type: &apos;store&apos;,
+      factory: [&apos;Dispatcher&apos;, factory, trace]
+    });
+    return this;
+  }
+
+  /**
+   * Registers a new actions.
+   * @param {String} name
+   * @param {Array} dependencies
+   * @return {Rey} rey
+   */
+  actions(name, dependencies) {
+    const trace = new Error(&apos;actions: &apos; + name);
+    const factory = (dispatcher) =&gt; {
+      const actions = new Actions(dispatcher);
+      actions.extend(this.deps.resolve(dependencies));
+      autoBind(actions);
+      return actions;
+    };
+    this.deps.add({
+      name,
+      type: &apos;actions&apos;,
+      factory: [&apos;Dispatcher&apos;, factory, trace]
+    });
+    return this;
+  }
+
+  /**
+   * Registers a new router.
+   * @param {String} name
+   * @param {Array} dependencies
+   * @return {Rey} rey
+   */
+  router(name, dependencies) {
+    const trace = new Error(&apos;router: &apos; + name);
+    const factory = (dispatcher, location, React, ReactDOM, document) =&gt; {
+      const router = new Router(dispatcher, location);
+      router.setRoutes(this.deps.resolve(dependencies));
+      router.register(() =&gt; {
+        const route = router.getState();
+
+        if (Utils.isFunction(route.handler)) {
+          route.handler(route);
+          return;
+        }
+
+        // resolve the controller
+        const controller = Utils.isString(route.controller) ?
+          this.deps.get(route.controller) : Utils.isArray(route.controller) ?
+          this.deps.resolve(route.controller) : route.controller;
+
+        // resolves the container
+        const container = Utils.isString(route.container) ?
+          document.getElementById(route.container) :
+          Utils.isFunction(route.container) ?
+          route.container() : route.container;
+
+        const element = React.createElement(controller, { router });
+        ReactDOM.render(element, container);
+      });
+      autoBind(router);
+      return router;
+    };
+    this.deps.add({
+      name,
+      type: &apos;router&apos;,
+      factory: [&apos;Dispatcher&apos;, &apos;Location&apos;, &apos;React&apos;, &apos;ReactDOM&apos;, &apos;document&apos;, factory, trace]
+    });
+    return this;
+  }
+
+  /**
+   * Registers a new component.
+   * @param {String} name
+   * @param {Array} dependencies
+   * @return {Rey} rey
+   */
+  component(name, dependencies) {
+    const trace = new Error(&apos;component: &apos; + name);
+    const factory = (React) =&gt; {
+      const component = this.deps.resolve(dependencies);
+      if (!component.displayName) {
+        component.displayName = name;
+      }
+      if (Utils.isFunction(component.render)) {
+        const render = component.render;
+        const rey = this;
+        component.render = function() {
+          try {
+            return render.call(this);
+          } catch (error) {
+            if (rey.listenerCount(&apos;error&apos;)) {
+              rey.emit(&apos;error&apos;, error, trace);
+            } else {
+              console.error(error, trace);
+            }
+            return React.createElement(&apos;noscript&apos;);
+          }
+        };
+      }
+      return React.createClass(component);
+    };
+    this.deps.add({
+      name,
+      type: &apos;router&apos;,
+      factory: [&apos;React&apos;, factory, trace]
+    });
+    return this;
+  }
+
+  /**
+   * Registers a new controller.
+   * @param {String} name
+   * @param {Array} dependencies
+   * @return {Rey} rey
+   */
+  controller(name, dependencies) {
+    const trace = new Error(&apos;controller: &apos; + name);
+    const factory = (React) =&gt; {
+
+      const props = this.deps.resolve(dependencies);
+
+      // resolve the component
+      const component = Utils.isString(props.component) ?
+        this.deps.get(props.component) : Utils.isArray(props.component) ?
+        this.deps.resolve(props.component) : props.component;
+
+      // resolve the stores
+      const store = Utils.isString(props.store) ?
+        this.deps.get(props.store) : Utils.isArray(props.store) ?
+        props.store.map(store =&gt; {
+          return Utils.isString(store) ?
+            this.deps.get(store) : Utils.isArray(store) ?
+            this.deps.resolve(store) : store;
+        }) : props.store;
+
+      // resolve the actions
+      const actions = Utils.isString(props.actions) ?
+        this.deps.get(props.actions) : Utils.isArray(props.actions) ?
+        props.actions.map(actions =&gt; {
+          return Utils.isString(actions) ?
+            this.deps.get(actions) : Utils.isArray(actions) ?
+            this.deps.resolve(actions) : actions;
+        }) : props.actions;
+
+      // resolve the router
+      const router = Utils.isString(props.router) ?
+        this.deps.get(props.router) : Utils.isArray(props.router) ?
+        this.deps.resolve(props.router) : props.router;
+
+      const defaultProps = {
+        component,
+        store,
+        actions,
+        router
+      };
+
+      const componentMethods = {
+        displayName: name,
+        getDefaultProps() {
+          if (Utils.isFunction(props.getDefaultProps)) {
+            return xtend(defaultProps, props.getDefaultProps.call(this));
+          }
+          return defaultProps;
+        }
+      };
+
+      if (props.propTypes) {
+        componentMethods.propTypes = xtend(Controller.propTypes, props.propTypes);
+      }
+
+      Object.keys(props).forEach(prop =&gt; {
+        if (!defaultProps[prop] &amp;&amp; prop !== &apos;getDefaultProps&apos; &amp;&amp; prop !== &apos;propTypes&apos;) {
+          componentMethods[prop] = props[prop];
+        }
+      });
+
+      return React.createClass(xtend(Controller, componentMethods));
+    };
+    this.deps.add({
+      name,
+      type: &apos;controller&apos;,
+      factory: [&apos;React&apos;, factory, trace]
+    });
+    return this;
+  }
+
+  /**
+   * Registers a new static.
+   * @param {String} name
+   * @param {Array} dependencies
+   * @return {Rey} rey
+   */
+  static(name, dependencies) {
+    const trace = new Error(&apos;static: &apos; + name);
+    const factory = () =&gt; Immutable.fromJS(this.deps.resolve(dependencies));
+    this.deps.add({
+      name,
+      type: &apos;static&apos;,
+      factory: [factory, trace]
+    });
+    return this;
+  }
+
+  /**
+   * Registers a new API.
+   * @param {String} name
+   * @param {Array} dependencies
+   * @return {Rey} rey
+   */
+  api(name, dependencies) {
+    const trace = new Error(&apos;api: &apos; + name);
+    const factory = (xhr, Promise, Location) =&gt; {
+      const api = new API(xhr, Promise, Location);
+      const methods = this.deps.resolve(dependencies);
+      api.extend(methods);
+      return api;
+    };
+    this.deps.add({
+      name,
+      type: &apos;api&apos;,
+      factory: [&apos;xhr&apos;, &apos;Promise&apos;, &apos;Location&apos;, factory, trace]
+    });
+    return this;
+  }
+
+  /**
+   * Resolves specified dependencies.
+   * @param {Array} dependencies
+   * @return {Rey} rey
+   */
+  load(dependencies) {
+    this.deps.resolve(deps.concat(Utils.noop));
+    return this;
+  }
+
+  /**
+   * Resolves specified dependencies.
+   * @param {Array} dependencies
+   * @return {Rey} rey
+   */
+  run(dependencies) {
+    this.deps.resolve(dependencies);
+    return this;
+  }
+
+};
+
+module.exports = Rey;
+
+// - -------------------------------------------------------------------- - //
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.8)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

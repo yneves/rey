@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 const getObjectType = (arg) => {
   const type = Object.prototype.toString.call(arg);
   return type.substr(8, type.length - 9);

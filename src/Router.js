@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 const Location = require('./Location.js');
 const Dispatcher = require('./Dispatcher.js');
 const StateHolder = require('./StateHolder.js');
@@ -36,9 +34,9 @@ class Router extends StateHolder {
 
   /**
    * Activates the store by hooking up dispatcher and location listeners.
-   * @param {String} href initial url
+   * @param {String} initialURI - initial url
    */
-  activate(initial) {
+  activate(initialURI) {
 
     this.locationHandler = this.location.register((href) => {
       this.dispatcher.dispatch({
@@ -59,7 +57,7 @@ class Router extends StateHolder {
 
     this.dispatcher.dispatch({
       actionType: 'ROUTER_START',
-      href: initial
+      href: initialURI
     });
   }
 
@@ -79,7 +77,7 @@ class Router extends StateHolder {
 
   /**
    * Navigates to the given url.
-   * @param {String} url
+   * @param {String} href
    */
   navigate(href) {
     this.location.push(href);
@@ -91,7 +89,7 @@ class Router extends StateHolder {
 
   /**
    * Handle start, change and navigate actions.
-   * @param {String} url
+   * @param {String} href
    */
   handleNavigation(href = this.location.get()) {
     const route = this.matchRoute(href);
@@ -123,7 +121,7 @@ class Router extends StateHolder {
 
   /**
    * Finds the route for the given url.
-   * @param {String} url
+   * @param {String} href
    * @return {Object} route
    */
   matchRoute(href) {
@@ -157,13 +155,13 @@ class Router extends StateHolder {
   /**
    * Prepares a route object with given data.
    * @private
-   * @param {Object} parsed url
-   * @param {Object} route properties
-   * @param {Array} route matched parameters
-   * @param {Array} value for each parameter
+   * @param {Object} href - parsed url
+   * @param {Object} props - route properties
+   * @param {Array} params - matched parameters
+   * @param {Array} values - value for each parameter
    * @return {Object} consolidated route object
    */
-  prepareRoute(url, props, params, values) {
+  prepareRoute(href, props, params, values) {
     const route = {
       path: url.path,
       query: url.query,

@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 const deepExtend = require('deep-extend');
 const Immutable = require('immutable');
 
@@ -22,6 +20,9 @@ class API {
 
   /**
    * Creates a new API wrapper.
+   * @param {Function} xhr
+   * @param {Function} Promise
+   * @param {Location} location
    */
   constructor(xhr, Promise, location) {
     this.xhr = xhr;
@@ -44,7 +45,7 @@ class API {
 
   /**
    * Combines multiple arguments into a single xhr options object.
-   * @param {Array} args
+   * @param {Array} givenArgs
    */
   prepare(givenArgs) {
     const defaults = Utils.isFunction(this.defaults) ? this.defaults() : this.defaults;
@@ -101,7 +102,7 @@ class API {
    * @param {Array} args
    * @return {Promise} response
    */
-  request() {
+  request(args) {
     const options = this.prepare(Array.from(arguments));
     const promise = new this.Promise((resolve, reject) => {
       this.xhr(options, (error, response) => {

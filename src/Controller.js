@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 const React = require('react');
 const Immutable = require('immutable');
 const Store = require('./Store.js');

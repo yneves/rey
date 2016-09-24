@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 const window = require('global/window');
 const document = require('global/document');
 const xhr = require('xhr');
@@ -123,9 +121,9 @@ class Rey extends EventEmitter {
    * @param {Array} dependencies
    * @return {Rey} rey
    */
-  factory(name, deps) {
+  factory(name, dependencies) {
     const trace = new Error('factory: ' + name);
-    const factory = () => this.deps.resolve(deps);
+    const factory = () => this.deps.resolve(dependencies);
     this.deps.add({
       name,
       type: 'factory',
@@ -140,12 +138,12 @@ class Rey extends EventEmitter {
    * @param {Array} dependencies
    * @return {Rey} rey
    */
-  store(name, deps) {
+  store(name, dependencies) {
     const trace = new Error('store: ' + name);
     const factory = (dispatcher) => {
 
       const store = new Store(dispatcher);
-      const storeOptions = this.deps.resolve(deps);
+      const storeOptions = this.deps.resolve(dependencies);
 
       // set action handler
       if (storeOptions.registerHandler) {
@@ -201,11 +199,11 @@ class Rey extends EventEmitter {
    * @param {Array} dependencies
    * @return {Rey} rey
    */
-  actions(name, deps) {
+  actions(name, dependencies) {
     const trace = new Error('actions: ' + name);
     const factory = (dispatcher) => {
       const actions = new Actions(dispatcher);
-      actions.extend(this.deps.resolve(deps));
+      actions.extend(this.deps.resolve(dependencies));
       autoBind(actions);
       return actions;
     };
@@ -223,11 +221,11 @@ class Rey extends EventEmitter {
    * @param {Array} dependencies
    * @return {Rey} rey
    */
-  router(name, deps) {
+  router(name, dependencies) {
     const trace = new Error('router: ' + name);
     const factory = (dispatcher, location, React, ReactDOM, document) => {
       const router = new Router(dispatcher, location);
-      router.setRoutes(this.deps.resolve(deps));
+      router.setRoutes(this.deps.resolve(dependencies));
       router.register(() => {
         const route = router.getState();
 
@@ -267,10 +265,10 @@ class Rey extends EventEmitter {
    * @param {Array} dependencies
    * @return {Rey} rey
    */
-  component(name, deps) {
+  component(name, dependencies) {
     const trace = new Error('component: ' + name);
     const factory = (React) => {
-      const component = this.deps.resolve(deps);
+      const component = this.deps.resolve(dependencies);
       if (!component.displayName) {
         component.displayName = name;
       }
@@ -306,11 +304,11 @@ class Rey extends EventEmitter {
    * @param {Array} dependencies
    * @return {Rey} rey
    */
-  controller(name, deps) {
+  controller(name, dependencies) {
     const trace = new Error('controller: ' + name);
     const factory = (React) => {
 
-      const props = this.deps.resolve(deps);
+      const props = this.deps.resolve(dependencies);
 
       // resolve the component
       const component = Utils.isString(props.component) ?
@@ -383,9 +381,9 @@ class Rey extends EventEmitter {
    * @param {Array} dependencies
    * @return {Rey} rey
    */
-  static(name, deps) {
+  static(name, dependencies) {
     const trace = new Error('static: ' + name);
-    const factory = () => Immutable.fromJS(this.deps.resolve(deps));
+    const factory = () => Immutable.fromJS(this.deps.resolve(dependencies));
     this.deps.add({
       name,
       type: 'static',
@@ -400,11 +398,11 @@ class Rey extends EventEmitter {
    * @param {Array} dependencies
    * @return {Rey} rey
    */
-  api(name, deps) {
+  api(name, dependencies) {
     const trace = new Error('api: ' + name);
     const factory = (xhr, Promise, Location) => {
       const api = new API(xhr, Promise, Location);
-      const methods = this.deps.resolve(deps);
+      const methods = this.deps.resolve(dependencies);
       api.extend(methods);
       return api;
     };
@@ -421,7 +419,7 @@ class Rey extends EventEmitter {
    * @param {Array} dependencies
    * @return {Rey} rey
    */
-  load(deps) {
+  load(dependencies) {
     this.deps.resolve(deps.concat(Utils.noop));
     return this;
   }
@@ -431,8 +429,8 @@ class Rey extends EventEmitter {
    * @param {Array} dependencies
    * @return {Rey} rey
    */
-  run(deps) {
-    this.deps.resolve(deps);
+  run(dependencies) {
+    this.deps.resolve(dependencies);
     return this;
   }
 

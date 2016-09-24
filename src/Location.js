@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 const URLParser = require('url');
 const Utils = require('./Utils.js');
 const CallbackRegistry = require('./CallbackRegistry.js');
@@ -58,7 +56,7 @@ class Location {
 
   /**
    * Specifies current url.
-   * @param {String} url
+   * @param {String} href
    */
   set(href) {
     this.window.location.href;
@@ -66,7 +64,7 @@ class Location {
 
   /**
    * Adds an entry to history.
-   * @param {String} url
+   * @param {String} href
    */
   push(href) {
     if (Utils.isObject(href)) {
@@ -77,7 +75,7 @@ class Location {
 
   /**
    * Replaces current history entry.
-   * @param {String} url
+   * @param {String} href
    */
   replace(href) {
     if (Utils.isObject(href)) {
@@ -95,8 +93,8 @@ class Location {
 
   /**
    * Registers a callback to be executed when history changes.
-   * @param {Function} callback to be registered
-   * @param {Object} this variable for the callback
+   * @param {Function} callback callback to be registered
+   * @param {Object} context this variable for the callback
    * @param {Error} trace error
    * @return {Function} callback added callback
    */
@@ -115,7 +113,7 @@ class Location {
 
   /**
    * Parses the given url.
-   * @param {String} url
+   * @param {String} href
    * @return {Object} parsed
    */
   parse(href) {
@@ -130,8 +128,8 @@ class Location {
    * @param {Object} properties
    * @return {String} url
    */
-  format(href) {
-    return URLParser.format(href);
+  format(properties) {
+    return URLParser.format(properties);
   }
 
 };

@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 const Dispatcher = require('./Dispatcher.js');
 const StateHolder = require('./StateHolder.js');
 

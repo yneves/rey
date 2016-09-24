@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 const Promise = require('bluebird');
 const Immutable = require('immutable');
 const Utils = require('./Utils.js');

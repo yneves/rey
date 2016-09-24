@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 const CallbackRegistry = require('./CallbackRegistry.js');
 
 const callbackWrapper = (callback) => (payload) => {

@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 /**
  * Generic class to manage a list of callbacks.
  */
@@ -95,8 +93,8 @@ class CallbackRegistry {
 
   /**
    * Executes the given callback passing arguments.
-   * @param {Object} callback
-   * @param {Array} arguments
+   * @param {Object} entry
+   * @param {Array} args
    */
   call(entry, args) {
     try {

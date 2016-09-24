@@ -1,0 +1,5238 @@
+[
+  {
+    "__docId__": 0,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/API.js",
+    "memberof": null,
+    "longname": "src/API.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "/*!\n**  rey -- React & Flux framework.\n**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>\n**  Licensed under The MIT License <http://opensource.org/licenses/MIT>\n**  Distributed on <http://github.com/yneves/rey>\n*/\n// - -------------------------------------------------------------------- - //\n\nconst deepExtend = require('deep-extend');\nconst Immutable = require('immutable');\n\nconst Utils = require('./Utils.js');\n\nconst toJS = (arg) => (arg.toJS ? arg.toJS() : arg);\n\n/**\n * Class to create API wrappers.\n */\nclass API {\n\n  /**\n   * Creates a new API wrapper.\n   * @param {Function} xhr\n   * @param {Function} Promise\n   * @param {Location} location\n   */\n  constructor(xhr, Promise, location) {\n    this.xhr = xhr;\n    this.Promise = Promise;\n    this.location = location;\n    this.defaults = {};\n  }\n\n  /**\n   * Extends the API wrapper with new methods.\n   * @param {Object} methods\n   */\n  extend(methods) {\n    Object.keys(methods).forEach(name => {\n      const method = methods[name];\n      this[name] = Utils.isFunction(method) ? method.bind(this) :\n        this.request.bind(this, method);\n    });\n  }\n\n  /**\n   * Combines multiple arguments into a single xhr options object.\n   * @param {Array} givenArgs\n   */\n  prepare(givenArgs) {\n    const defaults = Utils.isFunction(this.defaults) ? this.defaults() : this.defaults;\n    const args = [{}, defaults];\n    const argNames = [];\n    givenArgs.forEach((arg) => {\n      arg = toJS(arg);\n      if (Utils.isString(arg)) {\n        argNames.push(arg);\n      } else if (Utils.isArray(arg)) {\n        arg.forEach((subArg) => {\n          subArg = toJS(subArg);\n          if (Utils.isString(subArg)) {\n            argNames.push(subArg);\n\n          } else {\n            if (argNames.length) {\n              args.push({ [argNames.shift()]: subArg });\n            } else {\n              args.push(subArg);\n            }\n          }\n        });\n      } else {\n        if (argNames.length) {\n          args.push({ [argNames.shift()]: arg });\n        } else {\n          args.push(arg);\n        }\n      }\n    });\n\n    const options = deepExtend.apply(undefined, args);\n\n    if (options.query) {\n      const parsed = Utils.isString(options.url) ?\n        this.location.parse(options.url) : Utils.isObject(options.url) ?\n        options.url : {};\n      parsed.query = options.query;\n      delete options.query;\n      options.url = this.location.format(parsed);\n    }\n\n    if (Utils.isObject(options.body)) {\n      options.json = options.body;\n      delete options.body;\n    }\n\n    return options;\n  }\n\n  /**\n   * Performs a request and returns a Promise.\n   * @param {Array} args\n   * @return {Promise} response\n   */\n  request(args) {\n    const options = this.prepare(Array.from(arguments));\n    const promise = new this.Promise((resolve, reject) => {\n      this.xhr(options, (error, response) => {\n        if (response.statusCode === 200 && response.body) {\n          resolve(Immutable.fromJS(response.body));\n        } else {\n          reject(error);\n        }\n      });\n    });\n    return promise.bind(this);\n  }\n};\n\nmodule.exports = API;\n\n// - -------------------------------------------------------------------- - //\n"
+  },
+  {
+    "__docId__": 1,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "deepExtend",
+    "memberof": "src/API.js",
+    "longname": "src/API.js~deepExtend",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/API.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 2,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Immutable",
+    "memberof": "src/API.js",
+    "longname": "src/API.js~Immutable",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/API.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 3,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Utils",
+    "memberof": "src/API.js",
+    "longname": "src/API.js~Utils",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/API.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 12,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 4,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "toJS",
+    "memberof": "src/API.js",
+    "longname": "src/API.js~toJS",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/API.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 14,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 5,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "API",
+    "memberof": "src/API.js",
+    "longname": "src/API.js~API",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/API.js",
+    "importStyle": null,
+    "description": "Class to create API wrappers.",
+    "lineNumber": 19,
+    "interface": false
+  },
+  {
+    "__docId__": 6,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/API.js~API",
+    "longname": "src/API.js~API#constructor",
+    "access": null,
+    "description": "Creates a new API wrapper.",
+    "lineNumber": 27,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "xhr",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "Promise",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Location"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "location",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 7,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "xhr",
+    "memberof": "src/API.js~API",
+    "longname": "src/API.js~API#xhr",
+    "access": null,
+    "description": null,
+    "lineNumber": 28,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 8,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "Promise",
+    "memberof": "src/API.js~API",
+    "longname": "src/API.js~API#Promise",
+    "access": null,
+    "description": null,
+    "lineNumber": 29,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 9,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "location",
+    "memberof": "src/API.js~API",
+    "longname": "src/API.js~API#location",
+    "access": null,
+    "description": null,
+    "lineNumber": 30,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 10,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "defaults",
+    "memberof": "src/API.js~API",
+    "longname": "src/API.js~API#defaults",
+    "access": null,
+    "description": null,
+    "lineNumber": 31,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 11,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "extend",
+    "memberof": "src/API.js~API",
+    "longname": "src/API.js~API#extend",
+    "access": null,
+    "description": "Extends the API wrapper with new methods.",
+    "lineNumber": 38,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "methods",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 12,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "prepare",
+    "memberof": "src/API.js~API",
+    "longname": "src/API.js~API#prepare",
+    "access": null,
+    "description": "Combines multiple arguments into a single xhr options object.",
+    "lineNumber": 50,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "givenArgs",
+        "description": ""
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 13,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "request",
+    "memberof": "src/API.js~API",
+    "longname": "src/API.js~API#request",
+    "access": null,
+    "description": "Performs a request and returns a Promise.",
+    "lineNumber": 105,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "args",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Promise"
+      ],
+      "spread": false,
+      "description": "response"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 14,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/Actions.js",
+    "memberof": null,
+    "longname": "src/Actions.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "/*!\n**  rey -- React & Flux framework.\n**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>\n**  Licensed under The MIT License <http://opensource.org/licenses/MIT>\n**  Distributed on <http://github.com/yneves/rey>\n*/\n// - -------------------------------------------------------------------- - //\n\nconst Dispatcher = require('./Dispatcher.js');\nconst StateHolder = require('./StateHolder.js');\n\n/**\n * Class to manage action creators.\n */\nclass Actions {\n\n  /**\n   * Creates a new set of action creators.\n   * @param {Dispatcher} dispatcher\n   */\n  constructor(dispatcher) {\n    if (!(dispatcher instanceof Dispatcher)) {\n      throw new Error('Dispatcher must be provided');\n    }\n    this.dispatcher = dispatcher;\n  }\n\n  /**\n   * Extends the action creator with given actions.\n   * @param {Object} actions\n   */\n  extend(actions) {\n    const dispatch = this.dispatcher.dispatch.bind(this.dispatcher);\n    Object.keys(actions).forEach(name => {\n      const code = actions[name];\n      this[name] = function() {\n        let payload = code.apply(this, arguments);\n        if (typeof payload === 'string') {\n          payload = { actionType: payload };\n        }\n        if (typeof payload !== 'undefined') {\n          dispatch(payload);\n        }\n      };\n    });\n  }\n\n};\n\nmodule.exports = Actions;\n\n// - -------------------------------------------------------------------- - //\n"
+  },
+  {
+    "__docId__": 15,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Dispatcher",
+    "memberof": "src/Actions.js",
+    "longname": "src/Actions.js~Dispatcher",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Actions.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 16,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "StateHolder",
+    "memberof": "src/Actions.js",
+    "longname": "src/Actions.js~StateHolder",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Actions.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 17,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "Actions",
+    "memberof": "src/Actions.js",
+    "longname": "src/Actions.js~Actions",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Actions.js",
+    "importStyle": null,
+    "description": "Class to manage action creators.",
+    "lineNumber": 15,
+    "interface": false
+  },
+  {
+    "__docId__": 18,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/Actions.js~Actions",
+    "longname": "src/Actions.js~Actions#constructor",
+    "access": null,
+    "description": "Creates a new set of action creators.",
+    "lineNumber": 21,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Dispatcher"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dispatcher",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 19,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "dispatcher",
+    "memberof": "src/Actions.js~Actions",
+    "longname": "src/Actions.js~Actions#dispatcher",
+    "access": null,
+    "description": null,
+    "lineNumber": 25,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 20,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "extend",
+    "memberof": "src/Actions.js~Actions",
+    "longname": "src/Actions.js~Actions#extend",
+    "access": null,
+    "description": "Extends the action creator with given actions.",
+    "lineNumber": 32,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "actions",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 21,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/CallbackRegistry.js",
+    "memberof": null,
+    "longname": "src/CallbackRegistry.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "/*!\n**  rey -- React & Flux framework.\n**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>\n**  Licensed under The MIT License <http://opensource.org/licenses/MIT>\n**  Distributed on <http://github.com/yneves/rey>\n*/\n// - -------------------------------------------------------------------- - //\n\n/**\n * Generic class to manage a list of callbacks.\n */\nclass CallbackRegistry {\n\n  /**\n   * Creates a new list of callbacks.\n   * @param {Function} wrapper used to wrap non-function callbacks into function\n   */\n  constructor(wrapper) {\n    this.wrapper = wrapper;\n    this.callbacks = [];\n  }\n\n  /**\n   * Returns the number of registered callbacks.\n   * @return {Number} count\n   */\n  count() {\n    return this.callbacks.length;\n  }\n\n  /**\n   * Removes all registered callbacks.\n   */\n  clear() {\n    this.callbacks.length = 0;\n  }\n\n  /**\n   * Registers a new callback.\n   * Call the wrapper passed on contructur if the argument is not a function.\n   * Throws an exception if the callback is already registered.\n   * @param {Function} callback to be registered\n   * @param {Object} context this variable for the callback\n   * @param {Error} trace error for tracing purposes\n   * @return {Function} wrappedCallback\n   */\n  add(callback, context, trace) {\n    const wrapped = typeof callback === 'function'\n      ? callback : typeof this.wrapper === 'function'\n        ? this.wrapper(callback) : callback;\n    const index = this.indexOf(wrapped);\n    if (index !== -1) {\n      throw new Error('cannot add repeated callbacks');\n    }\n    this.callbacks.push({\n      callback: wrapped,\n      context: context,\n      trace: trace || new Error()\n    });\n    return wrapped;\n  }\n\n  /**\n   * Finds the given callback within the list.\n   * @param {Function} callback to be found\n   * @return {Number} index of the callback within the list\n   */\n  indexOf(callback) {\n    let index = -1;\n    const length = this.callbacks.length;\n    for (let i = 0; i < length; i++) {\n      if (this.callbacks[i].callback === callback) {\n        index = i;\n        break;\n      }\n    }\n    return index;\n  }\n\n  /**\n   * Removes the given callback from the registry.\n   * @param {Function} callback to be removed\n   * @return {Boolean} removed true if the callback was found\n   */\n  remove(callback) {\n    const index = this.indexOf(callback);\n    const found = index !== -1;\n    if (found) {\n      this.callbacks.splice(index, 1);\n    }\n    return found;\n  }\n\n  /**\n   * Executes the given callback passing arguments.\n   * @param {Object} entry\n   * @param {Array} args\n   */\n  call(entry, args) {\n    try {\n      entry.callback.apply(entry.context, args);\n    } catch (error) {\n      console.error(error, entry.trace);\n    }\n  }\n\n  /**\n   * Executes all registered callbacks passing given arguments.\n   */\n  run() {\n    const args = Array.from(arguments);\n    const length = this.callbacks.length;\n    for (let i = 0; i < length; i++) {\n      this.call(this.callbacks[i], args);\n    }\n  }\n\n};\n\nmodule.exports = CallbackRegistry;\n\n// - -------------------------------------------------------------------- - //\n"
+  },
+  {
+    "__docId__": 22,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "CallbackRegistry",
+    "memberof": "src/CallbackRegistry.js",
+    "longname": "src/CallbackRegistry.js~CallbackRegistry",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/CallbackRegistry.js",
+    "importStyle": null,
+    "description": "Generic class to manage a list of callbacks.",
+    "lineNumber": 12,
+    "interface": false
+  },
+  {
+    "__docId__": 23,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/CallbackRegistry.js~CallbackRegistry",
+    "longname": "src/CallbackRegistry.js~CallbackRegistry#constructor",
+    "access": null,
+    "description": "Creates a new list of callbacks.",
+    "lineNumber": 18,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "wrapper",
+        "description": "used to wrap non-function callbacks into function"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 24,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "wrapper",
+    "memberof": "src/CallbackRegistry.js~CallbackRegistry",
+    "longname": "src/CallbackRegistry.js~CallbackRegistry#wrapper",
+    "access": null,
+    "description": null,
+    "lineNumber": 19,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 25,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "callbacks",
+    "memberof": "src/CallbackRegistry.js~CallbackRegistry",
+    "longname": "src/CallbackRegistry.js~CallbackRegistry#callbacks",
+    "access": null,
+    "description": null,
+    "lineNumber": 20,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 26,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "count",
+    "memberof": "src/CallbackRegistry.js~CallbackRegistry",
+    "longname": "src/CallbackRegistry.js~CallbackRegistry#count",
+    "access": null,
+    "description": "Returns the number of registered callbacks.",
+    "lineNumber": 27,
+    "params": [],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Number"
+      ],
+      "spread": false,
+      "description": "count"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 27,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "clear",
+    "memberof": "src/CallbackRegistry.js~CallbackRegistry",
+    "longname": "src/CallbackRegistry.js~CallbackRegistry#clear",
+    "access": null,
+    "description": "Removes all registered callbacks.",
+    "lineNumber": 34,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 28,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "add",
+    "memberof": "src/CallbackRegistry.js~CallbackRegistry",
+    "longname": "src/CallbackRegistry.js~CallbackRegistry#add",
+    "access": null,
+    "description": "Registers a new callback.\nCall the wrapper passed on contructur if the argument is not a function.\nThrows an exception if the callback is already registered.",
+    "lineNumber": 47,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "callback",
+        "description": "to be registered"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "context",
+        "description": "this variable for the callback"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Error"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "trace",
+        "description": "error for tracing purposes"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Function"
+      ],
+      "spread": false,
+      "description": "wrappedCallback"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 29,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "indexOf",
+    "memberof": "src/CallbackRegistry.js~CallbackRegistry",
+    "longname": "src/CallbackRegistry.js~CallbackRegistry#indexOf",
+    "access": null,
+    "description": "Finds the given callback within the list.",
+    "lineNumber": 68,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "callback",
+        "description": "to be found"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Number"
+      ],
+      "spread": false,
+      "description": "index of the callback within the list"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 30,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "remove",
+    "memberof": "src/CallbackRegistry.js~CallbackRegistry",
+    "longname": "src/CallbackRegistry.js~CallbackRegistry#remove",
+    "access": null,
+    "description": "Removes the given callback from the registry.",
+    "lineNumber": 85,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "callback",
+        "description": "to be removed"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Boolean"
+      ],
+      "spread": false,
+      "description": "removed true if the callback was found"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 31,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "call",
+    "memberof": "src/CallbackRegistry.js~CallbackRegistry",
+    "longname": "src/CallbackRegistry.js~CallbackRegistry#call",
+    "access": null,
+    "description": "Executes the given callback passing arguments.",
+    "lineNumber": 99,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "entry",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "args",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 32,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "run",
+    "memberof": "src/CallbackRegistry.js~CallbackRegistry",
+    "longname": "src/CallbackRegistry.js~CallbackRegistry#run",
+    "access": null,
+    "description": "Executes all registered callbacks passing given arguments.",
+    "lineNumber": 110,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 33,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/Controller.js",
+    "memberof": null,
+    "longname": "src/Controller.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "/*!\n**  rey -- React & Flux framework.\n**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>\n**  Licensed under The MIT License <http://opensource.org/licenses/MIT>\n**  Distributed on <http://github.com/yneves/rey>\n*/\n// - -------------------------------------------------------------------- - //\n\nconst React = require('react');\nconst Immutable = require('immutable');\nconst Store = require('./Store.js');\nconst Router = require('./Router.js');\nconst Actions = require('./Actions.js');\n\nconst empty = [];\n\nconst Controller = {\n\n  propTypes: {\n    component: React.PropTypes.any,\n    actions: React.PropTypes.oneOfType([\n      React.PropTypes.instanceOf(Actions),\n      React.PropTypes.arrayOf(React.PropTypes.instanceOf(Actions))\n    ]),\n    store: React.PropTypes.oneOfType([\n      React.PropTypes.instanceOf(Store),\n      React.PropTypes.arrayOf(React.PropTypes.instanceOf(Store))\n    ]),\n    router: React.PropTypes.instanceOf(Router)\n  },\n\n  getInitialState() {\n    return this.mapProps();\n  },\n\n  routeDidChange() {\n    this.setState(this.mapProps());\n  },\n\n  storeDidChange() {\n    this.setState(this.mapProps());\n  },\n\n  componentWillMount() {\n    this.storeHandlers = this.getStores().map((store) => store.register(this.storeDidChange));\n    this.routerHandler = this.getRouters().map((router) => router.register(this.routeDidChange));\n    this.getStores().map((store) => store.autoActivate());\n  },\n\n  componentWillUnmount() {\n    this.getStores().map((store, index) => store.unregister(this.storeHandlers[index]));\n    this.getRouters().map((store, index) => store.unregister(this.routerHandler[index]));\n    this.getStores().map((store) => store.autoDeactivate());\n  },\n\n  getStores() {\n    if (!this.props.store) {\n      return empty;\n    }\n    return empty.concat(this.props.store);\n  },\n\n  getActions() {\n    if (!this.props.actions) {\n      return empty;\n    }\n    return empty.concat(this.props.actions);\n  },\n\n  getRouters() {\n    if (!this.props.router) {\n      return empty;\n    }\n    return empty.concat(this.props.router);\n  },\n\n  mapProps() {\n    const props = {};\n\n    this.getActions().forEach(actions => {\n      for (let key in actions) {\n        if (key !== 'extend' && key !== 'constructor') {\n          props[key] = actions[key];\n        }\n      }\n    });\n\n    this.getStores().forEach(store => {\n      const storeProps = store.toProps();\n      for (let key in storeProps) {\n        props[key] = storeProps[key];\n      }\n    });\n\n    this.getRouters().forEach(router => {\n      const routerProps = router.toProps();\n      for (let key in routerProps) {\n        props[key] = routerProps[key];\n      }\n    });\n\n    for (let key in this.props) {\n      if (!Controller.propTypes[key]) {\n        props[key] = this.props[key];\n      }\n    }\n\n    return props;\n  },\n\n  render() {\n    return React.createElement(this.props.component, this.state);\n  }\n};\n\nmodule.exports = Controller;\n\n// - -------------------------------------------------------------------- - //\n"
+  },
+  {
+    "__docId__": 34,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "React",
+    "memberof": "src/Controller.js",
+    "longname": "src/Controller.js~React",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Controller.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 35,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Immutable",
+    "memberof": "src/Controller.js",
+    "longname": "src/Controller.js~Immutable",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Controller.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 36,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Store",
+    "memberof": "src/Controller.js",
+    "longname": "src/Controller.js~Store",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Controller.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 11,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 37,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Router",
+    "memberof": "src/Controller.js",
+    "longname": "src/Controller.js~Router",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Controller.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 12,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 38,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Actions",
+    "memberof": "src/Controller.js",
+    "longname": "src/Controller.js~Actions",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Controller.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 13,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 39,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "empty",
+    "memberof": "src/Controller.js",
+    "longname": "src/Controller.js~empty",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Controller.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 15,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 40,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Controller",
+    "memberof": "src/Controller.js",
+    "longname": "src/Controller.js~Controller",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Controller.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 17,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 41,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/DependencyRegistry.js",
+    "memberof": null,
+    "longname": "src/DependencyRegistry.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "/*!\n**  rey -- React & Flux framework.\n**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>\n**  Licensed under The MIT License <http://opensource.org/licenses/MIT>\n**  Distributed on <http://github.com/yneves/rey>\n*/\n// - -------------------------------------------------------------------- - //\n\n/**\n * Dependency registry.\n */\nclass DependencyRegistry {\n\n  /**\n   * Creates a new dependency registry.\n   */\n  constructor() {\n    this.dependencies = {};\n  }\n\n  /**\n   * Registers a new dependency.\n   * @param {Object} dependency - dependency to be registered\n   */\n  add(dependency) {\n    const valid = typeof dependency === 'object' &&\n      typeof dependency.name === 'string' &&\n      (dependency.factory instanceof Array ||\n        typeof dependency.factory === 'function');\n    if (!valid) {\n      throw new Error('invalid dependency');\n    }\n    this.dependencies[dependency.name] = dependency;\n  }\n\n  /**\n   * Removes a dependency from the registry.\n   * @param {String} dependency - dependency to be removed\n   */\n  remove(dependency) {\n    if (typeof dependency === 'string') {\n      delete this.dependencies[dependency];\n    } else if (typeof dependency === 'object' && typeof dependency.name === 'string') {\n      delete this.dependencies[dependency.name];\n    }\n  }\n\n  /**\n   * Returns the requested instance.\n   * @param {String} name of the dependency\n   * @return {Object} dependency instance\n   */\n  get(name) {\n    const dep = this.dependencies[name];\n    if (!dep) {\n      throw new Error('unknown dependency: ' + name);\n    }\n    if (!dep.instance) {\n      dep.instance = this.resolve([].concat(dep.factory));\n    }\n    return dep.instance;\n  }\n\n  /**\n   * Resolves dependencies for the given factory.\n   * @param {Array} dependencies - list of dependencies, factory is last element\n   */\n  resolve(dependencies) {\n    const hasTrace = dependencies[dependencies.length - 1] instanceof Error;\n    const codeIndex = hasTrace ? dependencies.length - 2 : dependencies.length - 1;\n    const trace = hasTrace ? dependencies[codeIndex + 1] : null;\n    const code = dependencies[codeIndex];\n    const args = [];\n    for (let i = 0; i < codeIndex; i++) {\n      args[i] = this.get(dependencies[i]);\n    }\n    try {\n      return code.apply(this, args);\n    } catch (error) {\n      console.error(error, trace);\n    }\n  }\n\n};\n\nmodule.exports = DependencyRegistry;\n\n// - -------------------------------------------------------------------- - //\n"
+  },
+  {
+    "__docId__": 42,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "DependencyRegistry",
+    "memberof": "src/DependencyRegistry.js",
+    "longname": "src/DependencyRegistry.js~DependencyRegistry",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/DependencyRegistry.js",
+    "importStyle": null,
+    "description": "Dependency registry.",
+    "lineNumber": 12,
+    "interface": false
+  },
+  {
+    "__docId__": 43,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/DependencyRegistry.js~DependencyRegistry",
+    "longname": "src/DependencyRegistry.js~DependencyRegistry#constructor",
+    "access": null,
+    "description": "Creates a new dependency registry.",
+    "lineNumber": 17,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 44,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "dependencies",
+    "memberof": "src/DependencyRegistry.js~DependencyRegistry",
+    "longname": "src/DependencyRegistry.js~DependencyRegistry#dependencies",
+    "access": null,
+    "description": null,
+    "lineNumber": 18,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 45,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "add",
+    "memberof": "src/DependencyRegistry.js~DependencyRegistry",
+    "longname": "src/DependencyRegistry.js~DependencyRegistry#add",
+    "access": null,
+    "description": "Registers a new dependency.",
+    "lineNumber": 25,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dependency",
+        "description": "dependency to be registered"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 46,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "remove",
+    "memberof": "src/DependencyRegistry.js~DependencyRegistry",
+    "longname": "src/DependencyRegistry.js~DependencyRegistry#remove",
+    "access": null,
+    "description": "Removes a dependency from the registry.",
+    "lineNumber": 40,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dependency",
+        "description": "dependency to be removed"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 47,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "get",
+    "memberof": "src/DependencyRegistry.js~DependencyRegistry",
+    "longname": "src/DependencyRegistry.js~DependencyRegistry#get",
+    "access": null,
+    "description": "Returns the requested instance.",
+    "lineNumber": 53,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "name",
+        "description": "of the dependency"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Object"
+      ],
+      "spread": false,
+      "description": "dependency instance"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 48,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "resolve",
+    "memberof": "src/DependencyRegistry.js~DependencyRegistry",
+    "longname": "src/DependencyRegistry.js~DependencyRegistry#resolve",
+    "access": null,
+    "description": "Resolves dependencies for the given factory.",
+    "lineNumber": 68,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dependencies",
+        "description": "list of dependencies, factory is last element"
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 49,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/Dispatcher.js",
+    "memberof": null,
+    "longname": "src/Dispatcher.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "/*!\n**  rey -- React & Flux framework.\n**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>\n**  Licensed under The MIT License <http://opensource.org/licenses/MIT>\n**  Distributed on <http://github.com/yneves/rey>\n*/\n// - -------------------------------------------------------------------- - //\n\nconst CallbackRegistry = require('./CallbackRegistry.js');\n\nconst callbackWrapper = (callback) => (payload) => {\n  if (typeof callback[payload.actionType] === 'function') {\n    callback[payload.actionType].call(null, payload);\n  }\n};\n\n/**\n * Class to manage Flux actions flow.\n */\nclass Dispatcher {\n\n  /**\n   * Creates a new Dispatcher instance.\n   */\n  constructor() {\n    this.payloads = [];\n    this.callbacks = new CallbackRegistry(callbackWrapper);\n  }\n\n  /**\n   * Triggers the registered callbacks for all queued actions.\n   */\n  flush() {\n    this.flushing = true;\n    while (this.payloads.length) {\n      const payload = this.payloads.shift();\n      this.callbacks.run(payload);\n    }\n    this.flushing = false;\n  }\n\n  /**\n   * Dispatches an action, triggering the registered callbacks.\n   * @param {Object} payload\n   */\n  dispatch(payload) {\n    this.payloads.push(payload);\n    if (!this.flushing) {\n      this.flush();\n    }\n  }\n\n  /**\n   * Registers a callback to be executed at every action.\n   * @param {Function} callback to be registered\n   * @param {Object} context this variable for the callback\n   * @param {Error} trace error\n   * @return {Function} added callback\n   */\n  register(callback, context, trace) {\n    return this.callbacks.add(callback, context, trace);\n  }\n\n  /**\n   * Removes the given callback from the registry.\n   * @param {Function} callback to be removed\n   * @return {Boolean} unregistered true if the callback was found\n   */\n  unregister(callback) {\n    return this.callbacks.remove(callback);\n  }\n\n};\n\nmodule.exports = Dispatcher;\n\n// - -------------------------------------------------------------------- - //\n"
+  },
+  {
+    "__docId__": 50,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "CallbackRegistry",
+    "memberof": "src/Dispatcher.js",
+    "longname": "src/Dispatcher.js~CallbackRegistry",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Dispatcher.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 51,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "callbackWrapper",
+    "memberof": "src/Dispatcher.js",
+    "longname": "src/Dispatcher.js~callbackWrapper",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Dispatcher.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 11,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 52,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "Dispatcher",
+    "memberof": "src/Dispatcher.js",
+    "longname": "src/Dispatcher.js~Dispatcher",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Dispatcher.js",
+    "importStyle": null,
+    "description": "Class to manage Flux actions flow.",
+    "lineNumber": 20,
+    "interface": false
+  },
+  {
+    "__docId__": 53,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/Dispatcher.js~Dispatcher",
+    "longname": "src/Dispatcher.js~Dispatcher#constructor",
+    "access": null,
+    "description": "Creates a new Dispatcher instance.",
+    "lineNumber": 25,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 54,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "payloads",
+    "memberof": "src/Dispatcher.js~Dispatcher",
+    "longname": "src/Dispatcher.js~Dispatcher#payloads",
+    "access": null,
+    "description": null,
+    "lineNumber": 26,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 55,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "callbacks",
+    "memberof": "src/Dispatcher.js~Dispatcher",
+    "longname": "src/Dispatcher.js~Dispatcher#callbacks",
+    "access": null,
+    "description": null,
+    "lineNumber": 27,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 56,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "flush",
+    "memberof": "src/Dispatcher.js~Dispatcher",
+    "longname": "src/Dispatcher.js~Dispatcher#flush",
+    "access": null,
+    "description": "Triggers the registered callbacks for all queued actions.",
+    "lineNumber": 33,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 57,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "flushing",
+    "memberof": "src/Dispatcher.js~Dispatcher",
+    "longname": "src/Dispatcher.js~Dispatcher#flushing",
+    "access": null,
+    "description": null,
+    "lineNumber": 34,
+    "undocument": true,
+    "type": {
+      "types": [
+        "boolean"
+      ]
+    }
+  },
+  {
+    "__docId__": 58,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "flushing",
+    "memberof": "src/Dispatcher.js~Dispatcher",
+    "longname": "src/Dispatcher.js~Dispatcher#flushing",
+    "access": null,
+    "description": null,
+    "lineNumber": 39,
+    "undocument": true,
+    "type": {
+      "types": [
+        "boolean"
+      ]
+    }
+  },
+  {
+    "__docId__": 59,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "dispatch",
+    "memberof": "src/Dispatcher.js~Dispatcher",
+    "longname": "src/Dispatcher.js~Dispatcher#dispatch",
+    "access": null,
+    "description": "Dispatches an action, triggering the registered callbacks.",
+    "lineNumber": 46,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "payload",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 60,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "register",
+    "memberof": "src/Dispatcher.js~Dispatcher",
+    "longname": "src/Dispatcher.js~Dispatcher#register",
+    "access": null,
+    "description": "Registers a callback to be executed at every action.",
+    "lineNumber": 60,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "callback",
+        "description": "to be registered"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "context",
+        "description": "this variable for the callback"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Error"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "trace",
+        "description": "error"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Function"
+      ],
+      "spread": false,
+      "description": "added callback"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 61,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "unregister",
+    "memberof": "src/Dispatcher.js~Dispatcher",
+    "longname": "src/Dispatcher.js~Dispatcher#unregister",
+    "access": null,
+    "description": "Removes the given callback from the registry.",
+    "lineNumber": 69,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "callback",
+        "description": "to be removed"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Boolean"
+      ],
+      "spread": false,
+      "description": "unregistered true if the callback was found"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 62,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/Location.js",
+    "memberof": null,
+    "longname": "src/Location.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "/*!\n**  rey -- React & Flux framework.\n**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>\n**  Licensed under The MIT License <http://opensource.org/licenses/MIT>\n**  Distributed on <http://github.com/yneves/rey>\n*/\n// - -------------------------------------------------------------------- - //\n\nconst URLParser = require('url');\nconst Utils = require('./Utils.js');\nconst CallbackRegistry = require('./CallbackRegistry.js');\n\n/**\n * Simple wrapper for window.location and window.history.\n */\nclass Location {\n\n  /**\n   * Creates a new location wrapper instance.\n   * @param {Object} window\n   */\n  constructor(window) {\n    if (!window) {\n      throw new Error('window must be provided');\n    }\n    this.window = window;\n    this.callbacks = new CallbackRegistry();\n  }\n\n  /**\n   * Starts monitoring history popstate event.\n   */\n  activate() {\n    this.handler = (event) => {\n      if (event && event.state) {\n        this.callbacks.run(event.state.href);\n      }\n    };\n    this.window.addEventListener('popstate', this.handler);\n  }\n\n  /**\n   * Stops monitoring history popstate event.\n   */\n  deactivate() {\n    this.window.removeEventListener('popstate', this.handler);\n  }\n\n  /**\n   * Returns current url.\n   * @return {String} url\n   */\n  get() {\n    return this.window.location.href;\n  }\n\n  /**\n   * Specifies current url.\n   * @param {String} href\n   */\n  set(href) {\n    this.window.location.href;\n  }\n\n  /**\n   * Adds an entry to history.\n   * @param {String} href\n   */\n  push(href) {\n    if (Utils.isObject(href)) {\n      href = this.format(href);\n    }\n    this.window.history.pushState({href}, this.window.document.title, href);\n  }\n\n  /**\n   * Replaces current history entry.\n   * @param {String} href\n   */\n  replace(href) {\n    if (Utils.isObject(href)) {\n      href = this.format(href);\n    }\n    this.window.history.replaceState({href}, this.window.document.title, href);\n  }\n\n  /**\n   * Navigates back in history.\n   */\n  back() {\n    this.window.history.back();\n  }\n\n  /**\n   * Registers a callback to be executed when history changes.\n   * @param {Function} callback callback to be registered\n   * @param {Object} context this variable for the callback\n   * @param {Error} trace error\n   * @return {Function} callback added callback\n   */\n  register(callback, context, trace) {\n    return this.callbacks.add(callback, context, trace);\n  }\n\n  /**\n   * Removes the given callback from the registry.\n   * @param {Function} callback to be removed\n   * @return {Boolean} unregistered true if the callback was found\n   */\n  unregister(callback) {\n    return this.callbacks.remove(callback);\n  }\n\n  /**\n   * Parses the given url.\n   * @param {String} href\n   * @return {Object} parsed\n   */\n  parse(href) {\n    if (Utils.isObject(href)) {\n      href = this.format(href);\n    }\n    return URLParser.parse(href, true);\n  }\n\n  /**\n   * Formats given properties into an url.\n   * @param {Object} properties\n   * @return {String} url\n   */\n  format(properties) {\n    return URLParser.format(properties);\n  }\n\n};\n\nmodule.exports = Location;\n\n// - -------------------------------------------------------------------- - //\n"
+  },
+  {
+    "__docId__": 63,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "URLParser",
+    "memberof": "src/Location.js",
+    "longname": "src/Location.js~URLParser",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Location.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 64,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Utils",
+    "memberof": "src/Location.js",
+    "longname": "src/Location.js~Utils",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Location.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 65,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "CallbackRegistry",
+    "memberof": "src/Location.js",
+    "longname": "src/Location.js~CallbackRegistry",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Location.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 11,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 66,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "Location",
+    "memberof": "src/Location.js",
+    "longname": "src/Location.js~Location",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Location.js",
+    "importStyle": null,
+    "description": "Simple wrapper for window.location and window.history.",
+    "lineNumber": 16,
+    "interface": false
+  },
+  {
+    "__docId__": 67,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#constructor",
+    "access": null,
+    "description": "Creates a new location wrapper instance.",
+    "lineNumber": 22,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "window",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 68,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "window",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#window",
+    "access": null,
+    "description": null,
+    "lineNumber": 26,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 69,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "callbacks",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#callbacks",
+    "access": null,
+    "description": null,
+    "lineNumber": 27,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 70,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "activate",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#activate",
+    "access": null,
+    "description": "Starts monitoring history popstate event.",
+    "lineNumber": 33,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 71,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "handler",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#handler",
+    "access": null,
+    "description": null,
+    "lineNumber": 34,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 72,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "deactivate",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#deactivate",
+    "access": null,
+    "description": "Stops monitoring history popstate event.",
+    "lineNumber": 45,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 73,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "get",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#get",
+    "access": null,
+    "description": "Returns current url.",
+    "lineNumber": 53,
+    "params": [],
+    "return": {
+      "nullable": null,
+      "types": [
+        "String"
+      ],
+      "spread": false,
+      "description": "url"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 74,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "set",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#set",
+    "access": null,
+    "description": "Specifies current url.",
+    "lineNumber": 61,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "href",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 75,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "push",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#push",
+    "access": null,
+    "description": "Adds an entry to history.",
+    "lineNumber": 69,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "href",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 76,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "replace",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#replace",
+    "access": null,
+    "description": "Replaces current history entry.",
+    "lineNumber": 80,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "href",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 77,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "back",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#back",
+    "access": null,
+    "description": "Navigates back in history.",
+    "lineNumber": 90,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 78,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "register",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#register",
+    "access": null,
+    "description": "Registers a callback to be executed when history changes.",
+    "lineNumber": 101,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "callback",
+        "description": "callback to be registered"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "context",
+        "description": "this variable for the callback"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Error"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "trace",
+        "description": "error"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Function"
+      ],
+      "spread": false,
+      "description": "callback added callback"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 79,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "unregister",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#unregister",
+    "access": null,
+    "description": "Removes the given callback from the registry.",
+    "lineNumber": 110,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "callback",
+        "description": "to be removed"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Boolean"
+      ],
+      "spread": false,
+      "description": "unregistered true if the callback was found"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 80,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "parse",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#parse",
+    "access": null,
+    "description": "Parses the given url.",
+    "lineNumber": 119,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "href",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Object"
+      ],
+      "spread": false,
+      "description": "parsed"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 81,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "format",
+    "memberof": "src/Location.js~Location",
+    "longname": "src/Location.js~Location#format",
+    "access": null,
+    "description": "Formats given properties into an url.",
+    "lineNumber": 131,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "properties",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "String"
+      ],
+      "spread": false,
+      "description": "url"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 82,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/Promise.js",
+    "memberof": null,
+    "longname": "src/Promise.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "/*!\n**  rey -- React & Flux framework.\n**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>\n**  Licensed under The MIT License <http://opensource.org/licenses/MIT>\n**  Distributed on <http://github.com/yneves/rey>\n*/\n// - -------------------------------------------------------------------- - //\n\nconst Promise = require('bluebird');\nconst Immutable = require('immutable');\nconst Utils = require('./Utils.js');\n\nPromise.prototype.toState = function(stateHolder, propertyName) {\n\n  if (!stateHolder || !Utils.isFunction(stateHolder.setState)) {\n    throw new Error('state holder must have a setState method');\n  }\n\n  if (!Utils.isString(propertyName)) {\n    throw new Error('state property name must be string');\n  }\n\n  const getState = () => {\n    return Immutable.fromJS({\n      value: this.isFulfilled() ? this.value() : undefined,\n      reason: this.isRejected() ? this.reason() : undefined,\n      isFulfilled: this.isFulfilled(),\n      isRejected: this.isRejected(),\n      isPending: this.isPending(),\n      isCancelled: this.isCancelled()\n    })\n  };\n\n  const updateState = (value) => {\n    var newState = getState();\n    if (Immutable.Map.isMap(stateHolder.state)) {\n      stateHolder.setState(stateHolder.state.mergeIn([propertyName], newState));\n    } else {\n      var state = {};\n      state[propertyName] = newState;\n      stateHolder.setState(state);\n    }\n    return value;\n  };\n\n  updateState();\n\n  return this.bind(stateHolder)\n    .then(updateState)\n    .catch(updateState)\n    .finally(updateState);\n};\n\nmodule.exports = Promise;\n\n// - -------------------------------------------------------------------- - //\n"
+  },
+  {
+    "__docId__": 83,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Promise",
+    "memberof": "src/Promise.js",
+    "longname": "src/Promise.js~Promise",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Promise.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 84,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Immutable",
+    "memberof": "src/Promise.js",
+    "longname": "src/Promise.js~Immutable",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Promise.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 85,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Utils",
+    "memberof": "src/Promise.js",
+    "longname": "src/Promise.js~Utils",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Promise.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 11,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 86,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "toState",
+    "memberof": "src/Promise.js",
+    "longname": "src/Promise.js~toState",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Promise.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 13,
+    "undocument": true,
+    "params": [
+      {
+        "name": "stateHolder",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "propertyName",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 87,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/Rey.js",
+    "memberof": null,
+    "longname": "src/Rey.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "/*!\n**  rey -- React & Flux framework.\n**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>\n**  Licensed under The MIT License <http://opensource.org/licenses/MIT>\n**  Distributed on <http://github.com/yneves/rey>\n*/\n// - -------------------------------------------------------------------- - //\n\nconst window = require('global/window');\nconst document = require('global/document');\nconst xhr = require('xhr');\nconst React = require('react');\nconst ReactDOM = require('react-dom');\nconst ReactCSSTransitionGroup = require('react-addons-css-transition-group');\n\nconst xtend = require('xtend');\nconst autoBind = require('auto-bind');\nconst Immutable = require('immutable');\nconst {EventEmitter} = require('events');\n\nconst API = require('./API.js');\nconst Utils = require('./Utils.js');\nconst Store = require('./Store.js');\nconst Actions = require('./Actions.js');\nconst Router = require('./Router.js');\nconst Controller = require('./Controller.js');\nconst Dispatcher = require('./Dispatcher.js');\nconst Location = require('./Location.js');\nconst Promise = require('./Promise.js');\nconst DependencyRegistry = require('./DependencyRegistry.js');\n\n\n/**\n * Main class.\n */\nclass Rey extends EventEmitter {\n\n  /**\n   * Creates a new Rey instance.\n   */\n  constructor() {\n    super();\n    autoBind(this);\n\n    this.deps = new DependencyRegistry();\n\n    this.deps.add({\n      name: 'window',\n      type: 'core',\n      factory: [() => window]\n    });\n\n    this.deps.add({\n      name: 'document',\n      type: 'core',\n      factory: [() => document]\n    });\n\n    this.deps.add({\n      name: 'xhr',\n      type: 'core',\n      factory: [() => xhr]\n    });\n\n    this.deps.add({\n      name: 'Promise',\n      type: 'core',\n      factory: [() => Promise]\n    });\n\n    this.deps.add({\n      name: 'Immutable',\n      type: 'core',\n      factory: [() => Immutable]\n    });\n\n    this.deps.add({\n      name: 'React',\n      type: 'core',\n      factory: ['Immutable', (Immutable) => {\n        const ImmutableTypes = [\n          'Iterable', 'Seq', 'Collection', 'Map',\n          'OrderedMap', 'List', 'Stack', 'Set',\n          'OrderedSet', 'Record', 'Range', 'Repeat'\n        ];\n        ImmutableTypes.forEach((type) => {\n          React.PropTypes[type] = React.PropTypes.instanceOf(Immutable[type]);\n        });\n        return React;\n      }]\n    });\n\n    this.deps.add({\n      name: 'ReactDOM',\n      type: 'core',\n      factory: [() => ReactDOM]\n    });\n\n    this.deps.add({\n      name: 'ReactCSSTransitionGroup',\n      type: 'core',\n      factory: [() => ReactCSSTransitionGroup]\n    });\n\n    this.deps.add({\n      name: 'Dispatcher',\n      type: 'core',\n      factory: [() => new Dispatcher()]\n    });\n\n    this.deps.add({\n      name: 'Location',\n      type: 'core',\n      factory: ['window', (window) => new Location(window)]\n    });\n  }\n\n  /**\n   * Registers a new factory.\n   * @param {String} name\n   * @param {Array} dependencies\n   * @return {Rey} rey\n   */\n  factory(name, dependencies) {\n    const trace = new Error('factory: ' + name);\n    const factory = () => this.deps.resolve(dependencies);\n    this.deps.add({\n      name,\n      type: 'factory',\n      factory: [factory, trace]\n    });\n    return this;\n  }\n\n  /**\n   * Registers a new store.\n   * @param {String} name\n   * @param {Array} dependencies\n   * @return {Rey} rey\n   */\n  store(name, dependencies) {\n    const trace = new Error('store: ' + name);\n    const factory = (dispatcher) => {\n\n      const store = new Store(dispatcher);\n      const storeOptions = this.deps.resolve(dependencies);\n\n      // set action handler\n      if (storeOptions.registerHandler) {\n        store.setActionHandler(storeOptions.registerHandler);\n      } else if (storeOptions.actionHandler) {\n        store.setActionHandler(storeOptions.actionHandler);\n      }\n\n      // get stores to attach\n      let attachStores = [];\n      if (storeOptions.attachStore) {\n        if (Utils.isArray(storeOptions.attachStore)) {\n          attachStores = storeOptions.attachStore;\n        } else if (Utils.isObject(storeOptions.attachStore)) {\n          Object.keys(storeOptions.attachStore).forEach(function(key, value) {\n            attachStores.push([key, storeOptions.attachStore[key]]);\n          });\n        } else {\n          attachStores.push(storeOptions.attachStore);\n        }\n      }\n\n      // resolve and attach stores\n      attachStores.forEach((attachStore) => {\n        if (Utils.instanceOf(attachStore, Store)) {\n          store.attachStore(attachStore);\n        } else if (Utils.isString(attachStore)) {\n          store.attachStore(this.deps.get(attachStore));\n        } else if (Utils.isArray(attachStore)) {\n          if (Utils.instanceOf(attachStore[1], Store)) {\n            store.attachStore(attachStore[0], attachStore[1]);\n          } else if (Utils.isString(attachStore[1])) {\n            store.attachStore(attachStore[0], this.deps.get(attachStore[1]));\n          }\n        }\n      });\n\n      store.extend(storeOptions);\n      autoBind(store);\n      return store;\n    };\n    this.deps.add({\n      name,\n      type: 'store',\n      factory: ['Dispatcher', factory, trace]\n    });\n    return this;\n  }\n\n  /**\n   * Registers a new actions.\n   * @param {String} name\n   * @param {Array} dependencies\n   * @return {Rey} rey\n   */\n  actions(name, dependencies) {\n    const trace = new Error('actions: ' + name);\n    const factory = (dispatcher) => {\n      const actions = new Actions(dispatcher);\n      actions.extend(this.deps.resolve(dependencies));\n      autoBind(actions);\n      return actions;\n    };\n    this.deps.add({\n      name,\n      type: 'actions',\n      factory: ['Dispatcher', factory, trace]\n    });\n    return this;\n  }\n\n  /**\n   * Registers a new router.\n   * @param {String} name\n   * @param {Array} dependencies\n   * @return {Rey} rey\n   */\n  router(name, dependencies) {\n    const trace = new Error('router: ' + name);\n    const factory = (dispatcher, location, React, ReactDOM, document) => {\n      const router = new Router(dispatcher, location);\n      router.setRoutes(this.deps.resolve(dependencies));\n      router.register(() => {\n        const route = router.getState();\n\n        if (Utils.isFunction(route.handler)) {\n          route.handler(route);\n          return;\n        }\n\n        // resolve the controller\n        const controller = Utils.isString(route.controller) ?\n          this.deps.get(route.controller) : Utils.isArray(route.controller) ?\n          this.deps.resolve(route.controller) : route.controller;\n\n        // resolves the container\n        const container = Utils.isString(route.container) ?\n          document.getElementById(route.container) :\n          Utils.isFunction(route.container) ?\n          route.container() : route.container;\n\n        const element = React.createElement(controller, { router });\n        ReactDOM.render(element, container);\n      });\n      autoBind(router);\n      return router;\n    };\n    this.deps.add({\n      name,\n      type: 'router',\n      factory: ['Dispatcher', 'Location', 'React', 'ReactDOM', 'document', factory, trace]\n    });\n    return this;\n  }\n\n  /**\n   * Registers a new component.\n   * @param {String} name\n   * @param {Array} dependencies\n   * @return {Rey} rey\n   */\n  component(name, dependencies) {\n    const trace = new Error('component: ' + name);\n    const factory = (React) => {\n      const component = this.deps.resolve(dependencies);\n      if (!component.displayName) {\n        component.displayName = name;\n      }\n      if (Utils.isFunction(component.render)) {\n        const render = component.render;\n        const rey = this;\n        component.render = function() {\n          try {\n            return render.call(this);\n          } catch (error) {\n            if (rey.listenerCount('error')) {\n              rey.emit('error', error, trace);\n            } else {\n              console.error(error, trace);\n            }\n            return React.createElement('noscript');\n          }\n        };\n      }\n      return React.createClass(component);\n    };\n    this.deps.add({\n      name,\n      type: 'router',\n      factory: ['React', factory, trace]\n    });\n    return this;\n  }\n\n  /**\n   * Registers a new controller.\n   * @param {String} name\n   * @param {Array} dependencies\n   * @return {Rey} rey\n   */\n  controller(name, dependencies) {\n    const trace = new Error('controller: ' + name);\n    const factory = (React) => {\n\n      const props = this.deps.resolve(dependencies);\n\n      // resolve the component\n      const component = Utils.isString(props.component) ?\n        this.deps.get(props.component) : Utils.isArray(props.component) ?\n        this.deps.resolve(props.component) : props.component;\n\n      // resolve the stores\n      const store = Utils.isString(props.store) ?\n        this.deps.get(props.store) : Utils.isArray(props.store) ?\n        props.store.map(store => {\n          return Utils.isString(store) ?\n            this.deps.get(store) : Utils.isArray(store) ?\n            this.deps.resolve(store) : store;\n        }) : props.store;\n\n      // resolve the actions\n      const actions = Utils.isString(props.actions) ?\n        this.deps.get(props.actions) : Utils.isArray(props.actions) ?\n        props.actions.map(actions => {\n          return Utils.isString(actions) ?\n            this.deps.get(actions) : Utils.isArray(actions) ?\n            this.deps.resolve(actions) : actions;\n        }) : props.actions;\n\n      // resolve the router\n      const router = Utils.isString(props.router) ?\n        this.deps.get(props.router) : Utils.isArray(props.router) ?\n        this.deps.resolve(props.router) : props.router;\n\n      const defaultProps = {\n        component,\n        store,\n        actions,\n        router\n      };\n\n      const componentMethods = {\n        displayName: name,\n        getDefaultProps() {\n          if (Utils.isFunction(props.getDefaultProps)) {\n            return xtend(defaultProps, props.getDefaultProps.call(this));\n          }\n          return defaultProps;\n        }\n      };\n\n      if (props.propTypes) {\n        componentMethods.propTypes = xtend(Controller.propTypes, props.propTypes);\n      }\n\n      Object.keys(props).forEach(prop => {\n        if (!defaultProps[prop] && prop !== 'getDefaultProps' && prop !== 'propTypes') {\n          componentMethods[prop] = props[prop];\n        }\n      });\n\n      return React.createClass(xtend(Controller, componentMethods));\n    };\n    this.deps.add({\n      name,\n      type: 'controller',\n      factory: ['React', factory, trace]\n    });\n    return this;\n  }\n\n  /**\n   * Registers a new static.\n   * @param {String} name\n   * @param {Array} dependencies\n   * @return {Rey} rey\n   */\n  static(name, dependencies) {\n    const trace = new Error('static: ' + name);\n    const factory = () => Immutable.fromJS(this.deps.resolve(dependencies));\n    this.deps.add({\n      name,\n      type: 'static',\n      factory: [factory, trace]\n    });\n    return this;\n  }\n\n  /**\n   * Registers a new API.\n   * @param {String} name\n   * @param {Array} dependencies\n   * @return {Rey} rey\n   */\n  api(name, dependencies) {\n    const trace = new Error('api: ' + name);\n    const factory = (xhr, Promise, Location) => {\n      const api = new API(xhr, Promise, Location);\n      const methods = this.deps.resolve(dependencies);\n      api.extend(methods);\n      return api;\n    };\n    this.deps.add({\n      name,\n      type: 'api',\n      factory: ['xhr', 'Promise', 'Location', factory, trace]\n    });\n    return this;\n  }\n\n  /**\n   * Resolves specified dependencies.\n   * @param {Array} dependencies\n   * @return {Rey} rey\n   */\n  load(dependencies) {\n    this.deps.resolve(deps.concat(Utils.noop));\n    return this;\n  }\n\n  /**\n   * Resolves specified dependencies.\n   * @param {Array} dependencies\n   * @return {Rey} rey\n   */\n  run(dependencies) {\n    this.deps.resolve(dependencies);\n    return this;\n  }\n\n};\n\nmodule.exports = Rey;\n\n// - -------------------------------------------------------------------- - //\n"
+  },
+  {
+    "__docId__": 88,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "window",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~window",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 89,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "document",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~document",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 90,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "xhr",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~xhr",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 11,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 91,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "React",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~React",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 12,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 92,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "ReactDOM",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~ReactDOM",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 13,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 93,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "ReactCSSTransitionGroup",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~ReactCSSTransitionGroup",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 14,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 94,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "xtend",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~xtend",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 16,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 95,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "autoBind",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~autoBind",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 17,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 96,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Immutable",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~Immutable",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 18,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 97,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "EventEmitter",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~EventEmitter",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 19,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 98,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "API",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~API",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 21,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 99,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Utils",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~Utils",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 22,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 100,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Store",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~Store",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 23,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 101,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Actions",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~Actions",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 24,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 102,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Router",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~Router",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 25,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 103,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Controller",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~Controller",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 26,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 104,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Dispatcher",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~Dispatcher",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 27,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 105,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Location",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~Location",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 28,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 106,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Promise",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~Promise",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 29,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 107,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "DependencyRegistry",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~DependencyRegistry",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 30,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 108,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "Rey",
+    "memberof": "src/Rey.js",
+    "longname": "src/Rey.js~Rey",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Rey.js",
+    "importStyle": null,
+    "description": "Main class.",
+    "lineNumber": 36,
+    "interface": false,
+    "extends": [
+      "EventEmitter"
+    ]
+  },
+  {
+    "__docId__": 109,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/Rey.js~Rey",
+    "longname": "src/Rey.js~Rey#constructor",
+    "access": null,
+    "description": "Creates a new Rey instance.",
+    "lineNumber": 41,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 110,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "deps",
+    "memberof": "src/Rey.js~Rey",
+    "longname": "src/Rey.js~Rey#deps",
+    "access": null,
+    "description": null,
+    "lineNumber": 45,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 111,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "factory",
+    "memberof": "src/Rey.js~Rey",
+    "longname": "src/Rey.js~Rey#factory",
+    "access": null,
+    "description": "Registers a new factory.",
+    "lineNumber": 124,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "name",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dependencies",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Rey"
+      ],
+      "spread": false,
+      "description": "rey"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 112,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "store",
+    "memberof": "src/Rey.js~Rey",
+    "longname": "src/Rey.js~Rey#store",
+    "access": null,
+    "description": "Registers a new store.",
+    "lineNumber": 141,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "name",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dependencies",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Rey"
+      ],
+      "spread": false,
+      "description": "rey"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 113,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "actions",
+    "memberof": "src/Rey.js~Rey",
+    "longname": "src/Rey.js~Rey#actions",
+    "access": null,
+    "description": "Registers a new actions.",
+    "lineNumber": 202,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "name",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dependencies",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Rey"
+      ],
+      "spread": false,
+      "description": "rey"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 114,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "router",
+    "memberof": "src/Rey.js~Rey",
+    "longname": "src/Rey.js~Rey#router",
+    "access": null,
+    "description": "Registers a new router.",
+    "lineNumber": 224,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "name",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dependencies",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Rey"
+      ],
+      "spread": false,
+      "description": "rey"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 115,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "component",
+    "memberof": "src/Rey.js~Rey",
+    "longname": "src/Rey.js~Rey#component",
+    "access": null,
+    "description": "Registers a new component.",
+    "lineNumber": 268,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "name",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dependencies",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Rey"
+      ],
+      "spread": false,
+      "description": "rey"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 116,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "controller",
+    "memberof": "src/Rey.js~Rey",
+    "longname": "src/Rey.js~Rey#controller",
+    "access": null,
+    "description": "Registers a new controller.",
+    "lineNumber": 307,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "name",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dependencies",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Rey"
+      ],
+      "spread": false,
+      "description": "rey"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 117,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "static",
+    "memberof": "src/Rey.js~Rey",
+    "longname": "src/Rey.js~Rey#static",
+    "access": null,
+    "description": "Registers a new static.",
+    "lineNumber": 384,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "name",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dependencies",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Rey"
+      ],
+      "spread": false,
+      "description": "rey"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 118,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "api",
+    "memberof": "src/Rey.js~Rey",
+    "longname": "src/Rey.js~Rey#api",
+    "access": null,
+    "description": "Registers a new API.",
+    "lineNumber": 401,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "name",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dependencies",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Rey"
+      ],
+      "spread": false,
+      "description": "rey"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 119,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "load",
+    "memberof": "src/Rey.js~Rey",
+    "longname": "src/Rey.js~Rey#load",
+    "access": null,
+    "description": "Resolves specified dependencies.",
+    "lineNumber": 422,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dependencies",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Rey"
+      ],
+      "spread": false,
+      "description": "rey"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 120,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "run",
+    "memberof": "src/Rey.js~Rey",
+    "longname": "src/Rey.js~Rey#run",
+    "access": null,
+    "description": "Resolves specified dependencies.",
+    "lineNumber": 432,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dependencies",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Rey"
+      ],
+      "spread": false,
+      "description": "rey"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 121,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/Router.js",
+    "memberof": null,
+    "longname": "src/Router.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "/*!\n**  rey -- React & Flux framework.\n**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>\n**  Licensed under The MIT License <http://opensource.org/licenses/MIT>\n**  Distributed on <http://github.com/yneves/rey>\n*/\n// - -------------------------------------------------------------------- - //\n\nconst Location = require('./Location.js');\nconst Dispatcher = require('./Dispatcher.js');\nconst StateHolder = require('./StateHolder.js');\n\n/**\n * Routing class.\n */\nclass Router extends StateHolder {\n\n  /**\n   * Creates a new Router instance\n   * @param {Dispatcher} dispatcher instance to use\n   * @param {Location} location instance to use\n   */\n  constructor(dispatcher, location) {\n    if (!(dispatcher instanceof Dispatcher)) {\n      throw new Error('Dispatcher must be provided');\n    }\n    if (!(location instanceof Location)) {\n      throw new Error('Location must be provided');\n    }\n    super();\n    this.location = location;\n    this.dispatcher = dispatcher;\n  }\n\n  /**\n   * Activates the store by hooking up dispatcher and location listeners.\n   * @param {String} initialURI - initial url\n   */\n  activate(initialURI) {\n\n    this.locationHandler = this.location.register((href) => {\n      this.dispatcher.dispatch({\n        actionType: 'ROUTER_CHANGE',\n        href: href\n      });\n    });\n\n    this.dispatcherHandler = this.dispatcher.register(payload => {\n      switch (payload.actionType) {\n        case 'ROUTER_START':\n        case 'ROUTER_CHANGE':\n        case 'ROUTER_NAVIGATE':\n          this.handleNavigation(payload.href);\n          break;\n      }\n    });\n\n    this.dispatcher.dispatch({\n      actionType: 'ROUTER_START',\n      href: initialURI\n    });\n  }\n\n  /**\n   * Deactivates the store by removing any listeners from dispatcher and location.\n   */\n  deactivate() {\n    if (this.locationHandler) {\n      this.location.unregister(this.locationHandler);\n      this.locationHandler = undefined;\n    }\n    if (this.dispatcherHandler) {\n      this.dispatcher.unregister(this.dispatcherHandler);\n      this.dispatcherHandler = undefined;\n    }\n  }\n\n  /**\n   * Navigates to the given url.\n   * @param {String} href\n   */\n  navigate(href) {\n    this.location.push(href);\n    this.dispatcher.dispatch({\n      actionType: 'ROUTER_NAVIGATE',\n      href: href\n    });\n  }\n\n  /**\n   * Handle start, change and navigate actions.\n   * @param {String} href\n   */\n  handleNavigation(href = this.location.get()) {\n    const route = this.matchRoute(href);\n    if (route) {\n      this.setState(route);\n    }\n  }\n\n  /**\n   * Register the given routes.\n   * @param {Object} routes\n   */\n  setRoutes(routes) {\n    if (!this.routes) {\n      this.routes = {};\n    }\n    for (let key in routes) {\n      this.routes[key] = routes[key];\n    }\n  }\n\n  /**\n   * Returns the registered routes.\n   * @return {Object} routes\n   */\n  getRoutes() {\n    return this.routes || {};\n  }\n\n  /**\n   * Finds the route for the given url.\n   * @param {String} href\n   * @return {Object} route\n   */\n  matchRoute(href) {\n    const routes = this.getRoutes();\n    const url = this.location.parse(href);\n    let route;\n\n    // Exact match\n    if (routes[url.pathname]) {\n      route = this.prepareRoute(url, this.routes[url.pathname]);\n\n    // Match params\n    } else {\n      for (let key in routes) {\n        const params = key.match(/\\{[\\w]+\\}/g);\n        if (params) {\n          const routeMatcher = new RegExp('^' + key.replace(/\\{[\\w]+\\}/g, '([\\\\w0-9-]+)') + '$');\n          const values = url.pathname ? url.pathname.match(routeMatcher) : undefined;\n          if (values) {\n            route = this.prepareRoute(url, routes[key], params, values);\n          }\n        }\n        if (route) {\n          break;\n        }\n      }\n    }\n    return route;\n  }\n\n  /**\n   * Prepares a route object with given data.\n   * @private\n   * @param {Object} href - parsed url\n   * @param {Object} props - route properties\n   * @param {Array} params - matched parameters\n   * @param {Array} values - value for each parameter\n   * @return {Object} consolidated route object\n   */\n  prepareRoute(href, props, params, values) {\n    const route = {\n      path: url.path,\n      query: url.query,\n      pathname: url.pathname,\n      params: {}\n    };\n    for (let prop in props) {\n      route[prop] = props[prop];\n    }\n    if (params && values) {\n      for (let p = 0; p < params.length; p++) {\n        const name = params[p].substr(1, params[p].length - 2);\n        const value = values[p + 1];\n        route.params[name] = value;\n      }\n    }\n    return route;\n  }\n\n  /**\n   * Exports route state to props object.\n   * @return {Object} props\n   */\n  toProps() {\n    return this.state.withMutations((route) => {\n      route.delete('controller');\n      route.delete('container');\n      return route;\n    }).toObject();\n  }\n\n};\n\nmodule.exports = Router;\n\n// - -------------------------------------------------------------------- - //\n"
+  },
+  {
+    "__docId__": 122,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Location",
+    "memberof": "src/Router.js",
+    "longname": "src/Router.js~Location",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Router.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 123,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Dispatcher",
+    "memberof": "src/Router.js",
+    "longname": "src/Router.js~Dispatcher",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Router.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 124,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "StateHolder",
+    "memberof": "src/Router.js",
+    "longname": "src/Router.js~StateHolder",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Router.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 11,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 125,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "Router",
+    "memberof": "src/Router.js",
+    "longname": "src/Router.js~Router",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Router.js",
+    "importStyle": null,
+    "description": "Routing class.",
+    "lineNumber": 16,
+    "interface": false,
+    "extends": [
+      "StateHolder"
+    ]
+  },
+  {
+    "__docId__": 126,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#constructor",
+    "access": null,
+    "description": "Creates a new Router instance",
+    "lineNumber": 23,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Dispatcher"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dispatcher",
+        "description": "instance to use"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Location"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "location",
+        "description": "instance to use"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 127,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "location",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#location",
+    "access": null,
+    "description": null,
+    "lineNumber": 31,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 128,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "dispatcher",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#dispatcher",
+    "access": null,
+    "description": null,
+    "lineNumber": 32,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 129,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "activate",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#activate",
+    "access": null,
+    "description": "Activates the store by hooking up dispatcher and location listeners.",
+    "lineNumber": 39,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "initialURI",
+        "description": "initial url"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 130,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "locationHandler",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#locationHandler",
+    "access": null,
+    "description": null,
+    "lineNumber": 41,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 131,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "dispatcherHandler",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#dispatcherHandler",
+    "access": null,
+    "description": null,
+    "lineNumber": 48,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 132,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "deactivate",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#deactivate",
+    "access": null,
+    "description": "Deactivates the store by removing any listeners from dispatcher and location.",
+    "lineNumber": 67,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 133,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "locationHandler",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#locationHandler",
+    "access": null,
+    "description": null,
+    "lineNumber": 70,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 134,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "dispatcherHandler",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#dispatcherHandler",
+    "access": null,
+    "description": null,
+    "lineNumber": 74,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 135,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "navigate",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#navigate",
+    "access": null,
+    "description": "Navigates to the given url.",
+    "lineNumber": 82,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "href",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 136,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "handleNavigation",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#handleNavigation",
+    "access": null,
+    "description": "Handle start, change and navigate actions.",
+    "lineNumber": 94,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "href",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 137,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "setRoutes",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#setRoutes",
+    "access": null,
+    "description": "Register the given routes.",
+    "lineNumber": 105,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "routes",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 138,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "routes",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#routes",
+    "access": null,
+    "description": null,
+    "lineNumber": 107,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 139,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "getRoutes",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#getRoutes",
+    "access": null,
+    "description": "Returns the registered routes.",
+    "lineNumber": 118,
+    "params": [],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Object"
+      ],
+      "spread": false,
+      "description": "routes"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 140,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "matchRoute",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#matchRoute",
+    "access": null,
+    "description": "Finds the route for the given url.",
+    "lineNumber": 127,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "href",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Object"
+      ],
+      "spread": false,
+      "description": "route"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 141,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "prepareRoute",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#prepareRoute",
+    "access": "private",
+    "description": "Prepares a route object with given data.",
+    "lineNumber": 164,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "href",
+        "description": "parsed url"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "props",
+        "description": "route properties"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "params",
+        "description": "matched parameters"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "values",
+        "description": "value for each parameter"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Object"
+      ],
+      "spread": false,
+      "description": "consolidated route object"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 142,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "toProps",
+    "memberof": "src/Router.js~Router",
+    "longname": "src/Router.js~Router#toProps",
+    "access": null,
+    "description": "Exports route state to props object.",
+    "lineNumber": 188,
+    "params": [],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Object"
+      ],
+      "spread": false,
+      "description": "props"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 143,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/StateHolder.js",
+    "memberof": null,
+    "longname": "src/StateHolder.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "/*!\n**  rey -- React & Flux framework.\n**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>\n**  Licensed under The MIT License <http://opensource.org/licenses/MIT>\n**  Distributed on <http://github.com/yneves/rey>\n*/\n// - -------------------------------------------------------------------- - //\n\nconst Immutable = require('immutable');\nconst CallbackRegistry = require('./CallbackRegistry.js');\n\nconst callbackWrapper = (callback) => (state) => {\n  if (typeof callback === 'object' && typeof callback.setState === 'function') {\n    callback.setState(state);\n  }\n};\n\nconst concatPath = (args, offset) => {\n  const length = args.length;\n  let path = Immutable.List();\n  for (let i = 0; i < length - offset; i++) {\n    path = path.concat(args[i]);\n  }\n  return path;\n};\n\n/**\n * Base class for manipulating state.\n */\nclass StateHolder {\n\n  /**\n   * Creates a new state holder object.\n   */\n  constructor() {\n    this.callbacks = new CallbackRegistry(callbackWrapper);\n    this.resetState();\n  }\n\n  /**\n   * Registers a callback to be executed at every state change.\n   * @param {Function} callback to be registered\n   * @param {Object} context this variable for the callback\n   * @param {Error} trace error\n   * @return {Function} callback added callback\n   */\n  register(callback, context, trace) {\n    return this.callbacks.add(callback, context, trace);\n  }\n\n  /**\n   * Removes a callback previously registered.\n   * @param {Function} callback to be removed\n   */\n  unregister(callback) {\n    this.callbacks.remove(callback);\n  }\n\n  /**\n   * Runs all registered callbacks passing the object itself.\n   */\n  emitChange() {\n    this.callbacks.run(this);\n  }\n\n  /**\n   * Returns the initial state for the object.\n   * @return {Object} state\n   */\n  getInitialState() {\n    return Immutable.Map();\n  }\n\n  /**\n   * Restores the state to the initial state.\n   */\n  resetState() {\n    this.state = Immutable.Map().merge(this.getInitialState());\n    this.emitChange();\n  }\n\n  /**\n   * Returns the state or the requested property.\n   * @param {Array} path to the wanted state property\n   * @return {any} value\n   */\n  getState(path) {\n    const args = Array.from(arguments);\n    return args.length === 0 ? this.state.toObject()\n      : this.state.getIn(concatPath(args, 0));\n  }\n\n  /**\n   * Sets given state values.\n   * @param {Array} path to the state value\n   * @param {any} value\n   */\n  setState(path, value) {\n    const args = Array.from(arguments);\n    const length = args.length;\n    if (length === 1) {\n      this.state = this.state.merge(args[0]);\n    } else if (length > 1) {\n      const path = concatPath(args, 1);\n      this.state = this.state.setIn(path, args[length - 1]);\n    }\n    this.emitChange();\n  }\n\n  /**\n   * Merges given state values.\n   * @param {Array} path to the state value\n   * @param {any} value\n   */\n  mergeState(path, value) {\n    const args = Array.from(arguments);\n    const length = args.length;\n    if (length === 1) {\n      this.state = this.state.merge(args[0]);\n    } else if (length > 1) {\n      const path = concatPath(args, 1 );\n      this.state = this.state.mergeIn(path, args[length - 1]);\n    }\n    this.emitChange();\n  }\n\n  /**\n   * Deletes given state values.\n   * @param {Array} path to the state value\n   */\n  deleteState(path) {\n    const args = Array.from(arguments);\n    const length = args.length;\n    if (length === 0) {\n      this.state = this.state.clear();\n    } else if (length > 0) {\n      const path = concatPath(args, 0);\n      this.state = this.state.deleteIn(path);\n    }\n    this.emitChange();\n  }\n\n  /**\n   * Updates state values.\n   * @param {Array} path to the state value\n   * @param {Function} callback to return new state value\n   */\n  updateState(path, callback) {\n    const args = Array.from(arguments);\n    const length = args.length;\n    if (length === 1) {\n      this.state = this.state.update(args[0]);\n    } else if (length > 1) {\n      const path = concatPath(args, 1 );\n      this.state = this.state.updateIn(path, args[length - 1]);\n    }\n    this.emitChange();\n  }\n\n};\n\nmodule.exports = StateHolder;\n\n// - -------------------------------------------------------------------- - //\n"
+  },
+  {
+    "__docId__": 144,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Immutable",
+    "memberof": "src/StateHolder.js",
+    "longname": "src/StateHolder.js~Immutable",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/StateHolder.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 145,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "CallbackRegistry",
+    "memberof": "src/StateHolder.js",
+    "longname": "src/StateHolder.js~CallbackRegistry",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/StateHolder.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 146,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "callbackWrapper",
+    "memberof": "src/StateHolder.js",
+    "longname": "src/StateHolder.js~callbackWrapper",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/StateHolder.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 12,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 147,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "concatPath",
+    "memberof": "src/StateHolder.js",
+    "longname": "src/StateHolder.js~concatPath",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/StateHolder.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 18,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 148,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "StateHolder",
+    "memberof": "src/StateHolder.js",
+    "longname": "src/StateHolder.js~StateHolder",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/StateHolder.js",
+    "importStyle": null,
+    "description": "Base class for manipulating state.",
+    "lineNumber": 30,
+    "interface": false
+  },
+  {
+    "__docId__": 149,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#constructor",
+    "access": null,
+    "description": "Creates a new state holder object.",
+    "lineNumber": 35,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 150,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "callbacks",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#callbacks",
+    "access": null,
+    "description": null,
+    "lineNumber": 36,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 151,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "register",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#register",
+    "access": null,
+    "description": "Registers a callback to be executed at every state change.",
+    "lineNumber": 47,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "callback",
+        "description": "to be registered"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "context",
+        "description": "this variable for the callback"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Error"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "trace",
+        "description": "error"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Function"
+      ],
+      "spread": false,
+      "description": "callback added callback"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 152,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "unregister",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#unregister",
+    "access": null,
+    "description": "Removes a callback previously registered.",
+    "lineNumber": 55,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "callback",
+        "description": "to be removed"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 153,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "emitChange",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#emitChange",
+    "access": null,
+    "description": "Runs all registered callbacks passing the object itself.",
+    "lineNumber": 62,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 154,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "getInitialState",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#getInitialState",
+    "access": null,
+    "description": "Returns the initial state for the object.",
+    "lineNumber": 70,
+    "params": [],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Object"
+      ],
+      "spread": false,
+      "description": "state"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 155,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "resetState",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#resetState",
+    "access": null,
+    "description": "Restores the state to the initial state.",
+    "lineNumber": 77,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 156,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "state",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#state",
+    "access": null,
+    "description": null,
+    "lineNumber": 78,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 157,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "getState",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#getState",
+    "access": null,
+    "description": "Returns the state or the requested property.",
+    "lineNumber": 87,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "path",
+        "description": "to the wanted state property"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "any"
+      ],
+      "spread": false,
+      "description": "value"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 158,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "setState",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#setState",
+    "access": null,
+    "description": "Sets given state values.",
+    "lineNumber": 98,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "path",
+        "description": "to the state value"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "any"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "value",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 159,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "state",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#state",
+    "access": null,
+    "description": null,
+    "lineNumber": 102,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 160,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "state",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#state",
+    "access": null,
+    "description": null,
+    "lineNumber": 105,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 161,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "mergeState",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#mergeState",
+    "access": null,
+    "description": "Merges given state values.",
+    "lineNumber": 115,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "path",
+        "description": "to the state value"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "any"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "value",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 162,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "state",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#state",
+    "access": null,
+    "description": null,
+    "lineNumber": 119,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 163,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "state",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#state",
+    "access": null,
+    "description": null,
+    "lineNumber": 122,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 164,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "deleteState",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#deleteState",
+    "access": null,
+    "description": "Deletes given state values.",
+    "lineNumber": 131,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "path",
+        "description": "to the state value"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 165,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "state",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#state",
+    "access": null,
+    "description": null,
+    "lineNumber": 135,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 166,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "state",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#state",
+    "access": null,
+    "description": null,
+    "lineNumber": 138,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 167,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "updateState",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#updateState",
+    "access": null,
+    "description": "Updates state values.",
+    "lineNumber": 148,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "path",
+        "description": "to the state value"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "callback",
+        "description": "to return new state value"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 168,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "state",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#state",
+    "access": null,
+    "description": null,
+    "lineNumber": 152,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 169,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "state",
+    "memberof": "src/StateHolder.js~StateHolder",
+    "longname": "src/StateHolder.js~StateHolder#state",
+    "access": null,
+    "description": null,
+    "lineNumber": 155,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 170,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/Store.js",
+    "memberof": null,
+    "longname": "src/Store.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "/*!\n**  rey -- React & Flux framework.\n**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>\n**  Licensed under The MIT License <http://opensource.org/licenses/MIT>\n**  Distributed on <http://github.com/yneves/rey>\n*/\n// - -------------------------------------------------------------------- - //\n\nconst Utils = require('./Utils.js');\nconst Dispatcher = require('./Dispatcher.js');\nconst StateHolder = require('./StateHolder.js');\n\nconst reservedKeys = [\n  'constructor',\n  'registerHandler',\n  'actionHandler',\n  'attachStore',\n  'attachedStores',\n  'detachStore'\n];\n\n/**\n * Class to represent a Store.\n */\nclass Store extends StateHolder {\n\n  /**\n   * Creates a new store instance.\n   * @param {Dispatcher} dispatcher\n   */\n  constructor(dispatcher) {\n    if (!(dispatcher instanceof Dispatcher)) {\n      throw new Error('Dispatcher must be provided');\n    }\n    super();\n    this.dispatcher = dispatcher;\n    this.attachedStores = [];\n  }\n\n  /**\n   * Called before store is activated.\n   */\n  storeWillActivate() {\n  }\n\n  /**\n   * Called after store is activated.\n   */\n  storeDidActivate() {\n  }\n\n  /**\n   * Called before store is deactivated.\n   */\n  storeWillDeactivate() {\n  }\n\n  /**\n   * Activates the store by registering to handle actions.\n   */\n  activate() {\n    if (this.handler) {\n      throw new Error('store has been activated already');\n    }\n    this.storeWillActivate();\n    this.resetState();\n    this.handler = this.dispatcher.register((action) => {\n      const actionHandler = this.getActionHandler();\n      if (Utils.isFunction(actionHandler)) {\n        this.callActionHandler(actionHandler, action);\n      } else if (Utils.isObject(actionHandler)) {\n        const type = action.actionType || action.type;\n        this.callActionHandler(actionHandler[type], action);\n      }\n    });\n    this.storeDidActivate();\n  }\n\n  /**\n   * Activates the store by deregistering the action handler.\n   */\n  deactivate() {\n    this.storeWillDeactivate();\n    if (this.handler) {\n      this.dispatcher.unregister(this.handler);\n      this.handler = undefined;\n    }\n  }\n\n  /**\n   * Activates the store only if its not activate yet\n   * and there's at least one callback registered.\n   */\n  autoActivate() {\n    if (!this.handler && this.callbacks.count()) {\n      this.activate();\n    }\n  }\n\n  /**\n   * Deactivates the store only if its been activated\n   * and there aren't any callbacks registered.\n   */\n  autoDeactivate() {\n    if (this.handler && !this.callbacks.count()) {\n      this.deactivate();\n    }\n  }\n\n  /**\n   * Sets the action handler.\n   * @param {Function} handler\n   */\n  setActionHandler(handler) {\n    this.actionHandler = handler;\n  }\n\n  /**\n   * Gets the action handler.\n   * @return {Function} handler\n   */\n  getActionHandler() {\n    return this.actionHandler;\n  }\n\n  /**\n   * Calls the action handler.\n   * @private\n   * @param {Function} handler\n   * @param {Object} action\n   */\n  callActionHandler(handler, action) {\n    if (!Utils.isFunction(handler)) {\n      return;\n    }\n    if (handler.length === 2) {\n      handler(this, action);\n    } else {\n      handler.call(this, action);\n    }\n  }\n\n  /**\n   * Extends the store with given methods.\n   * @param {Object} methods\n   */\n  extend(methods) {\n    Object.keys(methods).forEach(name => {\n      if (reservedKeys.indexOf(name) === -1) {\n        this[name] = methods[name].bind(this);\n      }\n    });\n  }\n\n  /**\n   * Attaches another store to this store's state.\n   * @param {String} name\n   * @param {Store} store\n   * @return {Function} handler\n   */\n  attachStore(name, store) {\n    if (arguments.length === 1) {\n      store = name;\n      name = undefined;\n    }\n    const handler = store.register(stateHolder => {\n      if (name) {\n        this.setState([name], stateHolder.state);\n      } else {\n        this.setState(stateHolder.state);\n      }\n    });\n    this.attachedStores.push([name, store, handler]);\n    return handler;\n  }\n\n  /**\n   * Detaches a previously attached store from this store's state.\n   * @param {Store} store\n   */\n  detachStore(store) {\n    this.attachedStores = this.attachedStores.filter(entry => {\n      if (entry.store === store || entry.name === store || entry.handler === store) {\n        entry.store.unregister(entry.handler);\n        return false;\n      }\n      return true;\n    });\n  }\n\n  /**\n   * Exports store state to props object.\n   * @return {Object} props\n   */\n  toProps() {\n    return this.getState();\n  }\n\n};\n\nmodule.exports = Store;\n\n// - -------------------------------------------------------------------- - //\n"
+  },
+  {
+    "__docId__": 171,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Utils",
+    "memberof": "src/Store.js",
+    "longname": "src/Store.js~Utils",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Store.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 172,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "Dispatcher",
+    "memberof": "src/Store.js",
+    "longname": "src/Store.js~Dispatcher",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Store.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 173,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "StateHolder",
+    "memberof": "src/Store.js",
+    "longname": "src/Store.js~StateHolder",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Store.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 11,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 174,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "reservedKeys",
+    "memberof": "src/Store.js",
+    "longname": "src/Store.js~reservedKeys",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Store.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 13,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 175,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "Store",
+    "memberof": "src/Store.js",
+    "longname": "src/Store.js~Store",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Store.js",
+    "importStyle": null,
+    "description": "Class to represent a Store.",
+    "lineNumber": 25,
+    "interface": false,
+    "extends": [
+      "StateHolder"
+    ]
+  },
+  {
+    "__docId__": 176,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#constructor",
+    "access": null,
+    "description": "Creates a new store instance.",
+    "lineNumber": 31,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Dispatcher"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "dispatcher",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 177,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "dispatcher",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#dispatcher",
+    "access": null,
+    "description": null,
+    "lineNumber": 36,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 178,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "attachedStores",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#attachedStores",
+    "access": null,
+    "description": null,
+    "lineNumber": 37,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 179,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "storeWillActivate",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#storeWillActivate",
+    "access": null,
+    "description": "Called before store is activated.",
+    "lineNumber": 43,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 180,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "storeDidActivate",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#storeDidActivate",
+    "access": null,
+    "description": "Called after store is activated.",
+    "lineNumber": 49,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 181,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "storeWillDeactivate",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#storeWillDeactivate",
+    "access": null,
+    "description": "Called before store is deactivated.",
+    "lineNumber": 55,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 182,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "activate",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#activate",
+    "access": null,
+    "description": "Activates the store by registering to handle actions.",
+    "lineNumber": 61,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 183,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "handler",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#handler",
+    "access": null,
+    "description": null,
+    "lineNumber": 67,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 184,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "deactivate",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#deactivate",
+    "access": null,
+    "description": "Activates the store by deregistering the action handler.",
+    "lineNumber": 82,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 185,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "handler",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#handler",
+    "access": null,
+    "description": null,
+    "lineNumber": 86,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 186,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "autoActivate",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#autoActivate",
+    "access": null,
+    "description": "Activates the store only if its not activate yet\nand there's at least one callback registered.",
+    "lineNumber": 94,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 187,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "autoDeactivate",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#autoDeactivate",
+    "access": null,
+    "description": "Deactivates the store only if its been activated\nand there aren't any callbacks registered.",
+    "lineNumber": 104,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 188,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "setActionHandler",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#setActionHandler",
+    "access": null,
+    "description": "Sets the action handler.",
+    "lineNumber": 114,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "handler",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 189,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "actionHandler",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#actionHandler",
+    "access": null,
+    "description": null,
+    "lineNumber": 115,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 190,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "getActionHandler",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#getActionHandler",
+    "access": null,
+    "description": "Gets the action handler.",
+    "lineNumber": 122,
+    "params": [],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Function"
+      ],
+      "spread": false,
+      "description": "handler"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 191,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "callActionHandler",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#callActionHandler",
+    "access": "private",
+    "description": "Calls the action handler.",
+    "lineNumber": 132,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "handler",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "action",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 192,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "extend",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#extend",
+    "access": null,
+    "description": "Extends the store with given methods.",
+    "lineNumber": 147,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "methods",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 193,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "attachStore",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#attachStore",
+    "access": null,
+    "description": "Attaches another store to this store's state.",
+    "lineNumber": 161,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "name",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Store"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "store",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Function"
+      ],
+      "spread": false,
+      "description": "handler"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 194,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "detachStore",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#detachStore",
+    "access": null,
+    "description": "Detaches a previously attached store from this store's state.",
+    "lineNumber": 181,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Store"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "store",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 195,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "attachedStores",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#attachedStores",
+    "access": null,
+    "description": null,
+    "lineNumber": 182,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 196,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "toProps",
+    "memberof": "src/Store.js~Store",
+    "longname": "src/Store.js~Store#toProps",
+    "access": null,
+    "description": "Exports store state to props object.",
+    "lineNumber": 195,
+    "params": [],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Object"
+      ],
+      "spread": false,
+      "description": "props"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 197,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/Utils.js",
+    "memberof": null,
+    "longname": "src/Utils.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "/*!\n**  rey -- React & Flux framework.\n**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>\n**  Licensed under The MIT License <http://opensource.org/licenses/MIT>\n**  Distributed on <http://github.com/yneves/rey>\n*/\n// - -------------------------------------------------------------------- - //\n\nconst getObjectType = (arg) => {\n  const type = Object.prototype.toString.call(arg);\n  return type.substr(8, type.length - 9);\n};\n\nmodule.exports = {\n\n  instanceOf(arg, cls) {\n    return arg instanceof cls;\n  },\n\n  isString(arg) {\n    return typeof arg === 'string' || arg instanceof Number;\n  },\n\n  isNumber(arg) {\n    return typeof arg === 'number' || arg instanceof Number;\n  },\n\n  isBoolean(arg) {\n    return typeof arg === 'boolean';\n  },\n\n  isArray(arg) {\n    return arg instanceof Array;\n  },\n\n  isObject(arg) {\n    return getObjectType(arg) === 'Object';\n  },\n\n  isNull(arg) {\n    return arg === null;\n  },\n\n  isDefined(arg) {\n    return typeof arg === 'undefined';\n  },\n\n  isUndefined(arg) {\n    return typeof arg === 'undefined';\n  },\n\n  isFunction(arg) {\n    return typeof arg === 'function';\n  },\n\n  isError(arg) {\n    return arg instanceof Error;\n  },\n\n  isDate(arg) {\n    return arg instanceof Date;\n  },\n\n  isRegExp(arg) {\n    return arg instanceof RegExp;\n  },\n\n  isArguments(arg) {\n    return getObjectType(arg) === 'Arguments';\n  },\n\n  noop() {}\n\n};\n\n// - -------------------------------------------------------------------- - //\n"
+  },
+  {
+    "__docId__": 198,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "getObjectType",
+    "memberof": "src/Utils.js",
+    "longname": "src/Utils.js~getObjectType",
+    "access": null,
+    "export": false,
+    "importPath": "rey/src/Utils.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 200,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Infinity",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Infinity",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Infinity",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 201,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "NaN",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/NaN",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~NaN",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 202,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "undefined",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~undefined",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 203,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "null",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~null",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 204,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Object",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Object",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 205,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "object",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~object",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 206,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Function",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Function",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 207,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "function",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~function",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 208,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Boolean",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Boolean",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 209,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "boolean",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~boolean",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 210,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Symbol",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Symbol",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 211,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Error",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Error",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 212,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "EvalError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/EvalError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~EvalError",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 213,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "InternalError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/InternalError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~InternalError",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 214,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "RangeError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RangeError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~RangeError",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 215,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "ReferenceError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ReferenceError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~ReferenceError",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 216,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "SyntaxError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~SyntaxError",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 217,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "TypeError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~TypeError",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 218,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "URIError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/URIError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~URIError",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 219,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Number",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Number",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 220,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "number",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~number",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 221,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Date",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Date",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 222,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "String",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~String",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 223,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "string",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~string",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 224,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "RegExp",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~RegExp",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 225,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 226,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Int8Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int8Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Int8Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 227,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Uint8Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint8Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 228,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Uint8ClampedArray",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8ClampedArray",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint8ClampedArray",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 229,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Int16Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int16Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Int16Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 230,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Uint16Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint16Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint16Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 231,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Int32Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int32Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Int32Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 232,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Uint32Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint32Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint32Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 233,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Float32Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Float32Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 234,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Float64Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float64Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Float64Array",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 235,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Map",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Map",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 236,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Set",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Set",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 237,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "WeakMap",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~WeakMap",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 238,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "WeakSet",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~WeakSet",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 239,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "ArrayBuffer",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~ArrayBuffer",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 240,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "DataView",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~DataView",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 241,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "JSON",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~JSON",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 242,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Promise",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Promise",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 243,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Generator",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Generator",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 244,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "GeneratorFunction",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/GeneratorFunction",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~GeneratorFunction",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 245,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Reflect",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Reflect",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 246,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Proxy",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Proxy",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 248,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "CanvasRenderingContext2D",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~CanvasRenderingContext2D",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 249,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "DocumentFragment",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~DocumentFragment",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 250,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Element",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Element",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~Element",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 251,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Event",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Event",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~Event",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 252,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Node",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Node",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~Node",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 253,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "NodeList",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/NodeList",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~NodeList",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 254,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "XMLHttpRequest",
+    "externalLink": "https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~XMLHttpRequest",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 255,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "AudioContext",
+    "externalLink": "https://developer.mozilla.org/en/docs/Web/API/AudioContext",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~AudioContext",
+    "access": null,
+    "description": "",
+    "builtinExternal": true
+  }
+]

@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 const Immutable = require('immutable');
 const CallbackRegistry = require('./CallbackRegistry.js');
 
@@ -86,7 +84,7 @@ class StateHolder {
    * @param {Array} path to the wanted state property
    * @return {any} value
    */
-  getState() {
+  getState(path) {
     const args = Array.from(arguments);
     return args.length === 0 ? this.state.toObject()
       : this.state.getIn(concatPath(args, 0));
@@ -97,7 +95,7 @@ class StateHolder {
    * @param {Array} path to the state value
    * @param {any} value
    */
-  setState() {
+  setState(path, value) {
     const args = Array.from(arguments);
     const length = args.length;
     if (length === 1) {
@@ -114,7 +112,7 @@ class StateHolder {
    * @param {Array} path to the state value
    * @param {any} value
    */
-  mergeState() {
+  mergeState(path, value) {
     const args = Array.from(arguments);
     const length = args.length;
     if (length === 1) {
@@ -130,7 +128,7 @@ class StateHolder {
    * Deletes given state values.
    * @param {Array} path to the state value
    */
-  deleteState() {
+  deleteState(path) {
     const args = Array.from(arguments);
     const length = args.length;
     if (length === 0) {
@@ -147,7 +145,7 @@ class StateHolder {
    * @param {Array} path to the state value
    * @param {Function} callback to return new state value
    */
-  updateState() {
+  updateState(path, callback) {
     const args = Array.from(arguments);
     const length = args.length;
     if (length === 1) {

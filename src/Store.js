@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 const Utils = require('./Utils.js');
 const Dispatcher = require('./Dispatcher.js');
 const StateHolder = require('./StateHolder.js');
@@ -129,7 +127,7 @@ class Store extends StateHolder {
    * Calls the action handler.
    * @private
    * @param {Function} handler
-   * @param {Object} payload
+   * @param {Object} action
    */
   callActionHandler(handler, action) {
     if (!Utils.isFunction(handler)) {
@@ -156,7 +154,7 @@ class Store extends StateHolder {
 
   /**
    * Attaches another store to this store's state.
-   * @param {String} property
+   * @param {String} name
    * @param {Store} store
    * @return {Function} handler
    */
