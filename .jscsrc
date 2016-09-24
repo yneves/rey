@@ -12,7 +12,18 @@
     "maximumLineLength": 100,
     "requireCamelCaseOrUpperCaseIdentifiers": true,
     "requireCapitalizedConstructors": true,
-    "requireCurlyBraces": true,
+    "requireCurlyBraces": [
+      "if",
+      "else",
+      "for",
+      "while",
+      "do",
+      "switch",
+      "return",
+      "try",
+      "catch",
+      "typeof"
+    ],
     "requireSpaceAfterKeywords": [
         "if",
         "else",
@@ -33,8 +44,10 @@
     "requireSpaceBeforeObjectValues": true,
     "requireSpaceBetweenArguments": true,
     "requireSpacesInFunction": {
-      "beforeOpeningRoundBrace": true,
       "beforeOpeningCurlyBrace": true
+    },
+    "disallowSpacesInFunction": {
+      "beforeOpeningRoundBrace": true
     },
     "requireEarlyReturn": true,
     "validateIndentation": 2,

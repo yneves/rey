@@ -1,29 +1,34 @@
 {
   "name": "rey",
-  "version": "0.1.19",
+  "version": "1.0.7",
   "author": {
     "url": "http://yneves.com/",
     "name": "Yuri Neves Silveira",
     "email": "yurinevessilveira@gmail.com"
   },
-  "main": "./src/index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "main": "./index.js",
   "dependencies": {
-    "axios": "^0.11.0",
-    "bauer-factory": "^2.0.6",
+    "auto-bind": "^0.1.0",
+    "babel-preset-es2015": "^6.14.0",
     "bluebird": "^3.3.5",
-    "classnames": "^2.2.5",
+    "deep-extend": "^0.4.1",
     "envify": "^3.4.0",
-    "fluks": "^0.3.14",
+    "global": "^4.3.0",
     "grunt": "^1.0.1",
+    "grunt-babel": "^6.0.0",
     "grunt-browserify": "^5.0.0",
-    "grunt-contrib-uglify": "^1.0.1",
-    "grunt-envify": "0.0.3",
-    "jsdom": "^8.5.0",
+    "grunt-contrib-uglify": "^2.0.0",
+    "grunt-envify": "^0.1.0",
+    "immutable": "^3.8.1",
+    "jsdom": "^9.5.0",
+    "mocha": "^3.0.2",
     "mocha-jsdom": "^1.1.0",
     "react": "^15.0.2",
-    "react-addons-css-transition-group": "^15.0.2",
+    "react-addons-css-transition-group": "^15.3.1",
     "react-dom": "^15.0.2",
-    "react-immutable": "^0.1.3",
-    "rooter": "^0.1.18"
+    "xhr": "^2.2.2"
   }
 }
