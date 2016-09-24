@@ -163,9 +163,9 @@ class Router extends StateHolder {
    */
   prepareRoute(href, props, params, values) {
     const route = {
-      path: url.path,
-      query: url.query,
-      pathname: url.pathname,
+      path: href.path,
+      query: href.query,
+      pathname: href.pathname,
       params: {}
     };
     for (let prop in props) {
