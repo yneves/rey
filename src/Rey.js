@@ -420,7 +420,7 @@ class Rey extends EventEmitter {
    * @return {Rey} rey
    */
   load(dependencies) {
-    this.deps.resolve(deps.concat(Utils.noop));
+    this.deps.resolve(dependencies.concat(Utils.noop));
     return this;
   }
 

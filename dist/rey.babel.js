@@ -37325,7 +37325,7 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
         }, {
           key: "load",
           value: function load(dependencies) {
-            this.deps.resolve(deps.concat(Utils.noop));
+            this.deps.resolve(dependencies.concat(Utils.noop));
             return this;
           }
 
