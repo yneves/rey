@@ -38185,6 +38185,7 @@ class Store extends StateHolder {
         this.callActionHandler(actionHandler[type], action);
       }
     });
+    this.attachedStores.map(attachedStore => attachedStore[1].activate());
     this.storeDidActivate();
   }
 
@@ -38193,6 +38194,7 @@ class Store extends StateHolder {
    */
   deactivate() {
     this.storeWillDeactivate();
+    this.attachedStores.map(attachedStore => attachedStore[1].deactivate());
     if (this.handler) {
       this.dispatcher.unregister(this.handler);
       this.handler = undefined;

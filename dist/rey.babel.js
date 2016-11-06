@@ -37886,6 +37886,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
                 _this22.callActionHandler(actionHandler[type], action);
               }
             });
+            this.attachedStores.map(function (attachedStore) {
+              return attachedStore[1].activate();
+            });
             this.storeDidActivate();
           }
 
@@ -37897,6 +37900,9 @@ function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Con
           key: "deactivate",
           value: function deactivate() {
             this.storeWillDeactivate();
+            this.attachedStores.map(function (attachedStore) {
+              return attachedStore[1].deactivate();
+            });
             if (this.handler) {
               this.dispatcher.unregister(this.handler);
               this.handler = undefined;
