@@ -59,7 +59,7 @@ class Location {
    * @param {String} href
    */
   set(href) {
-    this.window.location.href;
+    this.window.location.href = href;
   }
 
   /**

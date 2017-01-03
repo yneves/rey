@@ -109,9 +109,10 @@ class CallbackRegistry {
    */
   run() {
     const args = Array.from(arguments);
-    const length = this.callbacks.length;
-    for (let i = 0; i < length; i++) {
-      this.call(this.callbacks[i], args);
+    for (let i = 0; i < this.callbacks.length; i++) {
+      if (this.callbacks[i]) {
+        this.call(this.callbacks[i], args);
+      }
     }
   }
 

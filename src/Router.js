@@ -127,11 +127,12 @@ class Router extends StateHolder {
   matchRoute(href) {
     const routes = this.getRoutes();
     const url = this.location.parse(href);
+    const pathname = url.pathname || url.path;
     let route;
 
     // Exact match
-    if (routes[url.pathname]) {
-      route = this.prepareRoute(url, this.routes[url.pathname]);
+    if (routes[pathname]) {
+      route = this.prepareRoute(url, this.routes[pathname]);
 
     // Match params
     } else {
@@ -139,7 +140,7 @@ class Router extends StateHolder {
         const params = key.match(/\{[\w]+\}/g);
         if (params) {
           const routeMatcher = new RegExp('^' + key.replace(/\{[\w]+\}/g, '([\\w0-9-]+)') + '$');
-          const values = url.pathname ? url.pathname.match(routeMatcher) : undefined;
+          const values = pathname ? pathname.match(routeMatcher) : undefined;
           if (values) {
             route = this.prepareRoute(url, routes[key], params, values);
           }
@@ -163,6 +164,7 @@ class Router extends StateHolder {
    */
   prepareRoute(href, props, params, values) {
     const route = {
+      href: this.location.format(href),
       path: href.path,
       query: href.query,
       pathname: href.pathname,

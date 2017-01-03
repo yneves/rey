@@ -53,7 +53,7 @@ class StateHolder {
    * @param {Function} callback to be removed
    */
   unregister(callback) {
-    this.callbacks.remove(callback);
+    return this.callbacks.remove(callback);
   }
 
   /**
