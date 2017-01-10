@@ -6,14 +6,14 @@
 */
 // - -------------------------------------------------------------------- - //
 
-const URLParser = require('url');
-const Utils = require('./Utils.js');
-const CallbackRegistry = require('./CallbackRegistry.js');
+import URLParser from 'url';
+import Utils from './Utils.js';
+import CallbackRegistry from './CallbackRegistry.js';
 
 /**
  * Simple wrapper for window.location and window.history.
  */
-class Location {
+export default class Location {
 
   /**
    * Creates a new location wrapper instance.
@@ -133,7 +133,5 @@ class Location {
   }
 
 };
-
-module.exports = Location;
 
 // - -------------------------------------------------------------------- - //

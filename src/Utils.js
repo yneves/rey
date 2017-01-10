@@ -11,7 +11,7 @@ const getObjectType = (arg) => {
   return type.substr(8, type.length - 9);
 };
 
-module.exports = {
+export default {
 
   instanceOf(arg, cls) {
     return arg instanceof cls;

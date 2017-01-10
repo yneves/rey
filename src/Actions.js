@@ -6,13 +6,13 @@
 */
 // - -------------------------------------------------------------------- - //
 
-const Dispatcher = require('./Dispatcher.js');
-const StateHolder = require('./StateHolder.js');
+import Dispatcher from './Dispatcher.js';
+import StateHolder from './StateHolder.js';
 
 /**
  * Class to manage action creators.
  */
-class Actions {
+export default class Actions {
 
   /**
    * Creates a new set of action creators.
@@ -46,7 +46,5 @@ class Actions {
   }
 
 };
-
-module.exports = Actions;
 
 // - -------------------------------------------------------------------- - //

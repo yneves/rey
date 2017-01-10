@@ -9,7 +9,7 @@
 /**
  * Dependency registry.
  */
-class DependencyRegistry {
+export default class DependencyRegistry {
 
   /**
    * Creates a new dependency registry.
@@ -82,7 +82,5 @@ class DependencyRegistry {
   }
 
 };
-
-module.exports = DependencyRegistry;
 
 // - -------------------------------------------------------------------- - //

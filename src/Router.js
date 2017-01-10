@@ -6,14 +6,14 @@
 */
 // - -------------------------------------------------------------------- - //
 
-const Location = require('./Location.js');
-const Dispatcher = require('./Dispatcher.js');
-const StateHolder = require('./StateHolder.js');
+import Location from './Location.js';
+import Dispatcher from './Dispatcher.js';
+import StateHolder from './StateHolder.js';
 
 /**
  * Routing class.
  */
-class Router extends StateHolder {
+export default class Router extends StateHolder {
 
   /**
    * Creates a new Router instance
@@ -196,7 +196,5 @@ class Router extends StateHolder {
   }
 
 };
-
-module.exports = Router;
 
 // - -------------------------------------------------------------------- - //

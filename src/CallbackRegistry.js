@@ -9,7 +9,7 @@
 /**
  * Generic class to manage a list of callbacks.
  */
-class CallbackRegistry {
+export default class CallbackRegistry {
 
   /**
    * Creates a new list of callbacks.
@@ -117,7 +117,5 @@ class CallbackRegistry {
   }
 
 };
-
-module.exports = CallbackRegistry;
 
 // - -------------------------------------------------------------------- - //

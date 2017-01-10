@@ -6,8 +6,8 @@
 */
 // - -------------------------------------------------------------------- - //
 
-const Immutable = require('immutable');
-const CallbackRegistry = require('./CallbackRegistry.js');
+import Immutable from 'immutable';
+import CallbackRegistry from './CallbackRegistry.js';
 
 const callbackWrapper = (callback) => (state) => {
   if (typeof callback === 'object' && typeof callback.setState === 'function') {
@@ -27,7 +27,7 @@ const concatPath = (args, offset) => {
 /**
  * Base class for manipulating state.
  */
-class StateHolder {
+export default class StateHolder {
 
   /**
    * Creates a new state holder object.
@@ -158,7 +158,5 @@ class StateHolder {
   }
 
 };
-
-module.exports = StateHolder;
 
 // - -------------------------------------------------------------------- - //

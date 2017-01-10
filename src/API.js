@@ -6,17 +6,17 @@
 */
 // - -------------------------------------------------------------------- - //
 
-const deepExtend = require('deep-extend');
-const Immutable = require('immutable');
+import deepExtend from 'deep-extend';
+import Immutable from 'immutable';
 
-const Utils = require('./Utils.js');
+import Utils from './Utils.js';
 
 const toJS = (arg) => (arg.toJS ? arg.toJS() : arg);
 
 /**
  * Class to create API wrappers.
  */
-class API {
+export default class API {
 
   /**
    * Creates a new API wrapper.
@@ -116,7 +116,5 @@ class API {
     return promise.bind(this);
   }
 };
-
-module.exports = API;
 
 // - -------------------------------------------------------------------- - //

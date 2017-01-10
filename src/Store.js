@@ -6,9 +6,9 @@
 */
 // - -------------------------------------------------------------------- - //
 
-const Utils = require('./Utils.js');
-const Dispatcher = require('./Dispatcher.js');
-const StateHolder = require('./StateHolder.js');
+import Utils from './Utils.js';
+import Dispatcher from './Dispatcher.js';
+import StateHolder from './StateHolder.js';
 
 const reservedKeys = [
   'constructor',
@@ -22,7 +22,7 @@ const reservedKeys = [
 /**
  * Class to represent a Store.
  */
-class Store extends StateHolder {
+export default class Store extends StateHolder {
 
   /**
    * Creates a new store instance.
@@ -199,7 +199,5 @@ class Store extends StateHolder {
   }
 
 };
-
-module.exports = Store;
 
 // - -------------------------------------------------------------------- - //

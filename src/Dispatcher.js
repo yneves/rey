@@ -6,7 +6,7 @@
 */
 // - -------------------------------------------------------------------- - //
 
-const CallbackRegistry = require('./CallbackRegistry.js');
+import CallbackRegistry from './CallbackRegistry.js';
 
 const callbackWrapper = (callback) => (payload) => {
   if (typeof callback[payload.actionType] === 'function') {
@@ -17,7 +17,7 @@ const callbackWrapper = (callback) => (payload) => {
 /**
  * Class to manage Flux actions flow.
  */
-class Dispatcher {
+export default class Dispatcher {
 
   /**
    * Creates a new Dispatcher instance.
@@ -71,7 +71,5 @@ class Dispatcher {
   }
 
 };
-
-module.exports = Dispatcher;
 
 // - -------------------------------------------------------------------- - //

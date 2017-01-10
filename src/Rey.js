@@ -6,34 +6,34 @@
 */
 // - -------------------------------------------------------------------- - //
 
-const window = require('global/window');
-const document = require('global/document');
-const xhr = require('xhr');
-const React = require('react');
-const ReactDOM = require('react-dom');
-const ReactCSSTransitionGroup = require('react-addons-css-transition-group');
+import window from 'global/window';
+import document from 'global/document';
+import xhr from 'xhr';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
-const xtend = require('xtend');
-const autoBind = require('auto-bind');
-const Immutable = require('immutable');
+import xtend from 'xtend';
+import autoBind from 'auto-bind';
+import Immutable from 'immutable';
 const {EventEmitter} = require('events');
 
-const API = require('./API.js');
-const Utils = require('./Utils.js');
-const Store = require('./Store.js');
-const Actions = require('./Actions.js');
-const Router = require('./Router.js');
-const Controller = require('./Controller.js');
-const Dispatcher = require('./Dispatcher.js');
-const Location = require('./Location.js');
-const Promise = require('./Promise.js');
-const DependencyRegistry = require('./DependencyRegistry.js');
+import API from './API.js';
+import Utils from './Utils.js';
+import Store from './Store.js';
+import Actions from './Actions.js';
+import Router from './Router.js';
+import Controller from './Controller.js';
+import Dispatcher from './Dispatcher.js';
+import Location from './Location.js';
+import Promise from './Promise.js';
+import DependencyRegistry from './DependencyRegistry.js';
 
 
 /**
  * Main class.
  */
-class Rey extends EventEmitter {
+export default class Rey extends EventEmitter {
 
   /**
    * Creates a new Rey instance.
@@ -435,7 +435,5 @@ class Rey extends EventEmitter {
   }
 
 };
-
-module.exports = Rey;
 
 // - -------------------------------------------------------------------- - //

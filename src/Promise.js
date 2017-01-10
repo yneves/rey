@@ -6,9 +6,9 @@
 */
 // - -------------------------------------------------------------------- - //
 
-const Promise = require('bluebird');
-const Immutable = require('immutable');
-const Utils = require('./Utils.js');
+import Promise from 'bluebird';
+import Immutable from 'immutable';
+import Utils from './Utils.js';
 
 Promise.prototype.toState = function(stateHolder, propertyName) {
 
@@ -51,6 +51,6 @@ Promise.prototype.toState = function(stateHolder, propertyName) {
     .finally(updateState);
 };
 
-module.exports = Promise;
+export default Promise;
 
 // - -------------------------------------------------------------------- - //

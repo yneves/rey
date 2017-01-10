@@ -6,11 +6,11 @@
 */
 // - -------------------------------------------------------------------- - //
 
-const React = require('react');
-const Immutable = require('immutable');
-const Store = require('./Store.js');
-const Router = require('./Router.js');
-const Actions = require('./Actions.js');
+import React from 'react';
+import Immutable from 'immutable';
+import Store from './Store.js';
+import Router from './Router.js';
+import Actions from './Actions.js';
 
 const empty = [];
 
@@ -113,6 +113,6 @@ const Controller = {
   }
 };
 
-module.exports = Controller;
+export default Controller;
 
 // - -------------------------------------------------------------------- - //

@@ -8,19 +8,20 @@
 
 'use strict';
 
-const window = require('global/window');
-const React = require('react');
-const ReactDOM = require('react-dom');
+import window from 'global/window';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Rey from './Rey.js';
+import Utils from './Utils';
+import deepExtend from 'deep-extend';
+import xtend from 'xtend';
 
+const rey = xtend(new Rey(), Utils, {extend: deepExtend});
+
+window.rey = rey;
 window.React = React;
 window.ReactDOM = ReactDOM;
 
-const Rey = require('./src/Rey.js');
-const Utils = require('./src/Utils');
-const xtend = require('xtend');
-const deepExtend = require('deep-extend');
-const rey = new Rey();
-
-module.exports = xtend(rey, Utils, {extend: deepExtend});
+export default rey;
 
 // - -------------------------------------------------------------------- - //
