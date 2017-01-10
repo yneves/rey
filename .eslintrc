@@ -1,10 +1,11 @@
 {
+  "parser": "babel-eslint",
   "env": {
     "browser": true,
     "es6": true
   },
   "ecmaFeatures": {
-    "jsx": true
+    "jsx": false
   },
   "rules": {
     // Strict mode

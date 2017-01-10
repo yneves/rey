@@ -2,11 +2,11 @@
 
 'use strict';
 
-const assert = require('assert');
-const jsdom = require('mocha-jsdom');
-const Router = require('../src/Router.js');
-const Location = require('../src/Location.js');
-const Dispatcher = require('../src/Dispatcher.js');
+import assert from 'assert';
+import jsdom from 'mocha-jsdom';
+import Router from '../src/Router.js';
+import Location from '../src/Location.js';
+import Dispatcher from '../src/Dispatcher.js';
 
 describe('Router', () => {
 

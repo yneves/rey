@@ -2,9 +2,9 @@
 
 'use strict';
 
-const assert = require('assert');
-const jsdom = require('mocha-jsdom');
-const Promise = require('../src/Promise.js');
+import assert from 'assert';
+import jsdom from 'mocha-jsdom';
+import Promise from '../src/Promise.js';
 
 describe('Promise', () => {
 

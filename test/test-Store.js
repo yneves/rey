@@ -2,9 +2,9 @@
 
 'use strict';
 
-const assert = require('assert');
-const Store = require('../src/Store.js');
-const Dispatcher = require('../src/Dispatcher.js');
+import assert from 'assert';
+import Store from '../src/Store.js';
+import Dispatcher from '../src/Dispatcher.js';
 
 describe('Store', () => {
 

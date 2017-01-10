@@ -2,8 +2,8 @@
 
 'use strict';
 
-const assert = require('assert');
-const jsdom = require('mocha-jsdom');
+import assert from 'assert';
+import jsdom from 'mocha-jsdom';
 
 describe('Rey', () => {
 
@@ -13,7 +13,7 @@ describe('Rey', () => {
 
   let Rey;
   before(() => {
-    Rey = require('../src/Rey.js');
+    Rey = require('../src/Rey.js').default;
   });
 
   it('constructor', () => {

@@ -2,11 +2,11 @@
 
 'use strict';
 
-const assert = require('assert');
-const Immutable = require('immutable');
-const xhr = require('xhr');
-const Promise = require('bluebird');
-const API = require('../src/API.js');
+import assert from 'assert';
+import Immutable from 'immutable';
+import xhr from 'xhr';
+import Promise from 'bluebird';
+import API from '../src/API.js';
 
 describe('API', () => {
 

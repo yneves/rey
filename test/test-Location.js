@@ -2,9 +2,9 @@
 
 'use strict';
 
-const assert = require('assert');
-const jsdom = require('mocha-jsdom');
-const Location = require('../src/Location.js');
+import assert from 'assert';
+import jsdom from 'mocha-jsdom';
+import Location from '../src/Location.js';
 
 describe('Location', () => {
 
@@ -22,7 +22,6 @@ describe('Location', () => {
     const location = new Location(window);
     assert.strictEqual(location.get(), 'http://localhost/');
     location.set('test');
-    // assert.strictEqual(location.get(), 'test');
   });
 
   it('should manipulate history state', () => {

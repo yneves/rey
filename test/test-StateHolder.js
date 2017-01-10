@@ -2,8 +2,8 @@
 
 'use strict';
 
-const assert = require('assert');
-const StateHolder = require('../src/StateHolder.js');
+import assert from 'assert';
+import StateHolder from '../src/StateHolder.js';
 
 describe('StateHolder', () => {
 

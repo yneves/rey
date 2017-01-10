@@ -2,8 +2,8 @@
 
 'use strict';
 
-const assert = require('assert');
-const Utils = require('../src/Utils.js');
+import assert from 'assert';
+import Utils from '../src/Utils.js';
 
 describe('Utils', () => {
 

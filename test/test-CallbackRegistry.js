@@ -2,8 +2,8 @@
 
 'use strict';
 
-const assert = require('assert');
-const CallbackRegistry = require('../src/CallbackRegistry.js');
+import assert from 'assert';
+import CallbackRegistry from '../src/CallbackRegistry.js';
 
 describe('CallbackRegistry', () => {
 

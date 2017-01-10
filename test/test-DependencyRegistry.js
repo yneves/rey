@@ -2,8 +2,8 @@
 
 'use strict';
 
-const assert = require('assert');
-const DependencyRegistry = require('../src/DependencyRegistry.js');
+import assert from 'assert';
+import DependencyRegistry from '../src/DependencyRegistry.js';
 
 describe('DependencyRegistry', () => {
 
