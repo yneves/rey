@@ -51,11 +51,7 @@ module.exports = {
         compact: false,
         babelrc: false,
         presets: ['babel-preset-es2015', 'babel-preset-stage-0'].map(require.resolve)
-      },
-      include: [
-        path.resolve(__dirname, 'src'),
-        path.resolve(__dirname, 'test')
-      ]
+      }
     }]
   }
 };
