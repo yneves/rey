@@ -12,12 +12,14 @@ import ReactDOM from 'react-dom';
 import Rey from './Rey.js';
 import Utils from './Utils';
 import deepExtend from 'deep-extend';
-import xtend from 'xtend';
 
 const rey = new Rey();
 
 rey.extend = deepExtend;
-xtend(rey, Utils);
+
+Object.keys(Utils).forEach(name => {
+  rey[name] = Utils[name];
+});
 
 window.rey = rey;
 window.React = React;
