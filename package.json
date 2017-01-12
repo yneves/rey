@@ -17,7 +17,7 @@
     "mocha": "mocha test/setup.js",
     "build": "webpack"
   },
-  "main": "./src/index.js",
+  "main": "./src/_index.js",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/yneves/rey.git"
