@@ -12,6 +12,7 @@ import ReactDOM from 'react-dom';
 import Rey from './Rey.js';
 import Utils from './Utils';
 import deepExtend from 'deep-extend';
+import xtend from 'xtend';
 
 const rey = new Rey();
 
